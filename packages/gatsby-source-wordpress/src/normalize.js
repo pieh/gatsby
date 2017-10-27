@@ -259,7 +259,15 @@ exports.mapEntitiesToMedia = entities => {
     const replaceFieldsInObject = object => {
       _.each(object, (value, key) => {
         if (_.isArray(value)) {
-          value.forEach(v => replaceFieldsInObject(v))
+          if (value.length > 0 && isPhoto(value[0])) {
+            object[`${key}___NODE`] = value.map(item => {
+              const me = media.find(m => m.wordpress_id === item.wordpress_id);
+              return me ? me.id : null;
+            }).filter(id => id !== null);
+            delete object[key]
+          } else {
+            value.forEach(v => replaceFieldsInObject(v))
+          }
         } else if (isPhoto(value)) {
           const me = media.find(m => m.wordpress_id === value.wordpress_id)
           if (me) {
