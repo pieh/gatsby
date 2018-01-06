@@ -4,6 +4,7 @@ const url = require(`url`)
 const chokidar = require(`chokidar`)
 const express = require(`express`)
 const graphqlHTTP = require(`express-graphql`)
+const printSchema = require(`graphql`).printSchema
 const parsePath = require(`parse-filepath`)
 const request = require(`request`)
 const rl = require(`readline`)
@@ -121,6 +122,10 @@ async function startServer(program) {
     res.end()
   })
 
+  app.get(`/___schema`, function(req, res) {
+    res.send(printSchema(store.getState().schema))
+  })
+
   app.get(`/__open-stack-frame-in-editor`, (req, res) => {
     launchEditor(req.query.fileName, req.query.lineNumber)
     res.end()
@@ -207,9 +212,7 @@ async function startServer(program) {
       if (err.code === `EADDRINUSE`) {
         // eslint-disable-next-line max-len
         report.panic(
-          `Unable to start Gatsby on port ${
-            program.port
-          } as there's already a process listing on that port.`
+          `Unable to start Gatsby on port ${program.port} as there's already a process listing on that port.`
         )
         return
       }
