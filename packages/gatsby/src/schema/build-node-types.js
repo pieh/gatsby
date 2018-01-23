@@ -110,6 +110,7 @@ module.exports = async () => {
       nodes: type.nodes,
       types: _.values(processedTypes),
       allNodes: getNodes(),
+      typeName: type.name,
     })
 
     return {

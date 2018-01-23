@@ -22,6 +22,7 @@ const {
 } = require(`./data-tree-utils`)
 const DateType = require(`./types/type-date`)
 const FileType = require(`./types/type-file`)
+const { schemaDefTypeMap } = require(`./types`)
 
 import type { GraphQLOutputType } from "graphql"
 import type {
@@ -42,6 +43,7 @@ function inferGraphQLType({
   selector,
   nodes,
   types,
+  forcedFieldType,
   ...otherArgs
 }): ?GraphQLFieldConfig<*, *> {
   if (exampleValue == null || isEmptyObjectOrArray(exampleValue)) return null
@@ -104,19 +106,25 @@ function inferGraphQLType({
       return { type: GraphQLBoolean }
     case `string`:
       return { type: GraphQLString }
-    case `object`:
+    case `object`: {
+      const typeName = forcedFieldType
+        ? forcedFieldType.type
+        : createTypeName(fieldName)
+
       return {
         type: new GraphQLObjectType({
-          name: createTypeName(fieldName),
+          name: typeName,
           fields: inferObjectStructureFromNodes({
             ...otherArgs,
             exampleValue,
+            typeName,
             selector,
             nodes,
             types,
           }),
         }),
       }
+    }
     case `number`:
       return _.isInteger(exampleValue)
         ? { type: GraphQLInt }
@@ -296,6 +304,7 @@ type inferTypeOptions = {
   types: ProcessedNodeType[],
   selector?: string,
   exampleValue?: Object,
+  typeName?: string,
 }
 
 const EXCLUDE_KEYS = {
@@ -310,6 +319,7 @@ export function inferObjectStructureFromNodes({
   nodes,
   types,
   selector,
+  typeName,
   exampleValue = extractFieldExamples(nodes),
 }: inferTypeOptions): GraphQLFieldConfigMap<*, *> {
   const config = store.getState().config
@@ -318,6 +328,10 @@ export function inferObjectStructureFromNodes({
 
   // Ensure nodes have internal key with object.
   nodes = nodes.map(n => (n.internal ? n : { ...n, internal: {} }))
+
+  // Check if we have defined field types of processed nodes type
+  const forcedFieldTypes =
+    typeName in schemaDefTypeMap ? schemaDefTypeMap[typeName] : {}
 
   const inferredFields = {}
   _.each(exampleValue, (value, key) => {
@@ -329,6 +343,9 @@ export function inferObjectStructureFromNodes({
     // before we try automatic inference.
     const nextSelector = selector ? `${selector}.${key}` : key
     const fieldSelector = `${nodes[0].internal.type}.${nextSelector}`
+
+    const forcedFieldType =
+      key in forcedFieldTypes ? forcedFieldTypes[key] : null
 
     let fieldName = key
     let inferredField
@@ -352,6 +369,7 @@ export function inferObjectStructureFromNodes({
         types,
         exampleValue: value,
         selector: nextSelector,
+        forcedFieldType,
       })
     }
 
