@@ -6,9 +6,10 @@ const buildNodeTypes = require(`./build-node-types`)
 const buildNodeConnections = require(`./build-node-connections`)
 const { store } = require(`../redux`)
 const invariant = require(`invariant`)
+const { getSchemaDefTypeMap } = require(`./types/definitions`)
 
 module.exports = async () => {
-  const typesGQL = await buildNodeTypes()
+  const typesGQL = await buildNodeTypes(getSchemaDefTypeMap())
   const connections = buildNodeConnections(_.values(typesGQL))
 
   // Pull off just the graphql node from each type object.
