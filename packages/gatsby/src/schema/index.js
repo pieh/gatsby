@@ -6,8 +6,11 @@ const buildNodeTypes = require(`./build-node-types`)
 const buildNodeConnections = require(`./build-node-connections`)
 const { store } = require(`../redux`)
 const invariant = require(`invariant`)
+const { importForcedTypes } = require(`./types`)
 
 module.exports = async () => {
+  importForcedTypes()
+
   const typesGQL = await buildNodeTypes()
   const connections = buildNodeConnections(_.values(typesGQL))
 
