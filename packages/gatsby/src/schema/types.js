@@ -2,6 +2,7 @@ const fs = require(`fs-extra`)
 const { parse } = require(`graphql`)
 const { store } = require(`../redux`)
 const createTypeName = require(`./create-type-name`)
+const { setFileNodeRootType } = require(`./types/type-file`)
 
 const schemaDefTypeMap = {}
 
@@ -77,3 +78,24 @@ exports.importForcedTypes = async () => {
 
   return schemaDefTypeMap
 }
+
+const graphQLNodeTypes = []
+exports.registerGraphQLNodeType = type => {
+  graphQLNodeTypes.push(type)
+
+  registerGraphQLType(type.name, {
+    type: type.nodeObjectType,
+  })
+
+  // special case to construct linked file type used by type inferring
+  if (type.name === `File`) {
+    setFileNodeRootType(type.nodeObjectType)
+  }
+}
+
+const graphQLTypeMap = {}
+function registerGraphQLType(typeName, type) {
+  graphQLTypeMap[typeName] = type
+  return type
+}
+exports.registerGraphQLType = registerGraphQLType

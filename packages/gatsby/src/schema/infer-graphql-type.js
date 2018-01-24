@@ -22,7 +22,7 @@ const {
 } = require(`./data-tree-utils`)
 const DateType = require(`./types/type-date`)
 const FileType = require(`./types/type-file`)
-const { schemaDefTypeMap } = require(`./types`)
+const { schemaDefTypeMap, registerGraphQLType } = require(`./types`)
 
 import type { GraphQLOutputType } from "graphql"
 import type {
@@ -111,7 +111,7 @@ function inferGraphQLType({
         ? forcedFieldType.type
         : createTypeName(fieldName)
 
-      return {
+      return registerGraphQLType(typeName, {
         type: new GraphQLObjectType({
           name: typeName,
           fields: inferObjectStructureFromNodes({
@@ -123,7 +123,7 @@ function inferGraphQLType({
             types,
           }),
         }),
-      }
+      })
     }
     case `number`:
       return _.isInteger(exampleValue)
