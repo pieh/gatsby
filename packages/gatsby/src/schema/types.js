@@ -1,5 +1,14 @@
 const fs = require(`fs-extra`)
 const { parse } = require(`graphql`)
+const {
+  GraphQLList,
+  GraphQLString,
+  GraphQLFloat,
+  GraphQLInt,
+  GraphQLBoolean,
+  GraphQLObjectType,
+} = require(`graphql`)
+const _ = require(`lodash`)
 const { store } = require(`../redux`)
 const createTypeName = require(`./create-type-name`)
 const { setFileNodeRootType } = require(`./types/type-file`)
@@ -99,3 +108,49 @@ function registerGraphQLType(typeName, type) {
   return type
 }
 exports.registerGraphQLType = registerGraphQLType
+
+export function getGraphQLType({ schemaDefType, key }) {
+  if (schemaDefType.type === `List`) {
+    return {
+      type: new GraphQLList(
+        getGraphQLType({
+          schemaDefType: schemaDefType.nodesType,
+          key,
+        }).type
+      ),
+    }
+  } else if (schemaDefType.type === `String`) {
+    return { type: GraphQLString }
+  } else if (schemaDefType.type === `Float`) {
+    return { type: GraphQLFloat }
+  } else if (schemaDefType.type === `Int`) {
+    return { type: GraphQLInt }
+  } else if (schemaDefType.type === `Boolean`) {
+    return { type: GraphQLBoolean }
+  }
+
+  if (schemaDefType.type in graphQLTypeMap) {
+    return graphQLTypeMap[schemaDefType.type]
+  }
+
+  if (schemaDefType.type in schemaDefTypeMap) {
+    return {
+      type: new GraphQLObjectType({
+        name: schemaDefType.type,
+        fields: _.mapValues(
+          schemaDefTypeMap[schemaDefType.type],
+          (typeDef, typeKey) =>
+            getGraphQLType({
+              schemaDefType: typeDef,
+              key: typeKey,
+            })
+        ),
+      }),
+      resolve(object) {
+        return _.isPlainObject(object[key]) ? object[key] : null
+      },
+    }
+  }
+
+  return null
+}

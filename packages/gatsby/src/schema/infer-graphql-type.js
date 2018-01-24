@@ -7,6 +7,7 @@ const {
   GraphQLInt,
   GraphQLList,
   GraphQLUnionType,
+  GraphQLScalarType,
 } = require(`graphql`)
 const _ = require(`lodash`)
 const invariant = require(`invariant`)
@@ -22,7 +23,11 @@ const {
 } = require(`./data-tree-utils`)
 const DateType = require(`./types/type-date`)
 const FileType = require(`./types/type-file`)
-const { schemaDefTypeMap, registerGraphQLType } = require(`./types`)
+const {
+  schemaDefTypeMap,
+  registerGraphQLType,
+  getGraphQLType,
+} = require(`./types`)
 
 import type { GraphQLOutputType } from "graphql"
 import type {
@@ -379,5 +384,55 @@ export function inferObjectStructureFromNodes({
     inferredFields[createKey(fieldName)] = inferredField
   })
 
+  if (forcedFieldTypes) {
+    _.each(forcedFieldTypes, (schemaDefType, key) => {
+      key = createKey(key)
+
+      let existingField = null
+      if (key in inferredFields) {
+        existingField = inferredFields[key]
+      }
+
+      let newField = getGraphQLType({ schemaDefType, key })
+      if (newField) {
+        if (existingField && existingField.type.name !== newField.type.name) {
+          // only change if there is type mismatch - else we remove custom resolvers
+
+          let adapterField = null
+
+          const existingFieldInfo = getFieldTypeInfo(existingField)
+          const newFieldInfo = getFieldTypeInfo(newField)
+
+          if (existingFieldInfo.isScalar) {
+            if (newFieldInfo.isObject) {
+              adapterField = {
+                ...newField,
+                resolve: () =>
+                  // For now just return null. Maybe if data is string we should
+                  // search for nodes with id of data and type defined in schema?
+                  // Basicly same as mapping. Or if possible allow to specify on
+                  // what field it should be joining in schema definition
+                  null,
+              }
+            }
+          }
+
+          inferredFields[key] = adapterField || newField
+        } else if (!existingField) {
+          // add field if it wasn't created by infering schema
+          inferredFields[key] = newField
+        }
+      }
+    })
+  }
+
   return inferredFields
+}
+
+const getFieldTypeInfo = field => {
+  return {
+    isScalar: field.type instanceof GraphQLScalarType,
+    isObject: field.type instanceof GraphQLObjectType,
+    isArray: field.type instanceof GraphQLList,
+  }
 }
