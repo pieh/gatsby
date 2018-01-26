@@ -11,7 +11,7 @@ const {
 const _ = require(`lodash`)
 const { store } = require(`../redux`)
 const createTypeName = require(`./create-type-name`)
-const { setFileNodeRootType } = require(`./types/type-file`)
+const FileType = require(`./types/type-file`)
 
 const schemaDefTypeMap = {}
 
@@ -88,9 +88,9 @@ exports.importForcedTypes = async () => {
   return schemaDefTypeMap
 }
 
-const graphQLNodeTypes = []
+const graphQLNodeTypes = {}
 exports.registerGraphQLNodeType = type => {
-  graphQLNodeTypes.push(type)
+  graphQLNodeTypes[type.name] = type
 
   registerGraphQLType(type.name, {
     type: type.nodeObjectType,
@@ -98,8 +98,12 @@ exports.registerGraphQLNodeType = type => {
 
   // special case to construct linked file type used by type inferring
   if (type.name === `File`) {
-    setFileNodeRootType(type.nodeObjectType)
+    FileType.setFileNodeRootType(type.nodeObjectType)
   }
+}
+
+export function getNodeType(typeName) {
+  return graphQLNodeTypes[typeName]
 }
 
 const graphQLTypeMap = {}
@@ -111,6 +115,10 @@ exports.registerGraphQLType = registerGraphQLType
 
 export function getGraphQLType({ schemaDefType, key }) {
   if (schemaDefType.type === `List`) {
+    if (schemaDefType.nodesType.type === `File`) {
+      return FileType.getListType()
+    }
+
     return {
       type: new GraphQLList(
         getGraphQLType({
@@ -127,6 +135,8 @@ export function getGraphQLType({ schemaDefType, key }) {
     return { type: GraphQLInt }
   } else if (schemaDefType.type === `Boolean`) {
     return { type: GraphQLBoolean }
+  } else if (schemaDefType.type === `File`) {
+    return FileType.getType()
   }
 
   if (schemaDefType.type in graphQLTypeMap) {
