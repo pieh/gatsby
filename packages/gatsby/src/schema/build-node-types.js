@@ -18,6 +18,7 @@ const {
 const { nodeInterface } = require(`./node-interface`)
 const { getNodes, getNode, getNodeAndSavePathDependency } = require(`../redux`)
 const { createPageDependency } = require(`../redux/actions/add-page-dependency`)
+const { setFileNodeRootType } = require(`./types/type-file`)
 
 import type { ProcessedNodeType } from "./infer-graphql-type"
 
@@ -183,6 +184,11 @@ module.exports = async () => {
     }
 
     processedTypes[_.camelCase(typeName)] = proccesedType
+
+    // special case to construct linked file type used by type inferring
+    if (typeName === `File`) {
+      setFileNodeRootType(gqlType)
+    }
   }
 
   // Create node types and node fields for nodes that have a resolve function.
