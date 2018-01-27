@@ -114,19 +114,14 @@ function registerGraphQLType(typeName, type) {
 }
 exports.registerGraphQLType = registerGraphQLType
 
-export function getGraphQLType({ schemaDefType, key }) {
+export function getGraphQLType(schemaDefType) {
   if (schemaDefType.type === `List`) {
     if (schemaDefType.nodesType.type === `File`) {
       return FileType.getListType()
     }
 
     return {
-      type: new GraphQLList(
-        getGraphQLType({
-          schemaDefType: schemaDefType.nodesType,
-          key,
-        }).type
-      ),
+      type: new GraphQLList(getGraphQLType(schemaDefType.nodesType).type),
     }
   } else if (schemaDefType.type === `String`) {
     return { type: GraphQLString }
@@ -150,17 +145,12 @@ export function getGraphQLType({ schemaDefType, key }) {
     return {
       type: new GraphQLObjectType({
         name: schemaDefType.type,
-        fields: _.mapValues(
-          schemaDefTypeMap[schemaDefType.type],
-          (typeDef, typeKey) =>
-            getGraphQLType({
-              schemaDefType: typeDef,
-              key: typeKey,
-            })
+        fields: _.mapValues(schemaDefTypeMap[schemaDefType.type], typeDef =>
+          getGraphQLType(typeDef)
         ),
       }),
-      resolve(object) {
-        return _.isPlainObject(object[key]) ? object[key] : null
+      resolve(object, fieldArgs, context, { fieldName }) {
+        return _.isPlainObject(object[fieldName]) ? object[fieldName] : null
       },
     }
   }

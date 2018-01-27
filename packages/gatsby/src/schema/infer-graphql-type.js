@@ -393,7 +393,7 @@ export function inferObjectStructureFromNodes({
         existingField = inferredFields[key]
       }
 
-      let newField = getGraphQLType({ schemaDefType, key })
+      let newField = getGraphQLType(schemaDefType)
       if (newField) {
         if (existingField && existingField.type.name !== newField.type.name) {
           // only change if there is type mismatch - else we remove custom resolvers
