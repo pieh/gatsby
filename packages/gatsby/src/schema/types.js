@@ -11,6 +11,7 @@ const {
 const _ = require(`lodash`)
 const { store } = require(`../redux`)
 const createTypeName = require(`./create-type-name`)
+const DateType = require(`./types/type-date`)
 const FileType = require(`./types/type-file`)
 
 const schemaDefTypeMap = {}
@@ -137,6 +138,8 @@ export function getGraphQLType({ schemaDefType, key }) {
     return { type: GraphQLBoolean }
   } else if (schemaDefType.type === `File`) {
     return FileType.getType()
+  } else if (schemaDefType.type === `Date`) {
+    return DateType.getType()
   }
 
   if (schemaDefType.type in graphQLTypeMap) {
