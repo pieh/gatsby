@@ -159,6 +159,11 @@ export function initTypeIndex() {
   registerGraphQLType(`Date`, DateType.getType())
 }
 
+const ScalarTypeNames = [`String`, `Float`, `Int`, `Boolean`, `Date`]
+export function isScalarTypeDef(schemaDefType) {
+  return ScalarTypeNames.indexOf(schemaDefType.type) !== -1
+}
+
 exports.registerGraphQLNodeType = type => {
   graphQLNodeTypes[type.name] = type
 

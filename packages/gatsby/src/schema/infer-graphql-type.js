@@ -27,6 +27,7 @@ const {
   registerGraphQLType,
   getGraphQLType,
   wrapFieldInList,
+  isScalarTypeDef,
 } = require(`./types`)
 
 import type { GraphQLOutputType } from "graphql"
@@ -342,10 +343,7 @@ export function inferObjectStructureFromNodes({
     if (forcedFieldType) {
       // special case for objects - we want to append our defined fields to
       // automaticly infered fields
-      if (
-        _.isPlainObject(value) &&
-        forcedFieldType instanceof GraphQLObjectType
-      ) {
+      if (_.isPlainObject(value) && !isScalarTypeDef(forcedFieldType)) {
         inferredField = inferGraphQLType({
           nodes,
           types,
@@ -391,7 +389,8 @@ export function inferObjectStructureFromNodes({
   if (forcedFieldTypes) {
     _.each(forcedFieldTypes, (forcedFieldType, fieldName) => {
       if (fieldName in inferredFields) {
-        // If we inferred type it's already correct type so don't process it
+        // If we inferred type, then we already used type from schema definition
+        // and it's already correct type so don't process it.
         return
       }
 
@@ -400,12 +399,4 @@ export function inferObjectStructureFromNodes({
   }
 
   return inferredFields
-}
-
-const getFieldTypeInfo = field => {
-  return {
-    isScalar: field.type instanceof GraphQLScalarType,
-    isObject: field.type instanceof GraphQLObjectType,
-    isArray: field.type instanceof GraphQLList,
-  }
 }
