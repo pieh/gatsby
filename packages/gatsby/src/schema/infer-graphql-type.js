@@ -24,7 +24,6 @@ const {
 const DateType = require(`./types/type-date`)
 const FileType = require(`./types/type-file`)
 const {
-  schemaDefTypeMap,
   registerGraphQLType,
   getGraphQLType,
   wrapFieldInList,
@@ -49,6 +48,7 @@ function inferGraphQLType({
   selector,
   nodes,
   types,
+  schemaDefTypeMap,
   forcedFieldType,
   ...otherArgs
 }): ?GraphQLFieldConfig<*, *> {
@@ -107,6 +107,7 @@ function inferGraphQLType({
             selector,
             nodes,
             types,
+            schemaDefTypeMap,
           }),
         }),
       })
@@ -291,6 +292,7 @@ type inferTypeOptions = {
   selector?: string,
   exampleValue?: Object,
   typeName?: string,
+  schemaDefTypeMap?: Object,
 }
 
 const EXCLUDE_KEYS = {
@@ -306,6 +308,7 @@ export function inferObjectStructureFromNodes({
   types,
   selector,
   typeName,
+  schemaDefTypeMap = {},
   exampleValue = extractFieldExamples(nodes),
 }: inferTypeOptions): GraphQLFieldConfigMap<*, *> {
   const config = store.getState().config
@@ -353,6 +356,7 @@ export function inferObjectStructureFromNodes({
       inferredField = inferGraphQLType({
         nodes,
         types,
+        schemaDefTypeMap,
         exampleValue: value,
         selector: nextSelector,
         forcedFieldType,

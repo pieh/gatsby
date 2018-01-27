@@ -14,9 +14,7 @@ const createTypeName = require(`./create-type-name`)
 const DateType = require(`./types/type-date`)
 const FileType = require(`./types/type-file`)
 
-const schemaDefTypeMap = {}
-
-exports.schemaDefTypeMap = schemaDefTypeMap
+let schemaDefTypeMap = {}
 
 const buildTypeDef = field => {
   if (field.type.kind === `NonNullType`) {
@@ -117,7 +115,13 @@ export function wrapFieldInList(field) {
   return listType
 }
 
-const graphQLNodeTypes = {}
+let graphQLNodeTypes = {}
+
+export function initTypeIndex() {
+  graphQLNodeTypes = {}
+  schemaDefTypeMap = {}
+}
+
 exports.registerGraphQLNodeType = type => {
   graphQLNodeTypes[type.name] = type
 

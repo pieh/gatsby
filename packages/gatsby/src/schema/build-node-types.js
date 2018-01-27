@@ -24,7 +24,7 @@ import type { ProcessedNodeType } from "./infer-graphql-type"
 
 type TypeMap = { [typeName: string]: ProcessedNodeType }
 
-module.exports = async () => {
+module.exports = async schemaDefTypeMap => {
   const types = _.groupBy(getNodes(), node => node.internal.type)
   const processedTypes: TypeMap = {}
 
@@ -111,6 +111,7 @@ module.exports = async () => {
       types: _.values(processedTypes),
       allNodes: getNodes(),
       typeName: type.name,
+      schemaDefTypeMap,
     })
 
     return {
