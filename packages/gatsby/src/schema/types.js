@@ -120,6 +120,42 @@ let graphQLNodeTypes = {}
 export function initTypeIndex() {
   graphQLNodeTypes = {}
   schemaDefTypeMap = {}
+
+  // Register scalar types
+
+  // Common resolver for scalar types
+  const scalarResolve = (object, args, context, { fieldName }) => {
+    const value = object[fieldName]
+
+    if (_.isObject(value)) {
+      // we don't want to show "[object Object]" if value is not scalar
+      return null
+    }
+
+    return value
+  }
+
+  registerGraphQLType(`String`, {
+    type: GraphQLString,
+    resolve: scalarResolve,
+  })
+
+  registerGraphQLType(`Float`, {
+    type: GraphQLFloat,
+    resolve: scalarResolve,
+  })
+
+  registerGraphQLType(`Int`, {
+    type: GraphQLInt,
+    resolve: scalarResolve,
+  })
+
+  registerGraphQLType(`Boolean`, {
+    type: GraphQLBoolean,
+    resolve: scalarResolve,
+  })
+
+  registerGraphQLType(`Date`, DateType.getType())
 }
 
 exports.registerGraphQLNodeType = type => {
@@ -192,18 +228,8 @@ export function getGraphQLType(schemaDefType) {
     registerGraphQLType(ListTypeName, wrappedListType)
 
     return wrappedListType
-  } else if (schemaDefType.type === `String`) {
-    return { type: GraphQLString }
-  } else if (schemaDefType.type === `Float`) {
-    return { type: GraphQLFloat }
-  } else if (schemaDefType.type === `Int`) {
-    return { type: GraphQLInt }
-  } else if (schemaDefType.type === `Boolean`) {
-    return { type: GraphQLBoolean }
   } else if (schemaDefType.type === `File`) {
     return FileType.getType()
-  } else if (schemaDefType.type === `Date`) {
-    return DateType.getType()
   }
 
   if (schemaDefType.type in graphQLTypeMap) {
