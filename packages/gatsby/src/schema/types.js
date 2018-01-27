@@ -152,6 +152,12 @@ export function getGraphQLType(schemaDefType) {
       return FileType.getListType()
     }
 
+    // check if we have ready to use List<type> in our cache
+    const ListTypeName = `[${schemaDefType.nodesType.type}]`
+    if (ListTypeName in graphQLTypeMap) {
+      return graphQLTypeMap[ListTypeName]
+    }
+
     const { resolve, ...rest } = wrapFieldInList(
       getGraphQLType(schemaDefType.nodesType)
     )
@@ -183,6 +189,8 @@ export function getGraphQLType(schemaDefType) {
       },
     }
 
+    registerGraphQLType(ListTypeName, wrappedListType)
+
     return wrappedListType
   } else if (schemaDefType.type === `String`) {
     return { type: GraphQLString }
@@ -203,7 +211,7 @@ export function getGraphQLType(schemaDefType) {
   }
 
   if (schemaDefType.type in schemaDefTypeMap) {
-    return {
+    const type = {
       type: new GraphQLObjectType({
         name: schemaDefType.type,
         fields: _.mapValues(schemaDefTypeMap[schemaDefType.type], typeDef =>
@@ -214,6 +222,10 @@ export function getGraphQLType(schemaDefType) {
         return _.isPlainObject(object[fieldName]) ? object[fieldName] : null
       },
     }
+
+    registerGraphQLType(schemaDefType.type, type)
+
+    return type
   }
 
   return null
