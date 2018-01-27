@@ -184,10 +184,6 @@ exports.registerGraphQLType = registerGraphQLType
 
 export function getGraphQLType(schemaDefType) {
   if (schemaDefType.type === `List`) {
-    if (schemaDefType.nodesType.type === `File`) {
-      return FileType.getListType()
-    }
-
     // check if we have ready to use List<type> in our cache
     const ListTypeName = `[${schemaDefType.nodesType.type}]`
     if (ListTypeName in graphQLTypeMap) {
@@ -228,8 +224,6 @@ export function getGraphQLType(schemaDefType) {
     registerGraphQLType(ListTypeName, wrappedListType)
 
     return wrappedListType
-  } else if (schemaDefType.type === `File`) {
-    return FileType.getType()
   }
 
   if (schemaDefType.type in graphQLTypeMap) {

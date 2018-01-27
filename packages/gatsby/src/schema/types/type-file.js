@@ -11,6 +11,7 @@ const {
   createPageDependency,
 } = require(`../../redux/actions/add-page-dependency`)
 const { joinPath } = require(`../../utils/path`)
+const { registerGraphQLType } = require(`../types`)
 
 let type, listType, fileNodeRootType
 
@@ -18,6 +19,9 @@ export function setFileNodeRootType(nodeRootType) {
   fileNodeRootType = nodeRootType
   type = createType(false)
   listType = createType(true)
+
+  registerGraphQLType(`File`, type)
+  registerGraphQLType(`[File]`, listType)
 }
 
 function findRootNode(node) {
