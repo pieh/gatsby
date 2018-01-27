@@ -120,6 +120,7 @@ let graphQLNodeTypes = {}
 export function initTypeIndex() {
   graphQLNodeTypes = {}
   schemaDefTypeMap = {}
+  graphQLTypeMap = {}
 
   // Register scalar types
 
@@ -175,7 +176,7 @@ export function getNodeType(typeName) {
   return graphQLNodeTypes[typeName]
 }
 
-const graphQLTypeMap = {}
+let graphQLTypeMap = {}
 function registerGraphQLType(typeName, type) {
   graphQLTypeMap[typeName] = type
   return type
