@@ -152,7 +152,38 @@ export function getGraphQLType(schemaDefType) {
       return FileType.getListType()
     }
 
-    return wrapFieldInList(getGraphQLType(schemaDefType.nodesType))
+    const { resolve, ...rest } = wrapFieldInList(
+      getGraphQLType(schemaDefType.nodesType)
+    )
+    const wrappedListType = {
+      ...rest,
+      resolve(object, fieldArgs, context, resolveInfo) {
+        const { fieldName } = resolveInfo
+        let value = object[fieldName]
+        if (!value) {
+          return null
+        }
+
+        if (!_.isArray(value)) {
+          // it's not array, so wrap value in single element array
+          value = [value]
+        }
+
+        // if have custom resolver
+        if (resolve) {
+          return resolve(
+            { [fieldName]: value },
+            fieldArgs,
+            context,
+            resolveInfo
+          )
+        }
+
+        return value
+      },
+    }
+
+    return wrappedListType
   } else if (schemaDefType.type === `String`) {
     return { type: GraphQLString }
   } else if (schemaDefType.type === `Float`) {

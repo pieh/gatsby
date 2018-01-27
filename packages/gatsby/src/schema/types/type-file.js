@@ -142,10 +142,15 @@ function createType(isArray) {
   return {
     type: isArray ? new GraphQLList(fileNodeRootType) : fileNodeRootType,
     resolve: (node, args, { path }, { fieldName }) => {
-      const fieldValue = node[fieldName]
+      let fieldValue = node[fieldName]
 
       if (!fieldValue) {
         return null
+      }
+
+      if (isArray && !_.isArray(fieldValue)) {
+        // fieldValue is not array, so wrap value in single element array
+        fieldValue = [fieldValue]
       }
 
       const findLinkedFileNode = relativePath => {
