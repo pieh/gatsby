@@ -49,7 +49,7 @@ function inferGraphQLType({
   nodes,
   types,
   schemaDefTypeMap,
-  forcedFieldType,
+  forcedFieldType = null,
   ...otherArgs
 }): ?GraphQLFieldConfig<*, *> {
   if (exampleValue == null || isEmptyObjectOrArray(exampleValue)) return null
@@ -339,9 +339,28 @@ export function inferObjectStructureFromNodes({
     let fieldName = key
     let inferredField
 
-    // First check for manual field => type mappings in the site's
-    // gatsby-config.js
-    if (mapping && _.includes(Object.keys(mapping), fieldSelector)) {
+    if (forcedFieldType) {
+      // special case for objects - we want to append our defined fields to
+      // automaticly infered fields
+      if (
+        _.isPlainObject(value) &&
+        forcedFieldType instanceof GraphQLObjectType
+      ) {
+        inferredField = inferGraphQLType({
+          nodes,
+          types,
+          schemaDefTypeMap,
+          exampleValue: value,
+          selector: nextSelector,
+          forcedFieldType,
+        })
+      } else {
+        inferredField = getGraphQLType(forcedFieldType)
+      }
+
+      // First check for manual field => type mappings in the site's
+      // gatsby-config.js
+    } else if (mapping && _.includes(Object.keys(mapping), fieldSelector)) {
       inferredField = inferFromMapping(value, mapping, fieldSelector, types)
 
       // Second if the field has a suffix of ___node. We use then the value
@@ -359,7 +378,6 @@ export function inferObjectStructureFromNodes({
         schemaDefTypeMap,
         exampleValue: value,
         selector: nextSelector,
-        forcedFieldType,
       })
     }
 
@@ -369,45 +387,15 @@ export function inferObjectStructureFromNodes({
     inferredFields[createKey(fieldName)] = inferredField
   })
 
+  // Add fields that are not inferred but are in schema definition
   if (forcedFieldTypes) {
-    _.each(forcedFieldTypes, (schemaDefType, key) => {
-      key = createKey(key)
-
-      let existingField = null
-      if (key in inferredFields) {
-        existingField = inferredFields[key]
+    _.each(forcedFieldTypes, (forcedFieldType, fieldName) => {
+      if (fieldName in inferredFields) {
+        // If we inferred type it's already correct type so don't process it
+        return
       }
 
-      let newField = getGraphQLType(schemaDefType)
-      if (newField) {
-        if (existingField && existingField.type.name !== newField.type.name) {
-          // only change if there is type mismatch - else we remove custom resolvers
-
-          let adapterField = null
-
-          const existingFieldInfo = getFieldTypeInfo(existingField)
-          const newFieldInfo = getFieldTypeInfo(newField)
-
-          if (existingFieldInfo.isScalar) {
-            if (newFieldInfo.isObject) {
-              adapterField = {
-                ...newField,
-                resolve: () =>
-                  // For now just return null. Maybe if data is string we should
-                  // search for nodes with id of data and type defined in schema?
-                  // Basicly same as mapping. Or if possible allow to specify on
-                  // what field it should be joining in schema definition
-                  null,
-              }
-            }
-          }
-
-          inferredFields[key] = adapterField || newField
-        } else if (!existingField) {
-          // add field if it wasn't created by infering schema
-          inferredFields[key] = newField
-        }
-      }
+      inferredFields[createKey(fieldName)] = getGraphQLType(forcedFieldType)
     })
   }
 
