@@ -20,6 +20,7 @@ const {
   extractFieldExamples,
   isEmptyObjectOrArray,
 } = require(`./data-tree-utils`)
+const { wrapFieldInList } = require(`./types/graphql-type-utils`)
 const DateType = require(`./types/type-date`)
 const FileType = require(`./types/type-file`)
 
@@ -74,27 +75,7 @@ function inferGraphQLType({
       `Could not infer graphQL type for value: ${exampleValue}`
     )
 
-    const { type, args = null, resolve = null } = inferredType
-
-    const listType = { type: new GraphQLList(type), args }
-
-    if (resolve) {
-      // If inferredType has resolve function wrap it with Array.map
-      listType.resolve = (object, args, context, resolveInfo) => {
-        const fieldValue = object[fieldName]
-        if (!fieldValue) {
-          return null
-        }
-
-        // Field resolver expects first parameter to be plain object
-        // containing key with name of field we want to resolve.
-        return fieldValue.map(value =>
-          resolve({ [fieldName]: value }, args, context, resolveInfo)
-        )
-      }
-    }
-
-    return listType
+    return wrapFieldInList(inferredType)
   }
 
   if (DateType.shouldInfer(exampleValue)) {
