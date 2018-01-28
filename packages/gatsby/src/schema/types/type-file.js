@@ -143,6 +143,11 @@ function createType(fileNodeRootType, isArray) {
         return null
       }
 
+      if (isArray && !_.isArray(fieldValue)) {
+        // fieldValue is not array, so wrap value in single element array
+        fieldValue = [fieldValue]
+      }
+
       const findLinkedFileNode = relativePath => {
         // Use the parent File node to create the absolute path to
         // the linked file.
