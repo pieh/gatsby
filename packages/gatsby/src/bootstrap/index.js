@@ -262,6 +262,8 @@ module.exports = async (args: BootstrapArgs) => {
   await require(`../utils/source-nodes`)()
   activity.end()
 
+  await require(`../schema/types/definitions`).importSchemaDefinition()
+
   // Create Schema.
   activity = report.activityTimer(`building schema`)
   activity.start()
