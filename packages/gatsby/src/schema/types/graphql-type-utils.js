@@ -1,4 +1,4 @@
-const { GraphQLList } = require(`graphql`)
+const { GraphQLList, GraphQLObjectType } = require(`graphql`)
 const _ = require(`lodash`)
 
 export function wrapFieldInList(field) {
@@ -28,3 +28,12 @@ export function wrapFieldInList(field) {
 
   return listType
 }
+
+// mutate current type, so types we already set will include new fields
+function addFields(fields = {}) {
+  this._typeConfig.fields = { ...fields, ...this._typeConfig.fields }
+  this._fields = null
+  this.getFields()
+}
+
+GraphQLObjectType.prototype.addFields = addFields

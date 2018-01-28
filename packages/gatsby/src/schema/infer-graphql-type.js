@@ -21,7 +21,10 @@ const {
   isEmptyObjectOrArray,
 } = require(`./data-tree-utils`)
 const { wrapFieldInList } = require(`./types/graphql-type-utils`)
-const { registerGraphQLType } = require(`./types/graphql-type-registry`)
+const {
+  registerGraphQLType,
+  getGraphQLType,
+} = require(`./types/graphql-type-registry`)
 const DateType = require(`./types/type-date`)
 const FileType = require(`./types/type-file`)
 
@@ -343,12 +346,34 @@ export function inferObjectStructureFromNodes({
     let fieldName = key
     let inferredField
 
-    // First check for manual field => type mappings in the site's
-    // gatsby-config.js
-    if (mapping && _.includes(Object.keys(mapping), fieldSelector)) {
+    // First check if we have defined type for this field in schema definition
+    if (forcedFieldType) {
+      inferredField = getGraphQLType(forcedFieldType)
+
+      // Special case for objects - we want to append fields not defined
+      // in our schema type definition but have data
+      if (
+        _.isPlainObject(value) &&
+        inferredField.type instanceof GraphQLObjectType
+      ) {
+        const fieldsFromData = inferObjectStructureFromNodes({
+          nodes,
+          types,
+          typeName: forcedFieldType.type,
+          schemaDefTypeMap,
+          exampleValue: value,
+          selector: nextSelector,
+        })
+
+        inferredField.type.addFields(fieldsFromData)
+      }
+
+      // Second check for manual field => type mappings in the site's
+      // gatsby-config.js
+    } else if (mapping && _.includes(Object.keys(mapping), fieldSelector)) {
       inferredField = inferFromMapping(value, mapping, fieldSelector, types)
 
-      // Second if the field has a suffix of ___node. We use then the value
+      // Third if the field has a suffix of ___node. We use then the value
       // (a node id) to find the node and use that node's type as the field
     } else if (_.includes(key, `___NODE`)) {
       ;[fieldName] = key.split(`___`)
@@ -372,6 +397,19 @@ export function inferObjectStructureFromNodes({
     // Replace unsupported values
     inferredFields[createKey(fieldName)] = inferredField
   })
+
+  // Add fields that are not inferred but are in schema definition
+  if (forcedFieldTypes) {
+    _.each(forcedFieldTypes, (forcedFieldType, fieldName) => {
+      if (fieldName in inferredFields) {
+        // If we inferred type, then we already used type from schema definition
+        // and it's already correct type so don't process it.
+        return
+      }
+
+      inferredFields[createKey(fieldName)] = getGraphQLType(forcedFieldType)
+    })
+  }
 
   return inferredFields
 }

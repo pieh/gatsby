@@ -37,6 +37,10 @@ const buildTypeDef = field => {
 
 const ScalarTypeNames = [`String`, `Float`, `Int`, `Boolean`, `Date`]
 
+export function isScalarTypeDef(typeName) {
+  return ScalarTypeNames.indexOf(typeName) !== -1
+}
+
 const parseSchemaDef = schemaDefText => {
   const ast = parse(schemaDefText)
 
@@ -47,7 +51,7 @@ const parseSchemaDef = schemaDefText => {
       const typeName = def.name.value
 
       // Builtin scalar type names are reserved and can't be redefined
-      if (ScalarTypeNames.indexOf(typeName) !== -1) {
+      if (isScalarTypeDef(typeName)) {
         console.log(`Can't redefine "${typeName}" type in schema definition`)
         return
       }
