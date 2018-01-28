@@ -7,8 +7,15 @@ const buildNodeConnections = require(`./build-node-connections`)
 const { store } = require(`../redux`)
 const invariant = require(`invariant`)
 const { getSchemaDefTypeMap } = require(`./types/definitions`)
+const { initTypeRegistry } = require(`./types/graphql-type-registry`)
 
 module.exports = async () => {
+  // Schema is created 2 times and schema can't contain 2 different types
+  // with same name. To prevent that we clear registry before building schema
+  // so we don't pull type from first schema creation before we register same
+  // type second time.
+  initTypeRegistry()
+
   const typesGQL = await buildNodeTypes(getSchemaDefTypeMap())
   const connections = buildNodeConnections(_.values(typesGQL))
 

@@ -21,6 +21,7 @@ const {
   isEmptyObjectOrArray,
 } = require(`./data-tree-utils`)
 const { wrapFieldInList } = require(`./types/graphql-type-utils`)
+const { registerGraphQLType } = require(`./types/graphql-type-registry`)
 const DateType = require(`./types/type-date`)
 const FileType = require(`./types/type-file`)
 
@@ -92,7 +93,7 @@ function inferGraphQLType({
         ? forcedFieldType.type
         : createTypeName(fieldName)
 
-      return {
+      const type = {
         type: new GraphQLObjectType({
           name: typeName,
           fields: inferObjectStructureFromNodes({
@@ -106,6 +107,13 @@ function inferGraphQLType({
           }),
         }),
       }
+
+      // Store type if it's part of schema definition
+      if (forcedFieldType) {
+        registerGraphQLType(typeName, type)
+      }
+
+      return type
     }
     case `number`:
       return _.isInteger(exampleValue)
