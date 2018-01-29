@@ -127,62 +127,6 @@ function inferGraphQLType({
   }
 }
 
-function inferFromMapping(
-  value,
-  mapping,
-  fieldSelector,
-  types
-): ?GraphQLFieldConfig<*, *> {
-  const matchedTypes = types.filter(
-    type => type.name === mapping[fieldSelector]
-  )
-  if (_.isEmpty(matchedTypes)) {
-    console.log(`Couldn't find a matching node type for "${fieldSelector}"`)
-    return null
-  }
-
-  const findNode = (fieldValue, path) => {
-    const linkedType = mapping[fieldSelector]
-    const linkedNode = _.find(
-      getNodes(),
-      n => n.internal.type === linkedType && n.id === fieldValue
-    )
-    if (linkedNode) {
-      createPageDependency({ path, nodeId: linkedNode.id })
-      return linkedNode
-    }
-    return null
-  }
-
-  if (_.isArray(value)) {
-    return {
-      type: new GraphQLList(matchedTypes[0].nodeObjectType),
-      resolve: (node, a, b, { fieldName }) => {
-        const fieldValue = node[fieldName]
-
-        if (fieldValue) {
-          return fieldValue.map(value => findNode(value, b.path))
-        } else {
-          return null
-        }
-      },
-    }
-  }
-
-  return {
-    type: matchedTypes[0].nodeObjectType,
-    resolve: (node, a, b, { fieldName }) => {
-      const fieldValue = node[fieldName]
-
-      if (fieldValue) {
-        return findNode(fieldValue, b.path)
-      } else {
-        return null
-      }
-    },
-  }
-}
-
 export function findLinkedNode(value, linkedField, path) {
   let linkedNode
   // If the field doesn't link to the id, use that for searching.
@@ -247,7 +191,10 @@ function inferFromFieldName(value, selector, types): GraphQLFieldConfig<*, *> {
     // If there's more than one type, we'll create a union type.
     if (fields.length > 1) {
       type = new GraphQLUnionType({
-        name: `Union_${key}_${fields.map(f => f.name).sort().join(`__`)}`,
+        name: `Union_${key}_${fields
+          .map(f => f.name)
+          .sort()
+          .join(`__`)}`,
         description: `Union interface for the field "${key}" for types [${fields
           .map(f => f.name)
           .sort()
@@ -371,7 +318,10 @@ export function inferObjectStructureFromNodes({
       // Second check for manual field => type mappings in the site's
       // gatsby-config.js
     } else if (mapping && _.includes(Object.keys(mapping), fieldSelector)) {
-      inferredField = inferFromMapping(value, mapping, fieldSelector, types)
+      const defType = { type: mapping[fieldSelector] }
+      inferredField = getGraphQLType(
+        _.isArray(value) ? { type: `List`, nodesType: defType } : defType
+      )
 
       // Third if the field has a suffix of ___node. We use then the value
       // (a node id) to find the node and use that node's type as the field
