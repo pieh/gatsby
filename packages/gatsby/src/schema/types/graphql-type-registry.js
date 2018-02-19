@@ -15,6 +15,7 @@ const { getSchemaDefTypeMap } = require(`./definitions`)
 const { wrapFieldInList } = require(`./graphql-type-utils`)
 const DateType = require(`./type-date`)
 const FileType = require(`./type-file`)
+const { addTrackingToTmpObject } = require(`../node-tracking`)
 
 let graphQLTypeMap = {}
 
@@ -111,20 +112,18 @@ export function getGraphQLType(schemaDefType) {
         if (!value) {
           return null
         }
-
         if (!_.isArray(value)) {
           // value is not an array, so wrap value in single element array
           value = [value]
+          // add tracking to newly created array
+          addTrackingToTmpObject(object, value)
         }
 
         // Use custom resolver if list have one (f.e. list of dates)
         if (resolve) {
-          return resolve(
-            { [fieldName]: value },
-            fieldArgs,
-            context,
-            resolveInfo
-          )
+          const tmpObject = { [fieldName]: value }
+          addTrackingToTmpObject(object, tmpObject)
+          return resolve(tmpObject, fieldArgs, context, resolveInfo)
         }
 
         return value

@@ -1,6 +1,8 @@
 const { GraphQLList, GraphQLObjectType } = require(`graphql`)
 const _ = require(`lodash`)
 
+const { addTrackingToTmpObject } = require(`../node-tracking`)
+
 export function wrapFieldInList(field) {
   if (!_.isPlainObject(field)) {
     return null
@@ -20,9 +22,12 @@ export function wrapFieldInList(field) {
 
       // Field resolver expects first parameter to be plain object
       // containing key with name of field we want to resolve.
-      return fieldValue.map(value =>
-        resolve({ [resolveInfo.fieldName]: value }, args, context, resolveInfo)
-      )
+      return fieldValue.map(value => {
+        const tmpObject = { [resolveInfo.fieldName]: value }
+        // add tracking to newly created array
+        addTrackingToTmpObject(object, tmpObject)
+        return resolve(tmpObject, args, context, resolveInfo)
+      })
     }
   }
 

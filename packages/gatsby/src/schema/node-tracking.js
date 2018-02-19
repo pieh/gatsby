@@ -10,6 +10,15 @@ const rootNodeMap = new WeakMap()
 
 const getRootNodeId = node => rootNodeMap.get(node)
 
+const addTrackingToTmpObject = (original, newObj) => {
+  const nodeID = getRootNodeId(original)
+  if (nodeID) {
+    addRootNodeToInlineObject(newObj, nodeID)
+  }
+}
+
+exports.addTrackingToTmpObject = addTrackingToTmpObject
+
 /**
  * Add link between passed data and Node. This function shouldn't be used
  * directly. Use higher level `trackInlineObjectsInRootNode`
