@@ -4,6 +4,7 @@ const {
   GraphQLFloat,
   GraphQLInt,
   GraphQLBoolean,
+  GraphQLUnionType,
 } = require(`graphql`)
 const _ = require(`lodash`)
 
@@ -146,25 +147,86 @@ export function getGraphQLType(schemaDefType) {
 
   // If we don't have type in registry, check if type is defined in schema
   // definition and construct type
-  const schemaDefTypeMap = getSchemaDefTypeMap()
-  if (schemaDefType.type in schemaDefTypeMap) {
-    const type = {
-      type: new GraphQLObjectType({
-        name: schemaDefType.type,
-        fields: _.mapValues(schemaDefTypeMap[schemaDefType.type], typeDef =>
-          getGraphQLType(typeDef)
-        ),
-      }),
-      resolve(object, fieldArgs, context, { fieldName }) {
-        return _.isPlainObject(object[fieldName]) ? object[fieldName] : null
-      },
-    }
-
-    // Register type for later use
-    registerGraphQLType(schemaDefType.type, type)
-
-    return type
+  const typeFromDefinition = createFromDefinition(schemaDefType.type)
+  if (typeFromDefinition) {
+    registerGraphQLType(schemaDefType.type, typeFromDefinition)
+    return typeFromDefinition
   }
 
   return null
+}
+
+function createFromDefinition(typeName) {
+  const schemaDefTypeMap = getSchemaDefTypeMap()
+  if (typeName in schemaDefTypeMap.types) {
+    return createObjectTypeFromDefinition(
+      typeName,
+      schemaDefTypeMap.types[typeName]
+    )
+  } else if (typeName in schemaDefTypeMap.unions) {
+    return createUnionTypeFromDefinition(
+      typeName,
+      schemaDefTypeMap.unions[typeName]
+    )
+  }
+
+  return null
+}
+
+function createObjectTypeFromDefinition(typeName, definition) {
+  return {
+    type: new GraphQLObjectType({
+      name: typeName,
+      fields: _.pickBy(
+        _.mapValues(definition, typeDef => getGraphQLType(typeDef))
+      ),
+    }),
+    resolve(object, fieldArgs, context, { fieldName }) {
+      return _.isPlainObject(object[fieldName]) ? object[fieldName] : null
+    },
+  }
+}
+
+function createUnionTypeFromDefinition(typeName, typeNames) {
+  const fieldTypes = typeNames
+    .map(typeName => getGraphQLType({ type: typeName }))
+    .filter(
+      field => field && field.resolve && field.type && field.type.isTypeOf
+    )
+
+  if (fieldTypes.length === 0) {
+    return null
+  }
+
+  const types = fieldTypes.map(field => field.type)
+
+  return {
+    type: new GraphQLUnionType({
+      name: typeName,
+      description: `Union interface for for types [${types
+        .map(f => f.name)
+        .join(`, `)}]`,
+      types,
+    }),
+    resolve(object, fieldArgs, context, resolveInfo) {
+      const { fieldName } = resolveInfo
+
+      const val = object[fieldName]
+      if (!val) {
+        return null
+      }
+
+      let result = null
+      if (
+        !fieldTypes.some(
+          field =>
+            (result = field.resolve(object, fieldArgs, context, resolveInfo))
+        )
+      ) {
+        return null
+      }
+
+      return result
+    },
+  }
 }

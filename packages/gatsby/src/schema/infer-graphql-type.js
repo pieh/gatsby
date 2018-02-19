@@ -71,6 +71,7 @@ function inferGraphQLType({
       ...otherArgs,
       exampleValue,
       selector,
+      schemaDefTypeMap,
       nodes,
       types,
     })
@@ -274,7 +275,7 @@ export function inferObjectStructureFromNodes({
 
   // Check if we have defined field types of processed nodes type
   const forcedFieldTypes =
-    typeName in schemaDefTypeMap ? schemaDefTypeMap[typeName] : {}
+    typeName in schemaDefTypeMap.types ? schemaDefTypeMap.types[typeName] : {}
 
   const inferredFields = {}
   _.each(exampleValue, (value, key) => {

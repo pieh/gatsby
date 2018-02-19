@@ -3,10 +3,21 @@ const { parse } = require(`graphql`)
 const { store } = require(`../../redux`)
 const createTypeName = require(`../create-type-name`)
 
-const schemaDefTypeMap = {}
+const schemaDefTypeMap = {
+  types: {},
+  unions: {},
+}
 
 export function getSchemaDefTypeMap() {
   return schemaDefTypeMap
+}
+
+const buildUnionDef = field => {
+  const types = field.types
+    .filter(type => type.kind === `NamedType`)
+    .map(type => type.name.value)
+
+  return types
 }
 
 const buildTypeDef = field => {
@@ -69,10 +80,17 @@ const parseSchemaDef = schemaDefText => {
         })
 
       // Append new fields to previous if type already has some fields defined.
-      schemaDefTypeMap[typeName] = {
+      schemaDefTypeMap.types[typeName] = {
         ...(schemaDefTypeMap[typeName] || {}),
         ...typeFields,
       }
+    })
+
+  ast.definitions
+    .filter(def => def.kind === `UnionTypeDefinition`)
+    .forEach(def => {
+      // TO-DO: add warning if we have union with same name as already defined type
+      schemaDefTypeMap.unions[def.name.value] = buildUnionDef(def)
     })
 }
 
