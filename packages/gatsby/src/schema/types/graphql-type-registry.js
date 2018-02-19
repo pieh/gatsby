@@ -67,25 +67,25 @@ export function registerGraphQLNodeType(type) {
   // special case to construct linked file type used by type inferring
   if (type.name === `File`) {
     FileType.setFileNodeRootType(type.nodeObjectType)
-  } else {
-    registerGraphQLType(type.name, {
-      type: type.nodeObjectType,
-      resolve(object, fieldArgs, { path }, { fieldName }) {
-        const value = object[fieldName]
-        if (!value) {
-          return null
-        }
-
-        const linkedNode = getNode(value)
-        if (linkedNode && linkedNode.type === type.name) {
-          createPageDependency({ path, nodeId: linkedNode.id })
-          return linkedNode
-        } else {
-          return null
-        }
-      },
-    })
   }
+
+  registerGraphQLType(type.name, {
+    type: type.nodeObjectType,
+    resolve(object, fieldArgs, { path }, { fieldName }) {
+      const value = object[fieldName]
+      if (!value) {
+        return null
+      }
+
+      const linkedNode = getNode(value)
+      if (linkedNode && linkedNode.internal.type === type.name) {
+        createPageDependency({ path, nodeId: linkedNode.id })
+        return linkedNode
+      } else {
+        return null
+      }
+    },
+  })
 }
 
 export function registerGraphQLType(typeName, type) {

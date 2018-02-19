@@ -21,8 +21,8 @@ export function setFileNodeRootType(fileNodeRootType) {
     type = createType(fileNodeRootType, false)
     listType = createType(fileNodeRootType, true)
 
-    registerGraphQLType(`File`, type)
-    registerGraphQLType(`[File]`, listType)
+    registerGraphQLType(`LocalFile`, type)
+    registerGraphQLType(`[LocalFile]`, listType)
   } else {
     type = null
     listType = null
