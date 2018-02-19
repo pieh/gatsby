@@ -100,9 +100,12 @@ export function getGraphQLType(schemaDefType) {
       return graphQLTypeMap[ListTypeName]
     }
 
-    const { resolve, ...rest } = wrapFieldInList(
-      getGraphQLType(schemaDefType.nodesType)
-    )
+    const listItemType = getGraphQLType(schemaDefType.nodesType)
+    if (!listItemType) {
+      return null
+    }
+
+    const { resolve, ...rest } = wrapFieldInList(listItemType)
 
     const wrappedListType = {
       ...rest,

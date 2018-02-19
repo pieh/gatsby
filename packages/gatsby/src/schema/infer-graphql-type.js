@@ -300,6 +300,7 @@ export function inferObjectStructureFromNodes({
       // Special case for objects - we want to append fields not defined
       // in our schema type definition but have data
       if (
+        inferredField &&
         _.isPlainObject(value) &&
         inferredField.type instanceof GraphQLObjectType
       ) {
@@ -314,32 +315,35 @@ export function inferObjectStructureFromNodes({
 
         inferredField.type.addFields(fieldsFromData)
       }
-
-      // Second check for manual field => type mappings in the site's
-      // gatsby-config.js
-    } else if (mapping && _.includes(Object.keys(mapping), fieldSelector)) {
-      const defType = { type: mapping[fieldSelector] }
-      inferredField = getGraphQLType(
-        _.isArray(value) ? { type: `List`, nodesType: defType } : defType
-      )
-
-      // Third if the field has a suffix of ___node. We use then the value
-      // (a node id) to find the node and use that node's type as the field
-    } else if (_.includes(key, `___NODE`)) {
-      ;[fieldName] = key.split(`___`)
-      inferredField = inferFromFieldName(value, nextSelector, types)
     }
 
-    // Finally our automatic inference of field value type.
     if (!inferredField) {
-      inferredField = inferGraphQLType({
-        nodes,
-        types,
-        exampleValue: value,
-        selector: nextSelector,
-        forcedFieldType,
-        schemaDefTypeMap,
-      })
+      // Second check for manual field => type mappings in the site's
+      // gatsby-config.js
+      if (mapping && _.includes(Object.keys(mapping), fieldSelector)) {
+        const defType = { type: mapping[fieldSelector] }
+        inferredField = getGraphQLType(
+          _.isArray(value) ? { type: `List`, nodesType: defType } : defType
+        )
+
+        // Third if the field has a suffix of ___node. We use then the value
+        // (a node id) to find the node and use that node's type as the field
+      } else if (_.includes(key, `___NODE`)) {
+        ;[fieldName] = key.split(`___`)
+        inferredField = inferFromFieldName(value, nextSelector, types)
+      }
+
+      // Finally our automatic inference of field value type.
+      if (!inferredField) {
+        inferredField = inferGraphQLType({
+          nodes,
+          types,
+          exampleValue: value,
+          selector: nextSelector,
+          forcedFieldType,
+          schemaDefTypeMap,
+        })
+      }
     }
 
     if (!inferredField) return
@@ -357,7 +361,10 @@ export function inferObjectStructureFromNodes({
         return
       }
 
-      inferredFields[createKey(fieldName)] = getGraphQLType(forcedFieldType)
+      const fieldConfig = getGraphQLType(forcedFieldType)
+      if (fieldConfig) {
+        inferredFields[createKey(fieldName)] = fieldConfig
+      }
     })
   }
 
