@@ -112,11 +112,17 @@ export default (locals, callback) => {
         return createElement(withRouter(layout), {
           children: layoutProps => {
             const props = layoutProps ? layoutProps : routeProps
+
+            // this is in node - we can just load json here
+            const dataAndContext = JSON.parse(
+              fs.readFileSync(process.cwd() + `/.cache/json/` + page.jsonName)
+            )
+
             return createElement(
               syncRequires.components[page.componentChunkName],
               {
                 ...props,
-                ...syncRequires.json[page.jsonName],
+                ...dataAndContext,
               }
             )
           },
