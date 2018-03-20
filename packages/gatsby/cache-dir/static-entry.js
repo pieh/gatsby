@@ -223,7 +223,13 @@ export default (locals, callback) => {
     headComponents.splice(
       1,
       0,
-      <link rel="preload" key={dataPath} href={dataPath} as="fetch" />
+      <link
+        rel="preload"
+        key={dataPath}
+        href={dataPath}
+        as="fetch"
+        crossOrigin="use-credentials"
+      />
     )
   }
 
