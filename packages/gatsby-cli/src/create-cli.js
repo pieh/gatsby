@@ -2,13 +2,22 @@ const path = require(`path`)
 const resolveCwd = require(`resolve-cwd`)
 const yargs = require(`yargs`)
 const report = require(`./reporter`)
+const stats = require(`./reporter/stats`)
 const fs = require(`fs`)
 
 const DEFAULT_BROWSERS = [`> 1%`, `last 2 versions`, `IE >= 9`]
 
 const handlerP = fn => (...args) => {
+  if (args.saveStats !== null) {
+    stats.setFile(args.saveStats || `stats.csv`)
+  }
   Promise.resolve(fn(...args)).then(
-    () => process.exit(0),
+    async () => {
+      if (args.saveStats !== null) {
+        await stats.save()
+      }
+      process.exit(0)
+    },
     err => report.panic(err)
   )
 }
@@ -119,6 +128,10 @@ function buildLocalCommands(cli, isLocalSite) {
         type: `boolean`,
         default: false,
         describe: `Build site with link paths prefixed (set prefix in your config).`,
+      }).option(`save-stats`, {
+        type: `string`,
+        default: null,
+        describe: `Save time for each step of build process to .csv file`,
       }),
     handler: handlerP(
       getCommandHandler(`build`, (args, cmd) => {

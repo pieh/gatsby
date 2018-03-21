@@ -4,6 +4,7 @@ const { createReporter } = require(`yurnalist`)
 const { stripIndent } = require(`common-tags`)
 const convertHrtime = require(`convert-hrtime`)
 const { getErrorFormatter } = require(`./errors`)
+const { setStat } = require(`./stats`)
 
 const VERBOSE = process.env.gatsby_log_level === `verbose`
 
@@ -53,7 +54,7 @@ module.exports = Object.assign(reporter, {
 
     const elapsedTime = () => {
       var elapsed = process.hrtime(start)
-      return `${convertHrtime(elapsed)[`seconds`].toFixed(3)} s`
+      return convertHrtime(elapsed)[`seconds`].toFixed(3)
     }
 
     return {
@@ -61,8 +62,10 @@ module.exports = Object.assign(reporter, {
         spinner.tick(name)
       },
       end: () => {
-        reporter.success(`${name} — ${elapsedTime()}`)
+        const time = elapsedTime()
+        reporter.success(`${name} — ${time} s`)
         spinner.end()
+        setStat(name, time)
       },
     }
   },
