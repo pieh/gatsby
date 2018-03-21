@@ -110,7 +110,9 @@ export default (locals, callback) => {
           page.jsonName in staticDataPaths
             ? JSON.parse(
                 fs.readFileSync(
-                  process.cwd() + `/public/` + staticDataPaths[page.jsonName]
+                  `${process.cwd()}/public/static/d/${
+                    staticDataPaths[page.jsonName]
+                  }.json`
                 )
               )
             : {}
@@ -218,8 +220,10 @@ export default (locals, callback) => {
     })
 
   if (page.jsonName in staticDataPaths) {
-    const dataPath = `${pathPrefix}${staticDataPaths[page.jsonName]}`
-    // Insert json data path after app
+    const dataPath = `${pathPrefix}static/d/${
+      staticDataPaths[page.jsonName]
+    }.json`
+    // Insert json data path after commons and app
     headComponents.splice(
       1,
       0,
