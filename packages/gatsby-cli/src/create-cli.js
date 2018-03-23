@@ -8,8 +8,8 @@ const fs = require(`fs`)
 const DEFAULT_BROWSERS = [`> 1%`, `last 2 versions`, `IE >= 9`]
 
 const handlerP = fn => (...args) => {
-  if (args.saveStats !== null) {
-    stats.setFile(args.saveStats || `stats.csv`)
+  if (args[0].saveStats !== null) {
+    stats.setFile(args[0].saveStats || `stats`)
   }
   Promise.resolve(fn(...args)).then(
     async () => {
