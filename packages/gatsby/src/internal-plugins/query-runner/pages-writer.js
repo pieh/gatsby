@@ -125,9 +125,11 @@ const preferDefault = m => m && m.default || m
     .join(`,\n`)}
 }\n\n`
 
-  const staticDataPaths = JSON.stringify(jsonDataPaths)
-
-  asyncRequires += `exports.json = ${staticDataPaths}\n\n`
+  asyncRequires += `exports.data = require("gatsby-module-loader?name=data!${joinPath(
+    program.directory,
+    `.cache`,
+    `data.json`
+  )}")\n\n`
 
   asyncRequires += `exports.layouts = {\n${pageLayouts
     .map(
@@ -148,10 +150,16 @@ const preferDefault = m => m && m.default || m
   }
 
   return await Promise.all([
-    writeAndMove(`pages.json`, JSON.stringify(pagesData, null, 4)),
+    writeAndMove(`pages.json`, JSON.stringify(pagesData, null, 4)), // keep pages.json for develop for now
     writeAndMove(`sync-requires.js`, syncRequires),
     writeAndMove(`async-requires.js`, asyncRequires),
-    writeAndMove(`static-data-paths.json`, staticDataPaths),
+    writeAndMove(
+      `data.json`,
+      JSON.stringify({
+        pages: pagesData,
+        dataPaths: jsonDataPaths,
+      })
+    ),
   ])
 }
 

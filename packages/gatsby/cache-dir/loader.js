@@ -9,13 +9,28 @@ let inInitialRender = true
 let hasFetched = Object.create(null)
 let syncRequires = {}
 let asyncRequires = {}
+let jsonDataPaths = {}
 let pathPrefix = ``
 let fetchHistory = []
+let fetchingAllPagesPromise = null
 const failedPaths = {}
 const failedResources = {}
 const MAX_HISTORY = 5
 
 const jsonStore = {}
+
+const fetchAllPagesMap = () => {
+  if (!fetchingAllPagesPromise) {
+    fetchingAllPagesPromise = new Promise(resolve => {
+      asyncRequires.data().then(({ pages, dataPaths }) => {
+        queue.addPagesArray(pages)
+        queue.addDataPaths(dataPaths)
+      })
+    })
+  }
+
+  return fetchingAllPagesPromise
+}
 
 const fetchResource = resourceName => {
   // Find resource
@@ -31,7 +46,7 @@ const fetchResource = resourceName => {
           resolve(jsonStore[resourceName])
         } else {
           const url = `${pathPrefix ? pathPrefix : `/`}static/d/${
-            asyncRequires.json[resourceName]
+            jsonDataPaths[resourceName]
           }.json`
           var req = new XMLHttpRequest()
           req.open(`GET`, url, true)
@@ -167,13 +182,23 @@ const queue = {
   addProdRequires: prodRequires => {
     asyncRequires = prodRequires
   },
-
+  addDataPaths: dataPaths => {
+    jsonDataPaths = dataPaths
+  },
   dequeue: () => resourcesArray.pop(),
-  enqueue: rawPath => {
+  enqueue: async rawPath => {
     // Check page exists.
     const path = stripPrefix(rawPath, pathPrefix)
     if (!pages.some(p => p.path === path)) {
-      return false
+      // Check if we fetched all pages yet,
+      if (fetchingAllPagesPromise === null) {
+        await fetchAllPagesMap()
+        if (!pages.some(p => p.path === path)) {
+          return false
+        }
+      } else {
+        return false
+      }
     }
 
     const mountOrderBoost = 1 / mountOrder
@@ -242,6 +267,7 @@ const queue = {
           })
       }
     }
+    const doingInitialRender = inInitialRender
     inInitialRender = false
     // In development we know the code is loaded already
     // so we just return with it immediately.
@@ -345,6 +371,12 @@ const queue = {
         page,
         pageResources,
       })
+
+      // once we got all resourecs needed for first mount,
+      // we can get all pages data
+      if (doingInitialRender) {
+        fetchAllPagesMap()
+      }
     })
 
     return null
