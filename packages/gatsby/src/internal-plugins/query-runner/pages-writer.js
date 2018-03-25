@@ -125,7 +125,7 @@ const preferDefault = m => m && m.default || m
     .join(`,\n`)}
 }\n\n`
 
-  asyncRequires += `exports.data = require("gatsby-module-loader?name=data!${joinPath(
+  asyncRequires += `exports.data = () => import("${joinPath(
     program.directory,
     `.cache`,
     `data.json`
