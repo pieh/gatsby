@@ -3,7 +3,7 @@ require(`v8-compile-cache`)
 const fs = require(`fs`)
 const path = require(`path`)
 const dotenv = require(`dotenv`)
-const StaticSiteGeneratorPlugin = require(`static-site-generator-webpack-plugin`)
+// const StaticSiteGeneratorPlugin = require(`static-site-generator-webpack-plugin`)
 const FriendlyErrorsWebpackPlugin = require(`friendly-errors-webpack-plugin`)
 const { store } = require(`../redux`)
 const { actions } = require(`../redux/actions`)
@@ -24,8 +24,7 @@ module.exports = async (
   program,
   directory,
   suppliedStage,
-  webpackPort = 1500,
-  pages = []
+  webpackPort = 1500
 ) => {
   const directoryPath = withBasePath(directory)
 
@@ -184,12 +183,12 @@ module.exports = async (
         ])
         break
 
-      case `develop-html`:
-      case `build-html`:
-        configPlugins = configPlugins.concat([
-          new StaticSiteGeneratorPlugin(`render-page.js`, pages),
-        ])
-        break
+      // case `develop-html`:
+      // case `build-html`:
+      //   configPlugins = configPlugins.concat([
+      //     new StaticSiteGeneratorPlugin(`render-page.js`, pages),
+      //   ])
+      //   break
       case `build-javascript`: {
         configPlugins = configPlugins.concat([
           // Minify Javascript.
