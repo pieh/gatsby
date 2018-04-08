@@ -9,6 +9,7 @@
   "dependencies": {
     "axios": "^0.16.1",
     "babel-runtime": "^6.26.0",
+    "better-queue": "^3.8.7",
     "bluebird": "^3.5.0",
     "gatsby-source-filesystem": "^1.5.29",
     "lodash": "^4.17.4"

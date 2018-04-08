@@ -1,9 +1,9 @@
-const axios = require(`axios`)
 const crypto = require(`crypto`)
 const _ = require(`lodash`)
 const { createRemoteFileNode } = require(`gatsby-source-filesystem`)
 const { URL } = require(`url`)
 const { nodeFromData } = require(`./normalize`)
+const requestInQueue = require(`./request-in-queue`)
 
 // Get content digest of node.
 const createContentDigest = obj =>
@@ -14,7 +14,7 @@ const createContentDigest = obj =>
 
 exports.sourceNodes = async (
   { boundActionCreators, getNode, hasNodeChanged, store, cache },
-  { baseUrl, apiBase }
+  { baseUrl, apiBase, concurrentRequests = 10 }
 ) => {
   const { createNode } = boundActionCreators
 
@@ -28,7 +28,11 @@ exports.sourceNodes = async (
 
   // Fetch articles.
   // console.time(`fetch Drupal data`)
-  console.log(`Starting to fetch data from Drupal`)
+  console.log(`Starting to fetch data from Drupal tada`)
+
+  requestInQueue.initQueue({
+    concurrent: concurrentRequests,
+  })
 
   // TODO restore this
   // let lastFetched
@@ -40,14 +44,14 @@ exports.sourceNodes = async (
   // .lastFetched
   // }
 
-  const data = await axios.get(`${baseUrl}/${apiBase}`)
+  const data = await requestInQueue.get(`${baseUrl}/${apiBase}`)
   const allData = await Promise.all(
     _.map(data.data.links, async (url, type) => {
       if (type === `self`) return
       if (!url) return
       if (!type) return
       const getNext = async (url, data = []) => {
-        const d = await axios.get(url)
+        const d = await requestInQueue.get(url)
         data = data.concat(d.data.data)
         if (d.data.links.next) {
           data = await getNext(d.data.links.next, data)
