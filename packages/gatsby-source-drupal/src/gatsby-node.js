@@ -14,7 +14,7 @@ const createContentDigest = obj =>
 
 exports.sourceNodes = async (
   { boundActionCreators, getNode, hasNodeChanged, store, cache },
-  { baseUrl, apiBase, concurrentRequests = 10 }
+  { baseUrl, apiBase, concurrentRequests = 3 }
 ) => {
   const { createNode } = boundActionCreators
 
@@ -28,7 +28,7 @@ exports.sourceNodes = async (
 
   // Fetch articles.
   // console.time(`fetch Drupal data`)
-  console.log(`Starting to fetch data from Drupal tada`)
+  console.log(`Starting to fetch data from Drupal (custom changes)`)
 
   requestInQueue.initQueue({
     concurrent: concurrentRequests,
@@ -76,7 +76,9 @@ exports.sourceNodes = async (
   // relationships.
   const ids = {}
   _.each(allData, contentType => {
-    if (!contentType) return
+    if (!contentType) {
+      return
+    }
     _.each(contentType.data, datum => {
       ids[datum.id] = true
     })
@@ -84,17 +86,34 @@ exports.sourceNodes = async (
 
   // Create back references
   const backRefs = {}
+
+  const addBackRef = (sourceId, linkedId, relationshipName) => {
+    if (ids[linkedId]) {
+      if (typeof backRefs[linkedId] === `undefined`) {
+        backRefs[linkedId] = []
+      }
+      backRefs[linkedId].push({
+        id: sourceId,
+        type: `backref_${relationshipName}`,
+      })
+    }
+  }
+
   _.each(allData, contentType => {
     if (!contentType) return
     _.each(contentType.data, datum => {
       if (datum.relationships) {
         _.each(datum.relationships, (v, k) => {
-          if (!v.data) return
-          if (ids[v.data.id]) {
-            if (!backRefs[v.data.id]) {
-              backRefs[v.data.id] = []
-            }
-            backRefs[v.data.id].push({ id: datum.id, type: datum.type })
+          if (!v.data) {
+            return
+          }
+
+          if (_.isArray(v.data)) {
+            v.data.forEach(data => {
+              addBackRef(datum.id, data.id, k)
+            })
+          } else {
+            addBackRef(datum.id, v.data.id, k)
           }
         })
       }
@@ -109,21 +128,40 @@ exports.sourceNodes = async (
     _.each(contentType.data, datum => {
       const node = nodeFromData(datum)
 
+      let addedRelationships = false
+      node.relationships = {}
+
       // Add relationships
       if (datum.relationships) {
-        node.relationships = {}
         _.each(datum.relationships, (v, k) => {
-          if (!v.data) return
-          if (ids[v.data.id]) {
-            node.relationships[`${k}___NODE`] = v.data.id
+          if (!v.data) {
+            return
           }
-          // Add back reference relationships.
-          if (backRefs[datum.id]) {
-            backRefs[datum.id].forEach(
-              ref => (node.relationships[`${ref.type}___NODE`] = ref.id)
-            )
+
+          if (_.isArray(v.data) && v.data.length > 0) {
+            node.relationships[`${k}___NODE`] = v.data.map(data => data.id)
+            addedRelationships = true
+          } else if (ids[v.data.id]) {
+            node.relationships[`${k}___NODE`] = v.data.id
+            addedRelationships = true
           }
         })
+      }
+
+      // Add back reference relationships.
+      if (backRefs[datum.id]) {
+        backRefs[datum.id].forEach(ref => {
+          if (!node.relationships[`${ref.type}___NODE`]) {
+            node.relationships[`${ref.type}___NODE`] = []
+          }
+
+          node.relationships[`${ref.type}___NODE`].push(ref.id)
+          addedRelationships = true
+        })
+      }
+
+      if (!addedRelationships) {
+        delete node.relationships
       }
       node.internal.contentDigest = createContentDigest(node)
       nodes.push(node)
