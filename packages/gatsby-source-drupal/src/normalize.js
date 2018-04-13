@@ -15,3 +15,5 @@ const nodeFromData = datum => {
 }
 
 exports.nodeFromData = nodeFromData
+
+exports.normalizeTypeName = typeName => typeName.replace(/[_-]{2,}/g, `_`)

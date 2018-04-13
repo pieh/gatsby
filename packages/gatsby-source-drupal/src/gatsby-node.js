@@ -2,7 +2,7 @@ const crypto = require(`crypto`)
 const _ = require(`lodash`)
 const { createRemoteFileNode } = require(`gatsby-source-filesystem`)
 const { URL } = require(`url`)
-const { nodeFromData } = require(`./normalize`)
+const { nodeFromData, normalizeTypeName } = require(`./normalize`)
 const requestInQueue = require(`./request-in-queue`)
 
 // Get content digest of node.
@@ -94,7 +94,7 @@ exports.sourceNodes = async (
       }
       backRefs[linkedId].push({
         id: sourceId,
-        type: `backref_${relationshipName}`,
+        type: normalizeTypeName(`backref_${relationshipName}`),
       })
     }
   }
