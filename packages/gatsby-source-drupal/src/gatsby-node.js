@@ -87,7 +87,7 @@ exports.sourceNodes = async (
   // Create back references
   const backRefs = {}
 
-  const addBackRef = (sourceId, linkedId, relationshipName) => {
+  const addBackRef = (sourceId, linkedId, relationshipName, type) => {
     if (ids[linkedId]) {
       if (typeof backRefs[linkedId] === `undefined`) {
         backRefs[linkedId] = []
@@ -95,6 +95,10 @@ exports.sourceNodes = async (
       backRefs[linkedId].push({
         id: sourceId,
         type: normalizeTypeName(`backref_${relationshipName}`),
+      })
+      backRefs[linkedId].push({
+        id: sourceId,
+        type: normalizeTypeName(`backref_${relationshipName}_${type}`),
       })
     }
   }
@@ -110,10 +114,10 @@ exports.sourceNodes = async (
 
           if (_.isArray(v.data)) {
             v.data.forEach(data => {
-              addBackRef(datum.id, data.id, k)
+              addBackRef(datum.id, data.id, k, contentType.type)
             })
           } else {
-            addBackRef(datum.id, v.data.id, k)
+            addBackRef(datum.id, v.data.id, k, contentType.type)
           }
         })
       }
