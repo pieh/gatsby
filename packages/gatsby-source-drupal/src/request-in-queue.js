@@ -60,7 +60,12 @@ const request = task =>
         resolve(result)
       })
       .on(`failed`, function(err) {
-        reject(err)
+        if (err.response.status === 404) {
+          console.error(`Failed ${task.url}: ${err}`)
+          resolve({ data: { data: [], links: {} } })
+        } else {
+          reject(err)
+        }
       })
   })
 
