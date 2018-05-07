@@ -14,14 +14,23 @@ const generatePathToOutput = outputPath => {
 }
 
 module.exports = (htmlComponentRenderer, pages) =>
-  new Promise(resolve => {
+  new Promise((resolve, reject) => {
     const queue = new Queue(
       (path, callback) => {
-        htmlComponentRenderer.default(path, (throwAway, htmlString) => {
-          fs.outputFile(generatePathToOutput(path), htmlString).then(() => {
-            callback()
+        try {
+          htmlComponentRenderer.default(path, (throwAway, htmlString) => {
+            fs
+              .outputFile(generatePathToOutput(path), htmlString)
+              .then(() => {
+                callback()
+              })
+              .catch(err => {
+                reject(err)
+              })
           })
-        })
+        } catch (err) {
+          reject(err)
+        }
       },
       {
         concurrent: 20,
