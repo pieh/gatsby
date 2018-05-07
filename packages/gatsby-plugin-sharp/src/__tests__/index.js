@@ -1,14 +1,20 @@
 const path = require(`path`)
 
-const {
-  base64,
-  responsiveSizes,
-  resolutions,
-  queueImageResizing,
-  getImageSize,
-} = require(`../`)
-
 describe(`gatsby-plugin-sharp`, () => {
+  jest.mock(`async/queue`, () => () => {
+    return {
+      push: jest.fn(),
+    }
+  })
+
+  const {
+    base64,
+    responsiveSizes,
+    resolutions,
+    queueImageResizing,
+    getImageSize,
+  } = require(`../`)
+
   const args = {
     duotone: false,
     grayscale: false,
