@@ -65,7 +65,6 @@ apiRunnerAsync(`onClientEntry`).then(() => {
       pathname = redirect.toPath
     }
     const wl = window.location
-    let errorWasEmitted = false
 
     // If we're already at this location, do nothing.
     if (
@@ -81,18 +80,8 @@ apiRunnerAsync(`onClientEntry`).then(() => {
     function eventHandler(e) {
       if (e.path === pathname) {
         emitter.off(`onPostLoadPageResources`, eventHandler)
-        emitter.off(`onLoadPageResourcesError`, eventHandler)
         clearTimeout(timeoutId)
-        if (!e.error) {
-          window.___history.push(location)
-        } else {
-          errorWasEmitted = true
-          apiRunner(`onRouteUpdateError`, {
-            location,
-            error: e.error,
-            action: `PUSH`,
-          })
-        }
+        window.___history.push(location)
       }
     }
 
@@ -106,19 +95,15 @@ apiRunnerAsync(`onClientEntry`).then(() => {
     lastNavigateToLocationString = `${location.pathname}${location.search}${
       location.hash
     }`
+    console.log('on pre route update')
     apiRunner(`onPreRouteUpdate`, { location, action: `PUSH` })
 
-    // Listen to error events early as they can be emitted before
-    // `loader.getResourcesForPathname` finish.
-    emitter.on(`onLoadPageResourcesError`, eventHandler)
+
     if (loader.getResourcesForPathname(pathname)) {
       // The resources are already loaded so off we go.
       clearTimeout(timeoutId)
       window.___history.push(location)
-
-      // Don't run pre/delayed APIs if error was already emitted,
-      // onLoadPageResources API already ran with error.
-    } else if (!errorWasEmitted) {
+    } else {
       // They're not loaded yet so let's add a listener for when
       // they finish loading.
       emitter.on(`onPostLoadPageResources`, eventHandler)
@@ -148,6 +133,7 @@ apiRunnerAsync(`onClientEntry`).then(() => {
             lastNavigateToLocationString !==
             `${location.pathname}${location.search}${location.hash}`
           ) {
+            console.log('on pre route update')
             apiRunner(`onPreRouteUpdate`, { location, action })
           }
           // Make sure React has had a chance to flush to DOM first.

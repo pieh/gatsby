@@ -306,6 +306,7 @@ const queue = {
     }
     // Production code path
     if (failedPaths[path]) {
+      console.log('previously failed')
       handleResourceLoadError(
         path,
         `Previously detected load failure for "${path}"`
@@ -325,11 +326,7 @@ const queue = {
     }
 
     if (!page) {
-      emitter.emit(`onLoadPageResourcesError`, {
-        path,
-        error: new Error(`A page wasn't found for "${path}"`),
-      })
-
+      console.log(`A page wasn't found for "${path}"`)
       cb()
       return null
     }
