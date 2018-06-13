@@ -135,6 +135,7 @@ module.exports = async (config = {}) => {
     `../../internal-plugins/internal-data-bridge`,
     `../../internal-plugins/prod-404`,
     `../../internal-plugins/query-runner`,
+    `../../internal-plugins/nav-a11y`,
   ]
   internalPlugins.forEach(relPath => {
     const absPath = path.join(__dirname, relPath)

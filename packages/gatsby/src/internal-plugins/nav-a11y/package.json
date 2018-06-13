@@ -1,0 +1,11 @@
+{
+  "name": "nav-a11y",
+  "version": "1.0.0",
+  "description": "Internal plugin that re-focus app container after page navigation, which triggers screen readers and other assistive tech to announce the new page",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kyle Mathews <mathews.kyle@gmail.com>",
+  "license": "MIT"
+}
