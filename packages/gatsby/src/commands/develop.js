@@ -246,12 +246,35 @@ async function startServer(program) {
 module.exports = async (program: any) => {
   const detect = require(`detect-port`)
   const port =
-    typeof program.port === `string` ? parseInt(program.port, 10) : program.port
+    typeof program.port === `string`
+      ? parseInt(program.port, 10)
+      : program.port
+
+  // In order to enable custom ssl, --cert-file --key-file and -https flags must all be
+  // used together
+  if ((program[`cert-file`] || program[`key-file`]) && !program.https) {
+    report.panic(
+      `for custom ssl --https, --cert-file, and --key-file must be used together`
+    )
+  }
+
+  // In order to enable custom ssl, --cert-file --key-file and -https flags must all be
+  // used together
+  if ((program[`cert-file`] || program[`key-file`]) && !program.https) {
+    report.panic(
+      `for custom ssl --https, --cert-file, and --key-file must be used together`
+    )
+  }
 
   // Check if https is enabled, then create or get SSL cert.
   // Certs are named after `name` inside the project's package.json.
   if (program.https) {
-    program.ssl = await getSslCert(program.sitePackageJson.name)
+    program.ssl = await getSslCert({
+      name: program.sitePackageJson.name,
+      certFile: program[`cert-file`],
+      keyFile: program[`key-file`],
+      directory: program.directory,
+    })
   }
 
   let compiler
@@ -378,7 +401,7 @@ module.exports = async (program: any) => {
     const deprecatedLocations = {}
     deprecatedApis.forEach(api => (deprecatedLocations[api] = []))
 
-    glob.sync(`{,!(node_modules|public)/**/}*.js`).forEach(file => {
+    glob.sync(`{,!(node_modules|public)/**/}*.js`, { nodir: true }).forEach(file => {
       const fileText = fs.readFileSync(file)
       const matchingApis = deprecatedApis.filter(
         api => fileText.indexOf(api) !== -1
@@ -405,7 +428,7 @@ module.exports = async (program: any) => {
   let isFirstCompile = true
   // "done" event fires when Webpack has finished recompiling the bundle.
   // Whether or not you have warnings or errors, you will get this event.
-  compiler.plugin(`done`, stats => {
+  compiler.hooks.done.tapAsync(`print getsby instructions`, (stats, done) => {
     // We have switched off the default Webpack output in WebpackDevServer
     // options so we are going to "massage" the warnings and errors and present
     // them in a readable focused way.
@@ -415,7 +438,7 @@ module.exports = async (program: any) => {
       program.host,
       program.port
     )
-    const isSuccessful = !messages.errors.length && !messages.warnings.length
+    const isSuccessful = !messages.errors.length
     // if (isSuccessful) {
     // console.log(chalk.green(`Compiled successfully!`))
     // }
@@ -459,5 +482,7 @@ module.exports = async (program: any) => {
     // " to the line before.\n"
     // )
     // }
+
+    done()
   })
 }

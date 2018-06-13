@@ -8,7 +8,7 @@ import presets, { colors } from "../utils/presets"
 class BlogPostPreviewItem extends React.Component {
   render() {
     const post = this.props.post
-    const avatar = post.frontmatter.author.avatar.childImageSharp.resolutions
+    const avatar = post.frontmatter.author.avatar.childImageSharp.fixed
 
     return (
       <article className={this.props.className} css={{ position: `relative` }}>
@@ -27,13 +27,15 @@ class BlogPostPreviewItem extends React.Component {
         >
           <Img
             alt=""
-            resolutions={avatar}
+            fixed={avatar}
             css={{
               borderRadius: `100%`,
               display: `inline-block`,
               marginRight: rhythm(1 / 2),
               marginBottom: 0,
               verticalAlign: `top`,
+              // prevents image twitch in Chrome when hovering the card
+              transform: `translateZ(0)`,
             }}
           />
           <div
@@ -123,7 +125,7 @@ export const blogPostPreviewFragment = graphql`
         }
         avatar {
           childImageSharp {
-            resolutions(
+            fixed(
               width: 30
               height: 30
               quality: 80
@@ -133,7 +135,7 @@ export const blogPostPreviewFragment = graphql`
                 color: "#e0d6eb"
               }
             ) {
-              ...GatsbyImageSharpResolutions_tracedSVG
+              ...GatsbyImageSharpFixed_tracedSVG
             }
           }
         }

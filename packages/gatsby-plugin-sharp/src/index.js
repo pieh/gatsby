@@ -60,6 +60,31 @@ const reportError = (message, err, reporter) => {
   }
 }
 
+const generalArgs = {
+  width: 400,
+  maxWidth: 800,
+  quality: 50,
+  jpegProgressive: true,
+  pngCompressionLevel: 9,
+  base64: false,
+  grayscale: false,
+  duotone: false,
+  pathPrefix: ``,
+  toFormat: ``,
+  sizeByPixelDensity: false,
+}
+
+const healOptions = (args, defaultArgs) => {
+  let options = _.defaults({}, args, defaultArgs, generalArgs)
+  options.width = parseInt(options.width, 10)
+  options.maxWidth = parseInt(options.maxWidth, 10)
+  options.quality = parseInt(options.quality, 10)
+  options.pngCompressionLevel = parseInt(options.pngCompressionLevel, 10)
+  options.toFormat = options.toFormat.toLowerCase()
+
+  return options
+}
+
 let totalJobs = 0
 const processFile = (file, jobs, cb, reporter) => {
   // console.log("totalJobs", totalJobs)
@@ -264,17 +289,7 @@ const queueJob = (job, reporter) => {
 }
 
 function queueImageResizing({ file, args = {}, reporter }) {
-  const defaultArgs = {
-    width: 400,
-    quality: 50,
-    jpegProgressive: true,
-    pngCompressionLevel: 9,
-    grayscale: false,
-    duotone: false,
-    pathPrefix: ``,
-    toFormat: ``,
-  }
-  const options = _.defaults(args, defaultArgs)
+  const options = healOptions(args, {})
   // Filter out false args, and args not for this extension and put width at
   // end (for the file path)
   const pairedArgs = _.toPairs(args)
@@ -362,16 +377,7 @@ function queueImageResizing({ file, args = {}, reporter }) {
 }
 
 async function notMemoizedbase64({ file, args = {}, reporter }) {
-  const defaultArgs = {
-    width: 20,
-    quality: 50,
-    jpegProgressive: true,
-    pngCompressionLevel: 9,
-    grayscale: false,
-    duotone: false,
-    toFormat: ``,
-  }
-  const options = _.defaults(args, defaultArgs)
+  const options = healOptions(args, { width: 20 })
   let pipeline
   try {
     pipeline = sharp(file.absolutePath).rotate()
@@ -430,20 +436,8 @@ async function base64(args) {
   return await memoizedBase64(args)
 }
 
-async function responsiveSizes({ file, args = {}, reporter }) {
-  const defaultArgs = {
-    maxWidth: 800,
-    quality: 50,
-    jpegProgressive: true,
-    pngCompressionLevel: 9,
-    grayscale: false,
-    duotone: false,
-    pathPrefix: ``,
-    toFormat: ``,
-    sizeByPixelDensity: false,
-  }
-  const options = _.defaults({}, args, defaultArgs)
-  options.maxWidth = parseInt(options.maxWidth, 10)
+async function fluid({ file, args = {}, reporter }) {
+  const options = healOptions(args, {})
 
   // Account for images with a high pixel density. We assume that these types of
   // images are intended to be displayed at their native resolution.
@@ -466,7 +460,8 @@ async function responsiveSizes({ file, args = {}, reporter }) {
   )
   const presentationHeight = Math.round(presentationWidth * (height / width))
 
-  // If the users didn't set a default sizes, we'll make one.
+
+  // If the users didn't set default sizes, we'll make one.
   if (!options.sizes) {
     options.sizes = `(max-width: ${presentationWidth}px) 100vw, ${presentationWidth}px`
   }
@@ -479,14 +474,14 @@ async function responsiveSizes({ file, args = {}, reporter }) {
   // device size / screen resolution while (hopefully) not requiring too much
   // image processing time (Sharp has optimizations thankfully for creating
   // multiple sizes of the same input file)
-  const sizes = []
-  sizes.push(options.maxWidth / 4)
-  sizes.push(options.maxWidth / 2)
-  sizes.push(options.maxWidth)
-  sizes.push(options.maxWidth * 1.5)
-  sizes.push(options.maxWidth * 2)
-  sizes.push(options.maxWidth * 3)
-  const filteredSizes = sizes.filter(size => size < width)
+  const fluidSizes = []
+  fluidSizes.push(options.maxWidth / 4)
+  fluidSizes.push(options.maxWidth / 2)
+  fluidSizes.push(options.maxWidth)
+  fluidSizes.push(options.maxWidth * 1.5)
+  fluidSizes.push(options.maxWidth * 2)
+  fluidSizes.push(options.maxWidth * 3)
+  const filteredSizes = fluidSizes.filter(size => size < width)
 
   // Add the original image to ensure the largest image possible
   // is available for small images. Also so we can link to
@@ -520,6 +515,7 @@ async function responsiveSizes({ file, args = {}, reporter }) {
     duotone: options.duotone,
     grayscale: options.grayscale,
     rotate: options.rotate,
+    toFormat: options.toFormat,
     width: base64Width,
     height: base64Height,
   }
@@ -551,19 +547,8 @@ async function responsiveSizes({ file, args = {}, reporter }) {
   }
 }
 
-async function resolutions({ file, args = {}, reporter }) {
-  const defaultArgs = {
-    width: 400,
-    quality: 50,
-    jpegProgressive: true,
-    pngCompressionLevel: 9,
-    grayscale: false,
-    duotone: false,
-    pathPrefix: ``,
-    toFormat: ``,
-  }
-  const options = _.defaults({}, args, defaultArgs)
-  options.width = parseInt(options.width, 10)
+async function fixed({ file, args = {}, reporter }) {
+  const options = healOptions(args, {})
 
   // Create sizes for different resolutions — we do 1x, 1.5x, 2x, and 3x.
   const sizes = []
@@ -575,7 +560,7 @@ async function resolutions({ file, args = {}, reporter }) {
 
   const filteredSizes = sizes.filter(size => size <= dimensions.width)
 
-  // If there's no sizes after filtering (e.g. image is smaller than what's
+  // If there's no fluid images after filtering (e.g. image is smaller than what's
   // requested, add back the original so there's at least something)
   if (filteredSizes.length === 0) {
     filteredSizes.push(dimensions.width)
@@ -591,7 +576,7 @@ async function resolutions({ file, args = {}, reporter }) {
     )
   }
 
-  // Sort sizes for prettiness.
+  // Sort images for prettiness.
   const sortedSizes = _.sortBy(filteredSizes)
 
   const images = sortedSizes.map(size => {
@@ -599,7 +584,7 @@ async function resolutions({ file, args = {}, reporter }) {
       ...options,
       width: Math.round(size),
     }
-    // Queue sizes for processing.
+    // Queue images for processing.
     if (options.height) {
       arrrgs.height = Math.round(size * (options.height / options.width))
     }
@@ -615,6 +600,7 @@ async function resolutions({ file, args = {}, reporter }) {
     duotone: options.duotone,
     grayscale: options.grayscale,
     rotate: options.rotate,
+    toFormat: options.toFormat,
   }
 
   // Get base64 version
@@ -658,6 +644,7 @@ async function resolutions({ file, args = {}, reporter }) {
 
 async function notMemoizedtraceSVG({ file, args, fileArgs, reporter }) {
   const potrace = require(`potrace`)
+  const svgToMiniDataURI = require(`mini-svg-data-uri`)
   const trace = Promise.promisify(potrace.trace)
   const defaultArgs = {
     color: `lightgray`,
@@ -666,17 +653,7 @@ async function notMemoizedtraceSVG({ file, args, fileArgs, reporter }) {
     turnPolicy: potrace.Potrace.TURNPOLICY_MAJORITY,
   }
   const optionsSVG = _.defaults(args, defaultArgs)
-
-  const defaultFileResizeArgs = {
-    width: 400,
-    quality: 50,
-    jpegProgressive: true,
-    pngCompressionLevel: 9,
-    grayscale: false,
-    duotone: false,
-    toFormat: ``,
-  }
-  const options = _.defaults(fileArgs, defaultFileResizeArgs)
+  const options = healOptions(fileArgs, {})
   let pipeline
   try {
     pipeline = sharp(file.absolutePath).rotate()
@@ -730,7 +707,7 @@ async function notMemoizedtraceSVG({ file, args, fileArgs, reporter }) {
 
   return trace(tmpFilePath, optionsSVG)
     .then(svg => optimize(svg))
-    .then(svg => encodeOptimizedSVGDataUri(svg))
+    .then(svg => svgToMiniDataURI(svg))
 }
 
 const memoizedTraceSVG = _.memoize(
@@ -740,19 +717,6 @@ const memoizedTraceSVG = _.memoize(
 
 async function traceSVG(args) {
   return await memoizedTraceSVG(args)
-}
-
-// https://codepen.io/tigt/post/optimizing-svgs-in-data-uris
-function encodeOptimizedSVGDataUri(svgString) {
-  var uriPayload = encodeURIComponent(svgString) // encode URL-unsafe characters
-    .replace(/%0A/g, ``) // remove newlines
-    .replace(/%20/g, ` `) // put spaces back in
-    .replace(/%3D/g, `=`) // ditto equals signs
-    .replace(/%3A/g, `:`) // ditto colons
-    .replace(/%2F/g, `/`) // ditto slashes
-    .replace(/%22/g, `'`) // replace quotes with apostrophes (may break certain SVGs)
-
-  return `data:image/svg+xml,` + uriPayload
 }
 
 const optimize = svg => {
@@ -776,8 +740,8 @@ function toArray(buf) {
 exports.queueImageResizing = queueImageResizing
 exports.base64 = base64
 exports.traceSVG = traceSVG
-exports.responsiveSizes = responsiveSizes
-exports.responsiveResolution = resolutions
-exports.sizes = responsiveSizes
-exports.resolutions = resolutions
+exports.sizes = fluid
+exports.resolutions = fixed
+exports.fluid = fluid
+exports.fixed = fixed
 exports.getImageSize = getImageSize

@@ -66,6 +66,27 @@ module.exports = async (
     return Object.assign(envObject, gatsbyVarObject)
   }
 
+  function getHmrPath () {
+    let hmrBasePath = `${
+      program.ssl ? `https` : `http`
+    }://${
+      program.host
+    }:${webpackPort}/`
+
+    const hmrSuffix = `__webpack_hmr&reload=true&overlay=false`
+
+    if (process.env.GATSBY_WEBPACK_PUBLICPATH) {
+      const pubPath = process.env.GATSBY_WEBPACK_PUBLICPATH
+      if (pubPath.substr(-1) === `/`) {
+        hmrBasePath = pubPath
+      } else {
+        hmrBasePath = `${pubPath}/`
+      }
+    }
+
+    return hmrBasePath + hmrSuffix
+  }
+
   debug(`Loading webpack config for stage "${stage}"`)
   function getOutput() {
     switch (stage) {
@@ -73,10 +94,12 @@ module.exports = async (
         return {
           path: directory,
           filename: `[name].js`,
-          publicPath: `http://${program.host}:${webpackPort}/`,
           // Add /* filename */ comments to generated require()s in the output.
           pathinfo: true,
           // Point sourcemap entries to original disk location (format as URL on Windows)
+          publicPath: process.env.GATSBY_WEBPACK_PUBLICPATH || `${program.ssl ? `https` : `http`}://${
+            program.host
+          }:${webpackPort}/`,
           devtoolModuleFilenameTemplate: info =>
             path.resolve(info.absoluteResourcePath).replace(/\\/g, `/`),
         }
@@ -115,9 +138,7 @@ module.exports = async (
         return {
           commons: [
             require.resolve(`react-hot-loader/patch`),
-            `${require.resolve(`webpack-hot-middleware/client`)}?path=http://${
-              program.host
-            }:${webpackPort}/__webpack_hmr&reload=true&overlay=false`,
+            `${require.resolve(`webpack-hot-middleware/client`)}?path=${getHmrPath()}`,
             directoryPath(`.cache/app`),
           ],
         }
@@ -143,22 +164,18 @@ module.exports = async (
       plugins.moment(),
 
       // Add a few global variables. Set NODE_ENV to production (enables
-      // optimizations for React) and whether prefixing links is enabled
-      // (__PREFIX_PATHS__) and what the link prefix is (__PATH_PREFIX__).
+      // optimizations for React) and what the link prefix is (__PATH_PREFIX__).
       plugins.define({
         "process.env": processEnv(stage, `development`),
-        __PREFIX_PATHS__: program.prefixPaths,
-        __PATH_PREFIX__: JSON.stringify(store.getState().config.pathPrefix),
+        __PATH_PREFIX__: JSON.stringify(
+          program.prefixPaths ? store.getState().config.pathPrefix : ``
+        ),
       }),
     ]
 
     switch (stage) {
       case `develop`:
         configPlugins = configPlugins.concat([
-          plugins.extractText({
-            filename: `[name].css`,
-            chunkFilename: `[name].css`,
-          }),
           plugins.hotModuleReplacement(),
           plugins.noEmitOnErrors(),
 

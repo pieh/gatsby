@@ -6,10 +6,9 @@ import rehypeReact from "rehype-react"
 import styles from "../styles"
 import Counter from "../components/Counter"
 import Layout from "../layouts"
-import typography from "../utils/typography"
+import { rhythm, scale } from "../utils/typography"
 
 import "katex/dist/katex.min.css"
-const { rhythm, scale } = typography
 
 const renderAst = new rehypeReact({
   createElement: React.createElement,
@@ -94,8 +93,8 @@ class BlogPostRoute extends React.Component {
           >
             <Img
               alt={`Avatar of ${post.frontmatter.author.id}`}
-              resolutions={
-                post.frontmatter.author.avatar.children[0].resolutions
+              fixed={
+                post.frontmatter.author.avatar.children[0].fixed
               }
               css={{
                 borderRadius: `100%`,
@@ -151,13 +150,13 @@ export const pageQuery = graphql`
           avatar {
             children {
               ... on ImageSharp {
-                resolutions(
+                fixed(
                   width: 50
                   height: 50
                   quality: 75
                   grayscale: true
                 ) {
-                  ...GatsbyImageSharpResolutions
+                  ...GatsbyImageSharpFixed
                 }
               }
             }

@@ -1,12 +1,11 @@
 import React, { Component } from "react"
 import Helmet from "react-helmet"
 
-import GlobalLayout from "../layouts"
+import Layout from "../components/layout"
 import EvaluationTable from "../components/evaluation-table"
 import EvaluationCell from "../components/evaluation-cell"
 import FuturaParagraph from "../components/futura-paragraph"
-import PageWithSidebar from "../components/page-with-sidebar"
-import featuresSidebar from "./docs/features-links.yaml"
+import featuresSidebar from "../data/sidebars/features-links.yaml"
 import Container from "../components/container"
 import { options, rhythm } from "../utils/typography"
 import presets, { colors } from "../utils/presets"
@@ -95,7 +94,6 @@ const LegendTable = () => {
           border: `1px solid ${legendBorderColor}`,
           borderLeft: 0,
           fontFamily: options.headerFontFamily.join(`,`),
-          display: `table`,
           [presets.Phablet]: {
             display: `none`,
           },
@@ -186,7 +184,11 @@ const FeaturesFooter = () => (
   <p css={{ fontSize: `80%`, marginTop: rhythm(1) }}>
     Want to help keep this information complete, accurate, and up-to-date?
     Please comment{` `}
-    <a href="https://github.com/gatsbyjs/gatsby/issues/2444" target="_blank">
+    <a
+      href="https://github.com/gatsbyjs/gatsby/issues/2444"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       here.
     </a>
   </p>
@@ -199,21 +201,16 @@ class FeaturesPage extends Component {
     )
 
     return (
-      <GlobalLayout location={this.props.location}>
-        <PageWithSidebar
-          yaml={featuresSidebar}
-          renderContent={() => (
-            <Container>
-              <FeaturesHeader />
-              <EvaluationTable
-                sections={sections}
-                sectionHeaders={sectionHeaders}
-              />
-              <FeaturesFooter />
-            </Container>
-          )}
-        />
-      </GlobalLayout>
+      <Layout location={this.props.location} sidebarYaml={featuresSidebar}>
+        <Container>
+          <FeaturesHeader />
+          <EvaluationTable
+            sections={sections}
+            sectionHeaders={sectionHeaders}
+          />
+          <FeaturesFooter />
+        </Container>
+      </Layout>
     )
   }
 }

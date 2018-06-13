@@ -6,7 +6,7 @@ import ArrowBackIcon from "react-icons/lib/md/arrow-back"
 import Img from "gatsby-image"
 import { OutboundLink } from "gatsby-plugin-google-analytics"
 
-import GlobalLayout from "../layouts"
+import Layout from "../components/layout"
 import presets, { colors } from "../utils/presets"
 import typography, { rhythm, scale, options } from "../utils/typography"
 import Container from "../components/container"
@@ -60,7 +60,7 @@ class BlogPostTemplate extends React.Component {
     }
 
     return (
-      <GlobalLayout location={this.props.location}>
+      <Layout location={this.props.location}>
         <Container className="post" css={{ paddingBottom: `0 !important` }}>
           {/* Add long list of social meta tags */}
           <Helmet>
@@ -134,8 +134,8 @@ class BlogPostTemplate extends React.Component {
               }}
             >
               <Img
-                resolutions={
-                  post.frontmatter.author.avatar.childImageSharp.resolutions
+                fixed={
+                  post.frontmatter.author.avatar.childImageSharp.fixed
                 }
                 css={{
                   height: rhythm(2.3),
@@ -196,7 +196,7 @@ class BlogPostTemplate extends React.Component {
                   marginBottom: rhythm(1),
                 }}
               >
-                <Img sizes={post.frontmatter.image.childImageSharp.sizes} />
+                <Img fluid={post.frontmatter.image.childImageSharp.fluid} />
                 {post.frontmatter.imageAuthor &&
                   post.frontmatter.imageAuthorLink && (
                     <em>
@@ -286,7 +286,7 @@ class BlogPostTemplate extends React.Component {
             </div>
           </Container>
         </div>
-      </GlobalLayout>
+      </Layout>
     )
   }
 }
@@ -315,8 +315,8 @@ export const pageQuery = graphql`
             resize(width: 1500, height: 1500) {
               src
             }
-            sizes(maxWidth: 786) {
-              ...GatsbyImageSharpSizes
+            fluid(maxWidth: 786) {
+              ...GatsbyImageSharpFluid
             }
           }
         }
@@ -330,7 +330,7 @@ export const pageQuery = graphql`
           twitter
           avatar {
             childImageSharp {
-              resolutions(
+              fixed(
                 width: 63
                 height: 63
                 quality: 75
@@ -340,7 +340,7 @@ export const pageQuery = graphql`
                   color: "#e0d6eb"
                 }
               ) {
-                ...GatsbyImageSharpResolutions_tracedSVG
+                ...GatsbyImageSharpFixed_tracedSVG
               }
             }
           }
