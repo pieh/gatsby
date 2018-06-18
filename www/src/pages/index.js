@@ -57,7 +57,7 @@ class IndexRoute extends React.Component {
                 <Cards>
                   <Card>
                     <CardHeadline>
-                      Modern web tech without the headache
+                      Test Modern web tech without the headache
                     </CardHeadline>
                     <FuturaParagraph>
                       Enjoy the power of the latest web technologies –{` `}
