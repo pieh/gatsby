@@ -237,7 +237,7 @@ const IndexPage = ({ data }) => (
 export default IndexPage
 
 export const pageQuery = graphql`
-  query IndexQuery {
+  query {
     allStrapiArticle {
       edges {
         node {
@@ -291,7 +291,7 @@ const ArticleTemplate = ({ data }) => (
 export default ArticleTemplate
 
 export const query = graphql`
-  query ArticleTemplate($id: String!) {
+  query($id: String!) {
     strapiArticle(id: { eq: $id }) {
       title
       content
@@ -400,7 +400,7 @@ const UserTemplate = ({ data }) => (
 export default UserTemplate
 
 export const query = graphql`
-  query UserTemplate($id: String!) {
+  query($id: String!) {
     strapiUser(id: { eq: $id }) {
       id
       username

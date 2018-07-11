@@ -237,7 +237,7 @@ class BlogPost extends React.Component {
 export default BlogPost
 
 export const pageQuery = graphql`
- query BlogPostBySlug($slug: String!) {
+ query($slug: String!) {
    contentfulBlogPost(fields: { slug: { eq: $slug } }) {
      title
       content {

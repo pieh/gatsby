@@ -260,7 +260,7 @@ export default ({ data }) => (
 )
 
 export const query = graphql`
-  query GatsbyImageSampleQuery {
+  query {
     file(relativePath: { eq: "images/an-image.jpeg" }) {
       childImageSharp {
         fixed(width: l25, height: 125) {

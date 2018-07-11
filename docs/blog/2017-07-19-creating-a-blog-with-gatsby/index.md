@@ -319,7 +319,7 @@ export default function Template({
 }
 
 export const pageQuery = graphql`
-  query BlogPostByPath($path: String!) {
+  query($path: String!) {
     markdownRemark(frontmatter: { path: { eq: $path } }) {
       html
       frontmatter {
@@ -560,7 +560,7 @@ export default function Index({ data }) {
 }
 
 export const pageQuery = graphql`
-  query IndexQuery {
+  query {
     allMarkdownRemark(sort: { order: DESC, fields: [frontmatter___date] }) {
       edges {
         node {

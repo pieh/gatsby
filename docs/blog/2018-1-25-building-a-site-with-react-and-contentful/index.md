@@ -145,7 +145,7 @@ export default ({ data }) => {
 }
 
 export const query = graphql`
-query PhotoQuery {
+query {
 // starting here is where I copied and pasted the query I created in GraphiQL.
     allContentfulPhotoGallery {
         edges {
@@ -202,7 +202,7 @@ export default ({ data }) => {
 }
 
 export const query = graphql`
-  query CommandsQuery {
+  query {
     allContentfulTricksCommands {
       edges {
         node {

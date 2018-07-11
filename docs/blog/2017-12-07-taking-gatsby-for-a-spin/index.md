@@ -53,7 +53,7 @@ Data from anywhere with static output. That's sort of the holy grail isn't it? R
 
 ```es6
 export const query = graphql`
-  query BlogPostQuery($slug: String!) {
+  query($slug: String!) {
     markdownRemark(fields: { slug: { eq: $slug } }) {
       html
       fields {

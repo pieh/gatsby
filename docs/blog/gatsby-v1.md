@@ -183,7 +183,7 @@ class BlogPostTemplate extends React.Component {
 export default BlogPostTemplate
 
 export const pageQuery = graphql`
-  query BlogPost($slug: String!) {
+  query($slug: String!) {
     markdownRemark(slug: { eq: $slug }) {
       # Get the markdown body compiled to HTML.
       html

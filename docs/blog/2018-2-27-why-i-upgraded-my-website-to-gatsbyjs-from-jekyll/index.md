@@ -71,7 +71,7 @@ export default function PostTemplate({
 }
 
 export const pageQuery = graphql`
-  query PostByPath($path: String!) {
+  query($path: String!) {
     markdownRemark(frontmatter: { path: { eq: $path } }) {
       html
       frontmatter {

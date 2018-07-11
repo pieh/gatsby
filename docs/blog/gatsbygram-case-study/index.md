@@ -259,7 +259,7 @@ export default PostTemplate
 // All GraphQL queries in Gatsby are run at build-time and
 // loaded as plain JSON files so have minimal client cost.
 export const pageQuery = `
-  query PostPage($id: String!) {
+  query($id: String!) {
     # Select the post which equals this id.
     posts(id: { eq: $id }) {
       # Specify the fields from the post we need.

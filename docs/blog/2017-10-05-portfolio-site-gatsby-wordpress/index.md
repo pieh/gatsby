@@ -70,7 +70,7 @@ some ACF fields which were originally defined in my Projects page template:
 ```js
 // Pull the project page content from Wordpress
 export const projectsPageQuery = graphql`
-  query projectsPageQuery {
+  query {
     wordpressPage(slug: { eq: "projects" }) {
       id
       title
@@ -91,7 +91,7 @@ title etc. you just add a simple flag to the query like so:
 ```js
 // Sort WordPress posts by date
 export const postQuery = graphql`
-  query getPostQuery {
+  query {
     allWordpressPost(sort: { fields: [date] }) {
       edges {
         node {

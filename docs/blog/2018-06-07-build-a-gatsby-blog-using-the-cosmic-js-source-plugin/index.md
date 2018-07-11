@@ -168,7 +168,7 @@ class BlogIndex extends React.Component {
 export default BlogIndex
 
 export const pageQuery = graphql`
-  query IndexQuery {
+  query {
     allCosmicjsPosts(sort: { fields: [created], order: DESC }, limit: 1000) {
       edges {
         node {
@@ -330,7 +330,7 @@ class BlogPostTemplate extends React.Component {
 export default BlogPostTemplate
 
 export const pageQuery = graphql`
-  query BlogPostBySlug($slug: String!) {
+  query($slug: String!) {
     cosmicjsPosts(slug: { eq: $slug }) {
       id
       content

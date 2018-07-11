@@ -66,7 +66,7 @@ export default ({ data }) => {
 }
 // The data query
 export const query = graphql`
-  query BlogPostQuery($slug: String!) {
+  query($slug: String!) {
     markdownRemark(fields: { slug: { eq: $slug } }) {
       html
       frontmatter {
@@ -103,7 +103,7 @@ might have set up.
 
 ```js
 export const query = graphql`
-  query BlogPostQuery($slug: String!) {
+  query($slug: String!) {
     markdownRemark(fields: { slug: { eq: $slug } }) {
       html
       frontmatter {

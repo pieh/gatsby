@@ -302,7 +302,7 @@ class BlogPostTemplate extends React.Component {
 export default BlogPostTemplate
 
 export const pageQuery = `
-  query BlogPost($slug: String!) {
+  query($slug: String!) {
     markdown(slug: { eq: $slug }) {
       // Get the markdown body compiled to HTML.
       html

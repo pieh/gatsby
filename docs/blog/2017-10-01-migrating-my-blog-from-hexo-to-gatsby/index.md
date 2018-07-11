@@ -692,7 +692,7 @@ export default class BlogPost extends React.Component {
 
 // NOTE: The $id var is passed in via context when calling createPage in gatsby-node.js
 export const pageQuery = graphql`
-  query PostById($id: String!) {
+  query($id: String!) {
     markdownRemark(id: { eq: $id }) {
       frontmatter {
         title
