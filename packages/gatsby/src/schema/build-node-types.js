@@ -143,14 +143,20 @@ module.exports = async ({ parentSpan }) => {
     const intermediateType = {}
 
     intermediateType.name = typeName
-    intermediateType.nodes = nodes
 
     const fieldsFromPlugins = await apiRunner(`setFieldsOnGraphQLNodeType`, {
       type: intermediateType,
-      allNodes: getNodes(),
+      // we don't need to pass nodes explictely - we pass getNodes(), so plugins can use that
+      // but it would be breaking change I think
+      // allNodes: getNodes(),
       traceId: `initial-setFieldsOnGraphQLNodeType`,
       parentSpan: span,
     })
+
+    // moving it after running api - we still need this, just not before api run
+    // plugin can use getNodes().fitler(node => node.internal.type === type.name)
+    // to get nodes of given type
+    intermediateType.nodes = nodes
 
     const mergedFieldsFromPlugins = _.merge(...fieldsFromPlugins)
 
