@@ -8,6 +8,7 @@ const { store } = require(`../redux`)
 const { actions } = require(`../redux/actions`)
 const debug = require(`debug`)(`gatsby:webpack-config`)
 const report = require(`gatsby-cli/lib/reporter`)
+const nodeExternals = require(`webpack-node-externals`)
 const { withBasePath } = require(`./path`)
 
 const apiRunnerNode = require(`./api-runner-node`)
@@ -443,6 +444,26 @@ module.exports = async (
         name: false,
       },
     }
+  }
+
+  if (stage === `build-html`) {
+    config.externals = [
+      nodeExternals({
+        whitelist: [
+          // gatsby package uses webpack alias for .cache/gatsby-browser-entry.js
+          // some gatsby plugins relies on __PATH_PREFIX__ provided by webpack define plugin
+          /^gatsby/,
+          // we need webpack loaders for files not handled by node
+          // (this regex is copied from webpack-node-externals docs)
+          /\.(?!(?:jsx?|json)$).{1,5}$/i,
+          // this is gatsbyjs.org specific as I was using that as test site
+          // those packages have "main": "index.css" in package.json and
+          // webpack-node-externals doesn't check that
+          `typeface-spectral`,
+          `typeface-space-mono`,
+        ],
+      }),
+    ]
   }
 
   store.dispatch(actions.replaceWebpackConfig(config))

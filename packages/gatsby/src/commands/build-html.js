@@ -24,7 +24,12 @@ module.exports = async (program: any, activity: any) => {
   )
 
   return new Promise((resolve, reject) => {
+    const start = process.hrtime()
     webpack(compilerConfig).run((e, stats) => {
+      const span = require(`convert-hrtime`)(process.hrtime(start))
+      console.log(`build html webpack build`, span.seconds)
+      console.log(`build html webpack build`, span.seconds)
+      console.log(`build html webpack build`, span.seconds)
       if (e) {
         return reject(e)
       }
