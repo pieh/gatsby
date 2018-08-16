@@ -4,6 +4,7 @@ const crypto = require(`crypto`)
 const path = require(`path`)
 const { isWebUri } = require(`valid-url`)
 const Queue = require(`better-queue`)
+const ProgressBar = require(`progress`)
 
 const { createFileNode } = require(`./create-file-node`)
 const cacheId = url => `create-remote-file-node-${url}`
@@ -87,7 +88,7 @@ const createFilePath = (directory, filename, ext) =>
 const queue = new Queue(pushToQueue, {
   id: `url`,
   merge: (old, _, cb) => cb(old),
-  concurrent: 200,
+  concurrent: 50,
 })
 
 /**
@@ -137,23 +138,81 @@ const requestRemoteNode = (url, headers, tmpFilename, filename) =>
       timeout: 30000,
       retries: 5,
     })
-    const fsWriteStream = fs.createWriteStream(tmpFilename)
-    responseStream.pipe(fsWriteStream)
-    responseStream.on(`downloadProgress`, pro => console.log(pro))
 
-    // If there's a 400/500 response or other error.
+    let responseResolved = false
+    let responseRejected = false
+    let FsResolved = false
+    let FsRejected = false
+    let FsClosed = false
+
+    const heartBeat = setInterval(() => {
+      console.log(`stuck downloading`, {
+        url,
+        filename,
+        tmpFilename,
+        FsResolved,
+        FsRejected,
+        FsClosed,
+        responseResolved,
+        responseRejected,
+      })
+    }, 20000)
+
     responseStream.on(`error`, (error, body, response) => {
+      responseRejected = true
       fs.removeSync(tmpFilename)
+      console.log("responseStream Error", error)
+      console.log("responseStream Error", error)
+      console.log("responseStream Error", error)
       reject(error)
     })
+
+    let fsWriteStream = fs.createWriteStream(tmpFilename)
 
     fsWriteStream.on(`error`, error => {
+      FsRejected = true
+      console.log("fwWriteStream Error", error)
+      console.log("fwWriteStream Error", error)
+      console.log("fwWriteStream Error", error)
       reject(error)
     })
 
+    responseStream.pipe(fsWriteStream)
+    // responseStream.on(`downloadProgress`, pro => console.log(pro))
+
+    // If there's a 400/500 response or other error.
+
     responseStream.on(`response`, response => {
-      fsWriteStream.on(`finish`, () => {
+      responseResolved = true
+      const fsEscapeHatch = setTimeout(() => {
+        // force close and try to restart
+
+        fsWriteStream.close()
+        console.log("WRITING FILE", tmpFilename)
+        console.log("WRITING FILE", tmpFilename)
+        console.log("WRITING FILE", tmpFilename)
+        fs.writeFileSync(tmpFilename, response.body)
+        clearInterval(heartBeat)
         resolve(response)
+      }, 180000)
+
+      fsWriteStream.on(`finish`, () => {
+        clearTimeout(fsEscapeHatch)
+        clearInterval(heartBeat)
+        resolve(response)
+      })
+    })
+
+    fsWriteStream.on(`close`, () => {
+      FsClosed = true
+    })
+
+    fsWriteStream.on(`finish`, () => {
+      FsResolved = true
+      responseStream.on(`response`, response => {
+        console.log(`reversed callbacks :/`, tmpFilename)
+        console.log(`reversed callbacks :/`, tmpFilename)
+        // resolve(response)
       })
     })
   })
@@ -239,6 +298,15 @@ async function processRemoteNode({
  * Index of promises resolving to File node from remote url
  */
 const processingCache = {}
+
+const bar = new ProgressBar(
+  `Downloading files [:bar] :current/:total :elapsed secs :percent\n`,
+  {
+    total: 0,
+    width: 30,
+  }
+)
+let totalFiles = 0
 /**
  * pushTask
  * --
@@ -250,12 +318,16 @@ const processingCache = {}
  */
 const pushTask = task =>
   new Promise((resolve, reject) => {
+    totalFiles += 1
+    bar.total = totalFiles
     queue
       .push(task)
       .on(`finish`, task => {
+        bar.tick()
         resolve(task)
       })
       .on(`failed`, () => {
+        bar.tick()
         resolve()
       })
   })
