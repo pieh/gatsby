@@ -192,10 +192,12 @@ const queue = {
   // click on it soon so let's start prefetching resources for this
   // pathname.
   hovering: rawPath => {
+    return
     const path = stripPrefix(rawPath, __PATH_PREFIX__)
     queue.getResourcesForPathname(path)
   },
   enqueue: rawPath => {
+    return 
     const path = stripPrefix(rawPath, __PATH_PREFIX__)
     if (!apiRunner)
       console.error(`Run setApiRunnerForLoader() before enqueing paths`)
@@ -238,7 +240,7 @@ const queue = {
       process.env.NODE_ENV !== `production` &&
       process.env.NODE_ENV !== `test`
     ) {
-      devGetPageData(page.path)
+      // devGetPageData(page.path)
     }
 
     const mountOrderBoost = 1 / mountOrder
@@ -357,6 +359,7 @@ const queue = {
 
         // Add to the cache.
         pathScriptsCache[path] = pageResources
+        console.log('getting', page.path)
         devGetPageData(page.path).then(pageData => {
           emitter.emit(`onPostLoadPageResources`, {
             page,

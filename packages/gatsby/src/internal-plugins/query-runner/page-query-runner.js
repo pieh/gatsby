@@ -1,5 +1,22 @@
 // @flow
 
+let pathFilter = null
+if (process.env.gatsby_executing_command !== `build`) {
+  pathFilter = new Set()
+
+  exports.addActivePath = path => {
+    pathFilter.add(path)
+    console.log(`Current active paths: add`, pathFilter)
+  }
+
+  console.log('registering removeActivePath')
+  exports.removeActivePath = path => {
+    pathFilter.delete(path)
+    console.log(`Current active paths: remove`, pathFilter)
+  }
+}
+
+
 import type { QueryJob } from "../query-runner"
 
 /**
@@ -121,7 +138,7 @@ const runQueriesForPathnames = pathnames => {
   const staticQueries = pathnames.filter(p => p.slice(0, 4) === `sq--`)
   const pageQueries = pathnames.filter(p => p.slice(0, 4) !== `sq--`)
   const state = store.getState()
-
+  let didNotQueueItems = true
   staticQueries.forEach(id => {
     const staticQueryComponent = store.getState().staticQueryComponents.get(id)
     const queryJob: QueryJob = {
@@ -132,12 +149,18 @@ const runQueriesForPathnames = pathnames => {
       componentPath: staticQueryComponent.componentPath,
       context: { path: staticQueryComponent.jsonName },
     }
+    didNotQueueItems = false
     queue.push(queryJob)
   })
 
   const pages = state.pages
-  let didNotQueueItems = true
+  
   pageQueries.forEach(id => {
+    if (process.env.gatsby_executing_command !== `build` && !pathFilter.has(id)) {
+      runQueriesForPathnamesQueue.add(id)
+      return
+    }
+    
     const page = pages.get(id)
     if (page) {
       didNotQueueItems = false

@@ -82,6 +82,7 @@ function getPageData(pathname) {
 // This will help the backend prioritize queries for this
 // path.
 function registerPath(path) {
+  console.log('register', path)
   socket.emit(`registerPath`, path)
 }
 

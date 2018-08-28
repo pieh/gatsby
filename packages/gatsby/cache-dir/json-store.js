@@ -36,6 +36,7 @@ class JSONStore extends React.Component {
   }
 
   handleMittEvent = (type, event) => {
+    console.log('handle mitt event')
     this.setState({
       staticQueryData: getStaticQueryData(),
       pageQueryData: getPageQueryData(),
@@ -53,10 +54,12 @@ class JSONStore extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
+    console.log('getDeribed ')
     const newPath = getPathFromProps(props)
     if (newPath !== state.path) {
       socketUnregisterPath(state.path)
       socketRegisterPath(newPath)
+      console.log('getDeribed changed', newPath)
       return {
         path: newPath,
       }
@@ -81,6 +84,7 @@ class JSONStore extends React.Component {
   }
 
   render() {
+    console.log('render')
     const data = this.state.pageQueryData[getPathFromProps(this.props)]
     // eslint-disable-next-line
     const { pages, ...propsWithoutPages } = this.props

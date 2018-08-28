@@ -4,6 +4,8 @@ const path = require(`path`)
 const { store } = require(`../redux`)
 const fs = require(`fs`)
 
+const {addActivePath, removeActivePath} = require(`../internal-plugins/query-runner/page-query-runner`)
+console.log('websocket manager', {addActivePath, removeActivePath})
 type QueryResult = {
   id: string,
   result: object,
@@ -141,6 +143,7 @@ class WebsocketManager {
         ]
         if (!leftRoom || leftRoom.length === 0) {
           this.activePaths.delete(path)
+          removeActivePath(path)
         }
       }
 
@@ -154,7 +157,7 @@ class WebsocketManager {
             return
           }
         }
-
+        console.log('getDataForPath', path)
         this.websocket.send({
           type: `pageQueryResult`,
           why: `getDataForPath`,
@@ -165,9 +168,11 @@ class WebsocketManager {
       s.on(`getDataForPath`, getDataForPath)
 
       s.on(`registerPath`, path => {
+        console.log('registering path', path)
         s.join(getRoomNameFromPath(path))
         activePath = path
         this.activePaths.add(path)
+        addActivePath(path)
       })
 
       s.on(`disconnect`, s => {

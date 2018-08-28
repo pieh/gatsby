@@ -398,22 +398,24 @@ module.exports = async (args: BootstrapArgs) => {
     require(`./page-hot-reloader`)(graphqlRunner)
   }
 
-  // Run queries
-  activity = report.activityTimer(`run graphql queries`, {
-    parentSpan: bootstrapSpan,
-  })
-  activity.start()
-  const startQueries = process.hrtime()
-  queryQueue.on(`task_finish`, () => {
-    const stats = queryQueue.getStats()
-    activity.setStatus(
-      `${stats.total}/${stats.peak} ${(
-        stats.total / convertHrtime(process.hrtime(startQueries)).seconds
-      ).toFixed(2)} queries/second`
-    )
-  })
-  await runInitialQueries(activity)
-  activity.end()
+  // Run queries in production
+  if (!true || process.env.gatsby_executing_command === `build`) {
+    activity = report.activityTimer(`run graphql queries`, {
+      parentSpan: bootstrapSpan,
+    })
+    activity.start()
+    const startQueries = process.hrtime()
+    queryQueue.on(`task_finish`, () => {
+      const stats = queryQueue.getStats()
+      activity.setStatus(
+        `${stats.total}/${stats.peak} ${(
+          stats.total / convertHrtime(process.hrtime(startQueries)).seconds
+        ).toFixed(2)} queries/second`
+      )
+    })
+    await runInitialQueries(activity)
+    activity.end()
+  }
 
   // Write out files.
   activity = report.activityTimer(`write out page data`, {
