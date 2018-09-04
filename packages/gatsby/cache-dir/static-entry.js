@@ -131,7 +131,7 @@ export default (pagePath, callback) => {
 
       const wrappedPage = apiRunner(
         `wrapPageElement`,
-        { element: pageElement, props },
+        { element: pageElement, props, pathname: pagePath },
         pageElement,
         ({ result }) => {
           return { element: result, props }
@@ -156,7 +156,7 @@ export default (pagePath, callback) => {
 
   const bodyComponent = apiRunner(
     `wrapRootElement`,
-    { element: routerElement },
+    { element: routerElement, pathname: pagePath },
     routerElement,
     ({ result }) => {
       return { element: result }
