@@ -1,6 +1,7 @@
 const _ = require(`lodash`)
 const fs = require(`fs-extra`)
 const crypto = require(`crypto`)
+const slash = require(`slash`)
 
 const { store, emitter } = require(`../../redux/`)
 
@@ -100,7 +101,7 @@ const preferDefault = m => m && m.default || m
 
   const writeAndMove = (file, data) => {
     const destination = joinPath(program.directory, `.cache`, file)
-    const tmp = `${destination}.${Date.now()}`
+    const tmp = slash(`${destination}.${Date.now()}`)
     return fs
       .writeFile(tmp, data)
       .then(() => fs.move(tmp, destination, { overwrite: true }))
