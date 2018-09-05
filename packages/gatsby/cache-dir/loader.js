@@ -196,6 +196,7 @@ const queue = {
     queue.getResourcesForPathname(path)
   },
   enqueue: rawPath => {
+    return
     const path = stripPrefix(rawPath, __PATH_PREFIX__)
     if (!apiRunner)
       console.error(`Run setApiRunnerForLoader() before enqueing paths`)

@@ -4,6 +4,7 @@ import loader, { publicLoader } from "./loader"
 import emitter from "./emitter"
 import shallowCompare from "shallow-compare"
 import { apiRunner } from "./api-runner-browser"
+import { onRouteUpdate, onPreRouteUpdate } from "./navigation"
 
 // Pass pathname in as prop.
 // component will try fetching resources. If they exist,
@@ -20,6 +21,8 @@ class PageRenderer extends React.Component {
       lastPathname: location.pathname,
       pageResources: loader.getResourcesForPathnameSync(pathname),
     }
+
+    onPreRouteUpdate(location)
   }
 
   static getDerivedStateFromProps({ pageResources, location }, prevState) {
@@ -57,6 +60,8 @@ class PageRenderer extends React.Component {
         this.setState({ pageResources: e.pageResources })
       }
     })
+
+    onRouteUpdate(this.props.location)
   }
 
   componentDidUpdate(prevProps) {
@@ -65,11 +70,12 @@ class PageRenderer extends React.Component {
     const { location } = this.props
     const pathName = this.getPathName(location)
 
-    if (!loader.getResourcesForPathnameSync(pathName))
+    if (!loader.getResourcesForPathnameSync(pathName)) {
+      console.log(`dont have resources, fetching`)
       // Page resources won't be set in cases where the browser back button
       // or forward button is pushed as we can't wait as normal for resources
       // to load before changing the page.
-      loader.getResourcesForPathnameSync(pathName, pageResources => {
+      loader.getResourcesForPathname(pathName).then(pageResources => {
         // The page may have changed since we started this, in which case doesn't update
         if (this.props.location.pathname !== location.pathname) {
           return
@@ -79,6 +85,19 @@ class PageRenderer extends React.Component {
           pageResources,
         })
       })
+    } else {
+      // console.log(`componentDidUpdate`, this.getPathName(this.props.location))
+      onRouteUpdate(this.props.location)
+    }
+  }
+
+  getSnapshotBeforeUpdate(prevProps, prevState) {
+    // console.log(`getSnapshotBeforeUpdate`, {
+    //   prev: prevProps.location.pathname,
+    //   this: this.props.location.pathname,
+    // })
+    onPreRouteUpdate(this.props.location)
+    return null
   }
 
   shouldComponentUpdate(nextProps, nextState) {
