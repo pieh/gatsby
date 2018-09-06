@@ -12,6 +12,7 @@ import syncRequires from "./sync-requires"
 import pages from "./pages.json"
 import loader from "./loader"
 import JSONStore from "./json-store"
+import EnsureResources from "./ensure-resources"
 
 import * as ErrorOverlay from "react-error-overlay"
 
@@ -55,25 +56,33 @@ class RouteHandler extends React.Component {
 
   render() {
     let { location } = this.props
-    const pageResources = loader.getResourcesForPathnameSync(location.pathname)
-    const isPage = !!(pageResources && pageResources.component)
+    const page = loader.getPage(location.pathname)
+
     let child
-    if (isPage) {
+    if (page) {
       child = (
-        <JSONStore
-          pages={pages}
-          {...this.props}
-          pageResources={pageResources}
-        />
+        <EnsureResources location={location}>
+          {pageResources => (
+            <JSONStore
+              pages={pages}
+              {...this.props}
+              pageResources={pageResources}
+            />
+          )}
+        </EnsureResources>
       )
     } else if (loader.getPage(`/404.html`)) {
       location.pathname = `/404.html`
       child = (
-        <JSONStore
-          pages={pages}
-          {...this.props}
-          pageResources={loader.getResourcesForPathnameSync(location.pathname)}
-        />
+        <EnsureResources location={location}>
+          {pageResources => (
+            <JSONStore
+              pages={pages}
+              {...this.props}
+              pageResources={pageResources}
+            />
+          )}
+        </EnsureResources>
       )
     } else {
       const dev404Page = pages.find(p => /^\/dev-404-page\/$/.test(p.path))

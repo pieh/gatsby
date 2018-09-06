@@ -16,6 +16,7 @@ import PageRenderer from "./page-renderer"
 import asyncRequires from "./async-requires"
 import loader from "./loader"
 import loadDirectlyOr404 from "./load-directly-or-404"
+import EnsureResources from "./ensure-resources"
 
 window.asyncRequires = asyncRequires
 window.___emitter = emitter
@@ -44,7 +45,6 @@ apiRunnerAsync(`onClientEntry`).then(() => {
     render() {
       const { location } = this.props
       let child
-
       // TODO
       // check if hash + if element and if so scroll
       // remove hash handling from gatsby-link
@@ -53,15 +53,22 @@ apiRunnerAsync(`onClientEntry`).then(() => {
       // if not, add that.
 
       if (loader.getPage(location.pathname)) {
-        child = createElement(PageRenderer, {
-          isPage: true,
-          ...this.props,
-        })
+        child = (
+          <EnsureResources location={location}>
+            {pageResources => (
+              <PageRenderer {...this.props} pageResources={pageResources} />
+            )}
+          </EnsureResources>
+        )
       } else {
-        child = createElement(PageRenderer, {
-          isPage: true,
-          location: { pathname: `/404.html` },
-        })
+        location.pathname = `/404.html`
+        child = (
+          <EnsureResources location={location}>
+            {pageResources => (
+              <PageRenderer {...this.props} pageResources={pageResources} />
+            )}
+          </EnsureResources>
+        )
       }
 
       return (
