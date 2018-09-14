@@ -3,6 +3,8 @@ import { Link } from "gatsby"
 
 import indexStyles from "../styles/index.module.css"
 
+console.log('indexStyles', indexStyles)
+
 class IndexComponent extends React.Component {
   render() {
     return (
