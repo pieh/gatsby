@@ -55,3 +55,16 @@ setGatsbyDepsToCurrentCaretVersion(
   path.join(__dirname, `../www/package.json`),
   `gatsbyjs.org`
 )
+
+const starters = [
+  `gatsby-starter-default`,
+  `gatsby-starter-blog`,
+  `gatsby-starter-hello-world`,
+]
+
+starters.forEach(starter => {
+  setGatsbyDepsToCurrentCaretVersion(
+    path.join(__dirname, `../../${starter}/package.json`),
+    starter
+  )
+})
