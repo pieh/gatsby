@@ -118,7 +118,7 @@ async function pushToQueue(task, cb) {
 /******************
  * Core Functions *
  ******************/
-
+const { finished } = require(`stream`)
 /**
  * requestRemoteNode
  * --
@@ -138,6 +138,15 @@ const requestRemoteNode = (url, headers, tmpFilename, filename) =>
       retries: 5,
     })
     const fsWriteStream = fs.createWriteStream(tmpFilename)
+    // fsWriteStream.on(`open`, (a, b, c) => {
+    //   console.log(`open`, { url, filename, tmpFilename, a, b, c })
+    // })
+    fsWriteStream.on(`ready`, (a, b, c) => {
+      console.log(`ready`, { url, filename, tmpFilename, a, b, c })
+    })
+    fsWriteStream.on(`error`, (a, b, c) => {
+      console.log(`error`, { url, filename, tmpFilename, a, b, c })
+    })
     responseStream.pipe(fsWriteStream)
     responseStream.on(`downloadProgress`, pro => console.log(pro))
 
@@ -151,9 +160,49 @@ const requestRemoteNode = (url, headers, tmpFilename, filename) =>
       reject(error)
     })
 
+    finished(fsWriteStream, err => {
+      if (err) {
+        console.log(`test 1`, url, err)
+      }
+    })
+
+    finished(responseStream, err => {
+      if (err) {
+        console.log(`test 2`, url, err)
+      }
+    })
+
+    fsWriteStream.on(`finish`, () => {
+      responseStream.on(`response`, response => {
+        console.log(`Finished before response`, filename)
+      })
+    })
+
     responseStream.on(`response`, response => {
+      // fsWriteStream.on(`drain`, (a, b, c) => {
+      //   console.log(`drain`, { url, filename, tmpFilename, a, b, c })
+      // })
+
+      const timeout = setTimeout(() => {
+        const res = response
+        // console.log(res)
+        // fsWriteStream.close()
+        console.log(`Timed out`, filename)
+        const b = 5
+        // response.
+        // fs.writeFile(tmpFilename, response.body, err => {
+        //   console.log(`force write`, { err })
+        //   if (err) {
+        //     reject(err)
+        //   } else {
+        //     resolve({ response })
+        //   }
+        // })
+        // resolve({ response, timedOut: true })
+      }, 30000)
       fsWriteStream.on(`finish`, () => {
-        resolve(response)
+        clearTimeout(timeout)
+        resolve({ response, timedOut: false })
       })
     })
   })
@@ -202,7 +251,7 @@ async function processRemoteNode({
 
   // Fetch the file.
   try {
-    const response = await requestRemoteNode(
+    const { response, timedOut } = await requestRemoteNode(
       url,
       headers,
       tmpFilename,

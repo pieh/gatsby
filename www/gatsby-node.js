@@ -20,6 +20,7 @@ const slugToAnchor = slug =>
     .pop() // take last item
 
 exports.createPages = ({ graphql, actions }) => {
+  process.exit()
   const { createPage, createRedirect } = actions
 
   // Random redirects
