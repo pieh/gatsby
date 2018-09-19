@@ -4,39 +4,43 @@ import { publicLoader } from "./loader"
 import { apiRunner } from "./api-runner-browser"
 import { onRouteUpdate, onPreRouteUpdate } from "./navigation"
 
-// Renders page and fire on(Pre)RouteUpdate APIs
-class PageRenderer extends React.Component {
+// Fire on(Pre)RouteUpdate APIs
+class RouteUpdates extends React.Component {
   constructor(props) {
     super(props)
-    if (props.isMain) {
-      onPreRouteUpdate(props.location)
-    }
+    onPreRouteUpdate(props.location)
   }
 
   componentDidMount() {
-    if (this.props.isMain) {
-      onRouteUpdate(this.props.location)
-    }
+    onRouteUpdate(this.props.location)
   }
 
   componentDidUpdate(prevProps, prevState, shouldFireRouteUpdate) {
-    if (this.props.isMain && shouldFireRouteUpdate) {
+    if (shouldFireRouteUpdate) {
       onRouteUpdate(this.props.location)
     }
   }
 
   getSnapshotBeforeUpdate(prevProps, prevState) {
-    if (this.props.isMain) {
-      if (this.props.location.pathname !== prevProps.location.pathname) {
-        onPreRouteUpdate(this.props.location)
-        return true
-      }
-
-      return false
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      onPreRouteUpdate(this.props.location)
+      return true
     }
-    return null
+
+    return false
   }
 
+  render() {
+    return this.props.children
+  }
+}
+
+RouteUpdates.propTypes = {
+  location: PropTypes.object.isRequired,
+}
+
+// Renders page
+class PageRenderer extends React.Component {
   render() {
     const props = {
       ...this.props,
@@ -70,7 +74,7 @@ PageRenderer.propTypes = {
   pageResources: PropTypes.object.isRequired,
   data: PropTypes.object,
   pageContext: PropTypes.object.isRequired,
-  isMain: PropTypes.bool,
 }
 
 export default PageRenderer
+export { RouteUpdates }

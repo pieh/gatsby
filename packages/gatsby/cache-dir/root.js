@@ -7,6 +7,7 @@ import syncRequires from "./sync-requires"
 import pages from "./pages.json"
 import loader from "./loader"
 import JSONStore from "./json-store"
+import { RouteUpdates } from "./page-renderer"
 import EnsureResources from "./ensure-resources"
 
 import * as ErrorOverlay from "react-error-overlay"
@@ -46,28 +47,34 @@ navigationInit()
 class RouteHandler extends React.Component {
   render() {
     let { location } = this.props
-    let child
+    // let child
 
     // check if page exists - in dev pages are sync loaded, it's safe to use
     // loader.getPage
     let page = loader.getPage(location.pathname)
 
     if (page) {
-      child = (
+      return (
         <EnsureResources location={location}>
           {locationAndPageResources => (
-            <JSONStore
-              pages={pages}
-              {...this.props}
-              {...locationAndPageResources}
-              isMain
-            />
+            <RouteUpdates location={location}>
+              <ScrollContext
+                location={location}
+                shouldUpdateScroll={shouldUpdateScroll}
+              >
+                <JSONStore
+                  pages={pages}
+                  {...this.props}
+                  {...locationAndPageResources}
+                />
+              </ScrollContext>
+            </RouteUpdates>
           )}
         </EnsureResources>
       )
     } else {
       const dev404Page = pages.find(p => /^\/dev-404-page\/$/.test(p.path))
-      child = createElement(
+      return createElement(
         syncRequires.components[dev404Page.componentChunkName],
         {
           pages,
@@ -75,16 +82,6 @@ class RouteHandler extends React.Component {
         }
       )
     }
-
-    return (
-      <ScrollContext
-        location={location}
-        history={this.props.history}
-        shouldUpdateScroll={shouldUpdateScroll}
-      >
-        {child}
-      </ScrollContext>
-    )
   }
 }
 

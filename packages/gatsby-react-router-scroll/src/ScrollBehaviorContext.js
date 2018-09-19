@@ -27,6 +27,8 @@ class ScrollContext extends React.Component {
     })
 
     this.scrollBehavior.updateScroll(null, this.getRouterProps())
+
+    console.log(`[ScrollBehaviourContext] ctor`)
   }
 
   getChildContext() {
@@ -36,6 +38,7 @@ class ScrollContext extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
+    console.log(`[ScrollBehaviourContext] didUpdate`)
     const { location } = this.props
     const prevLocation = prevProps.location
 
@@ -53,8 +56,15 @@ class ScrollContext extends React.Component {
     // Temp hack while awaiting https://github.com/reach/router/issues/119
     if (window.__navigatingToLink) {
       location.action = `PUSH`
+      console.log(`[ScrollBehaviourContext] __navigatingToLink PUSH`, {
+        location: { ...location },
+      })
+      // window.__navigatingToLink = false
     } else {
       location.action = `POP`
+      console.log(`[ScrollBehaviourContext] __navigatingToLink POP`, {
+        location: { ...location },
+      })
     }
 
     this.scrollBehavior.updateScroll(prevRouterProps, { history, location })
@@ -97,6 +107,7 @@ class ScrollContext extends React.Component {
   }
 
   render() {
+    console.log(`[ScrollBehaviourContext] render`)
     return React.Children.only(this.props.children)
   }
 }

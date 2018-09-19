@@ -8,7 +8,7 @@ import domReady from "domready"
 import { shouldUpdateScroll, init as navigationInit } from "./navigation"
 import emitter from "./emitter"
 window.___emitter = emitter
-import PageRenderer from "./page-renderer"
+import PageRenderer, { RouteUpdates } from "./page-renderer"
 import asyncRequires from "./async-requires"
 import loader from "./loader"
 import loadDirectlyOr404 from "./load-directly-or-404"
@@ -43,23 +43,24 @@ apiRunnerAsync(`onClientEntry`).then(() => {
       // if not, add that.
 
       return (
-        <ScrollContext
-          location={location}
-          shouldUpdateScroll={shouldUpdateScroll}
-        >
-          <EnsureResources location={location}>
-            {({ pageResources, location }) => (
-              <PageRenderer
-                key={location.pathname}
-                {...this.props}
+        <EnsureResources location={location}>
+          {({ pageResources, location }) => (
+            <RouteUpdates location={location}>
+              <ScrollContext
                 location={location}
-                pageResources={pageResources}
-                {...pageResources.json}
-                isMain
-              />
-            )}
-          </EnsureResources>
-        </ScrollContext>
+                shouldUpdateScroll={shouldUpdateScroll}
+              >
+                <PageRenderer
+                  key={location.pathname}
+                  {...this.props}
+                  location={location}
+                  pageResources={pageResources}
+                  {...pageResources.json}
+                />
+              </ScrollContext>
+            </RouteUpdates>
+          )}
+        </EnsureResources>
       )
     }
   }
