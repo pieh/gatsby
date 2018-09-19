@@ -267,6 +267,7 @@ const queue = {
   // and getting resources for page changes.
   getResourcesForPathname: path =>
     new Promise((resolve, reject) => {
+      console.log(`getting resources for path`, path)
       const doingInitialRender = inInitialRender
       inInitialRender = false
 
@@ -300,6 +301,8 @@ const queue = {
         // Preload the custom 404 page
         if (path !== `/404.html`) {
           return resolve(queue.getResourcesForPathname(`/404.html`))
+        } else if (process.env.NODE_ENV !== `production`) {
+          return resolve(queue.getResourcesForPathname(`/dev-404-page/`))
         }
 
         return resolve()

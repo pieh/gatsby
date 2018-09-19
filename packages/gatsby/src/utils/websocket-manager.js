@@ -145,6 +145,7 @@ class WebsocketManager {
       }
 
       const getDataForPath = path => {
+        console.log(`getDataForPath`, path)
         if (!this.pageResults.has(path)) {
           const result = getCachedPageData(path, this.programDir)
           if (result) {

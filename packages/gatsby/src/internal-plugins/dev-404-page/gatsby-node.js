@@ -18,6 +18,21 @@ exports.createPagesStatefully = async ({ store, actions }, options, done) => {
       component: destination,
       path: `/dev-404-page/`,
     })
+    // store.dispatch({
+    //   type: `REPLACE_COMPONENT_QUERY`,
+    //   payload: {
+    //     componentPath: destination,
+    //     query: `  {
+    //       allSitePage {
+    //         edges {
+    //           node {
+    //             path
+    //           }
+    //         }
+    //       }
+    //     }`,
+    //   },
+    // })
     chokidar
       .watch(source)
       .on(`change`, () => copy())

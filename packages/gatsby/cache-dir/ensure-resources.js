@@ -47,8 +47,8 @@ class EnsureResources extends React.Component {
       // to load before changing the page.
       loader.getResourcesForPathname(pathname).then(pageResources => {
         // The page may have changed since we started this, in which case doesn't update
-
-        if (this.props.location.pathname !== location.pathname) {
+        console.log(`got resources`)
+        if (this.props.location.pathname !== pathname) {
           return
         }
 

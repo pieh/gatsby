@@ -95,6 +95,7 @@ apiRunnerAsync(`onClientEntry`).then(() => {
             )
           )
       }
+      console.log(`getResourcesForPathname returned null`)
       return null
     })
     .then(() => {

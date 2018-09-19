@@ -52,36 +52,49 @@ class RouteHandler extends React.Component {
     // check if page exists - in dev pages are sync loaded, it's safe to use
     // loader.getPage
     let page = loader.getPage(location.pathname)
-
-    if (page) {
-      return (
-        <EnsureResources location={location}>
-          {locationAndPageResources => (
-            <RouteUpdates location={location}>
-              <ScrollContext
-                location={location}
-                shouldUpdateScroll={shouldUpdateScroll}
-              >
-                <JSONStore
-                  pages={pages}
-                  {...this.props}
-                  {...locationAndPageResources}
-                />
-              </ScrollContext>
-            </RouteUpdates>
-          )}
-        </EnsureResources>
-      )
-    } else {
-      const dev404Page = pages.find(p => /^\/dev-404-page\/$/.test(p.path))
-      return createElement(
-        syncRequires.components[dev404Page.componentChunkName],
-        {
-          pages,
-          ...this.props,
-        }
-      )
+    if (!page) {
+      page = loader.getPage(`/404.html`)
+      if (page) {
+        location = { ...location, pathname: `/404.html` }
+      } else {
+        location = { ...location, pathname: `/dev-404-page/` }
+      }
     }
+
+    console.log(`should render`, location)
+    // if (!page) {
+
+    // }
+
+    // if (page) {
+    return (
+      <EnsureResources location={location}>
+        {locationAndPageResources => (
+          <RouteUpdates location={location}>
+            <ScrollContext
+              location={location}
+              shouldUpdateScroll={shouldUpdateScroll}
+            >
+              <JSONStore
+                pages={pages}
+                {...this.props}
+                {...locationAndPageResources}
+              />
+            </ScrollContext>
+          </RouteUpdates>
+        )}
+      </EnsureResources>
+    )
+    // } else {
+    //   const dev404Page = pages.find(p => /^\/dev-404-page\/$/.test(p.path))
+    //   return createElement(
+    //     syncRequires.components[dev404Page.componentChunkName],
+    //     {
+    //       pages,
+    //       ...this.props,
+    //     }
+    //   )
+    // }
   }
 }
 

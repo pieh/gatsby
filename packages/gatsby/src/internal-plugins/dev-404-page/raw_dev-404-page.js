@@ -1,6 +1,6 @@
 import React from "react"
 import PropTypes from "prop-types"
-import { Link } from "gatsby"
+import { Link, graphql } from "gatsby"
 
 class Dev404Page extends React.Component {
   static propTypes = {
@@ -9,9 +9,7 @@ class Dev404Page extends React.Component {
   }
   render() {
     const { pathname } = this.props.location
-    const pages = this.props.pages.filter(
-      p => !/^\/dev-404-page\/$/.test(p.path)
-    )
+    const pages = this.props.data.allSitePage.edges.map(({ node }) => node)
     let newFilePath
     if (pathname === `/`) {
       newFilePath = `src/pages/index.js`
@@ -57,3 +55,15 @@ class Dev404Page extends React.Component {
 }
 
 export default Dev404Page
+
+export const query = graphql`
+  query what {
+    allSitePage(filter: { path: { ne: "/dev-404-page/" } }) {
+      edges {
+        node {
+          path
+        }
+      }
+    }
+  }
+`
