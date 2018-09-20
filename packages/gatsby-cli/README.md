@@ -37,6 +37,8 @@ development server.
 | `-o`, `--open`  | Open the site in your (default) browser for you |
 | `-S`, `--https` | Use HTTPS                                       |
 
+With `-o` flag enabled, for MacOS Chrome user, we will try our best to reuse the same tab. For any other scenarios, it will fallback to open a new tab instead.
+
 Follow the [Local HTTPS guide](https://www.gatsbyjs.org/docs/local-https/)
 to find out how you can set up an HTTPS development server using Gatsby.
 
