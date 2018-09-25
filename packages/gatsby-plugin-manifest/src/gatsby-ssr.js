@@ -1,5 +1,8 @@
 import React from "react"
 import { withPrefix } from "gatsby"
+import fs from "fs"
+import crypto from "crypto"
+let cacheId = null
 
 exports.onRenderBody = ({ setHeadComponents }, pluginOptions) => {
   // If icons were generated, also add a favicon link.
@@ -12,11 +15,18 @@ exports.onRenderBody = ({ setHeadComponents }, pluginOptions) => {
       favicon = pluginOptions.icons[0].src
     }
 
+    if (!cacheId) {
+      cacheId = crypto
+        .createHash("sha1")
+        .update(fs.readFileSync(`public${favicon}`))
+        .digest("hex")
+    }
+
     setHeadComponents([
       <link
         key={`gatsby-plugin-manifest-icon-link`}
         rel="shortcut icon"
-        href={withPrefix(favicon)}
+        href={[withPrefix(favicon), cacheId].join("?")}
       />,
     ])
   }
