@@ -26,7 +26,7 @@
     "flow-bin": "^0.42.0",
     "fs-extra": "^7.0.0",
     "glob": "^7.1.1",
-    "husky": "^0.14.3",
+    "husky": "^1.0.0",
     "jest": "^23.5.0",
     "jest-cli": "^23.5.0",
     "lerna": "^3.3.0",
@@ -46,8 +46,14 @@
     "**/__tests__/fixtures/"
   ],
   "private": true,
+  "husky": {
+    "hooks": {
+      "precommit": "lint-staged"
+    }
+  },
   "lint-staged": {
     "*.{js,jsx}": [
+      "echo",
       "eslint --ignore-path .gitignore --ignore-path .prettierignore --fix",
       "git add"
     ],
@@ -68,11 +74,9 @@
     "lint": "npm-run-all --continue-on-error -p lint:flow lint:js lint:other",
     "lint:js": "eslint --ignore-path .gitignore --ignore-path .prettierignore --ext .js,.jsx .",
     "lint:flow": "babel-node scripts/flow-check.js",
-    "lint:other": "npm run prettier -- --list-different",
+    "lint:other": "prettier \"**/*.{json,md,scss,yaml,yml}\"",
     "plop": "plop",
     "prebootstrap": "yarn",
-    "precommit": "lint-staged",
-    "prettier": "prettier \"**/*.{json,md,scss,yaml,yml}\"",
     "publish": "lerna publish",
     "publish-canary": "lerna publish --canary --yes",
     "publish-next": "lerna publish --npm-tag=next --bump=prerelease",
