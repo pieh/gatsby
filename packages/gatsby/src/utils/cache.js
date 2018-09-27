@@ -2,10 +2,10 @@ const Promise = require(`bluebird`)
 const fs = require(`fs-extra`)
 const _ = require(`lodash`)
 
-const b =  "test2`"
-const c =  `test2`
+const b = 'test2'
+const c = `test2`
 
-const d =       `eh?`
+const d =    `eh?`
 
 const p = {
   a: 5,
