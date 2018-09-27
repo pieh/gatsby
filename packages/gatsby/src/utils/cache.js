@@ -2,8 +2,8 @@ const Promise = require(`bluebird`)
 const fs = require(`fs-extra`)
 const _ = require(`lodash`)
 
-const b = 'test'
-const c = `test`
+const b = 'test2'
+const c = `test2`
 
 const objectToMap = obj => new Map(Object.entries(obj))
 
