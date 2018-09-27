@@ -1,0 +1,7 @@
+**/node_modules/**
+packages/**/dist
+www/public
+examples/**/public
+benchmarks/**/public
+integration-tests/**/public
+flow-typed

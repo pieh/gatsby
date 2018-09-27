@@ -1,20 +1,20 @@
 // handler.js
 
 "use strict"
-const axios = require("axios")
-const Libhoney = require("libhoney").default
-const flatten = require("flat")
-const GraphQLClient = require("graphql-request").GraphQLClient
+const axios = require(`axios`)
+const Libhoney = require(`libhoney`).default
+const flatten = require(`flat`)
+const GraphQLClient = require(`graphql-request`).GraphQLClient
 
 const hny = new Libhoney({
   writeKey: process.env.HONEYCOMB_KEY,
-  dataset: "gatsbyjs-os.lambda.github-webhook",
+  dataset: `gatsbyjs-os.lambda.github-webhook`,
 })
 
 console.log(`env vars`, process.env)
 
 const client = new GraphQLClient(
-  "https://api.graph.cool/simple/v1/cj8xuo77f0a3a0164y7jketkr",
+  `https://api.graph.cool/simple/v1/cj8xuo77f0a3a0164y7jketkr`,
   {
     headers: {
       Authorization: `Bearer ${process.env.GRAPHCOOL_TOKEN}`,
@@ -61,9 +61,11 @@ const createCommit = (commit, branchId) => {
   hny.sendNow(Object.assign({ createCommit: true, branchId: branchId }, commit))
   return client.request(`
     mutation {
-      createCommit(authorName: "${commit.author.name}",authorUsername: "${commit
-    .author.username}", authorEmail: "${commit.author
-    .email}", hash: "${commit.tree_id}", message: "${commit.message}", branchIds: ["${branchId}"]) {
+      createCommit(authorName: "${commit.author.name}",authorUsername: "${
+    commit.author.username
+  }", authorEmail: "${commit.author.email}", hash: "${
+    commit.tree_id
+  }", message: "${commit.message}", branchIds: ["${branchId}"]) {
         id
       }
     }
