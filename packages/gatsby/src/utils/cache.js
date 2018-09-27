@@ -5,6 +5,13 @@ const _ = require(`lodash`)
 const b = 'test2'
 const c = `test2`
 
+const d        = 'eh?'
+
+const p = {
+  a: 5,
+  b: 9
+}
+
 const objectToMap = obj => new Map(Object.entries(obj))
 
 const mapToObject = map => {
