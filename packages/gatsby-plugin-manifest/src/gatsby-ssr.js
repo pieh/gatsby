@@ -1,10 +1,12 @@
 import React from "react"
 import { withPrefix } from "gatsby"
 import fs from "fs"
-import crypto from "crypto"
 let cacheId = null
 
-exports.onRenderBody = ({ setHeadComponents }, pluginOptions) => {
+exports.onRenderBody = (
+  { createContentDigest, setHeadComponents },
+  pluginOptions
+) => {
   // If icons were generated, also add a favicon link.
   if (pluginOptions.icon) {
     let favicon = `/icons/icon-48x48.png`
@@ -16,10 +18,7 @@ exports.onRenderBody = ({ setHeadComponents }, pluginOptions) => {
     }
 
     if (!cacheId) {
-      cacheId = crypto
-        .createHash(`sha1`)
-        .update(fs.readFileSync(`public${favicon}`))
-        .digest(`hex`)
+      cacheId = createContentDigest(fs.readFileSync(`public${favicon}`))
     }
 
     setHeadComponents([
