@@ -2,12 +2,7 @@ import React from "react"
 
 import PageRenderer from "./page-renderer"
 import { StaticQueryContext } from "gatsby"
-import {
-  getStaticQueryData,
-  getPageQueryData,
-  registerPath as socketRegisterPath,
-  unregisterPath as socketUnregisterPath,
-} from "./socketIo"
+import { getStaticQueryData, getPageQueryData } from "./socketIo"
 
 if (process.env.NODE_ENV === `production`) {
   throw new Error(
@@ -43,20 +38,26 @@ class JSONStore extends React.Component {
   }
 
   componentDidMount() {
-    socketRegisterPath(getPathFromProps(this.props))
+    // we registerPath as part of navigation - still need to figure out
+    // public PageRenderer part
+    // socketRegisterPath(getPathFromProps(this.props))
     ___emitter.on(`*`, this.handleMittEvent)
   }
 
   componentWillUnmount() {
-    socketUnregisterPath(this.state.path)
+    // we registerPath as part of navigation - still need to figure out
+    // public PageRenderer part
+    // socketUnregisterPath(this.state.path)
     ___emitter.off(`*`, this.handleMittEvent)
   }
 
   static getDerivedStateFromProps(props, state) {
     const newPath = getPathFromProps(props)
     if (newPath !== state.path) {
-      socketUnregisterPath(state.path)
-      socketRegisterPath(newPath)
+      // we registerPath as part of navigation - still need to figure out
+      // public PageRenderer part
+      // socketUnregisterPath(state.path)
+      // socketRegisterPath(newPath)
       return {
         path: newPath,
       }
@@ -90,10 +91,7 @@ class JSONStore extends React.Component {
 
     return (
       <StaticQueryContext.Provider value={this.state.staticQueryData}>
-        <PageRenderer
-          {...propsWithoutPages}
-          {...data}
-        />
+        <PageRenderer {...propsWithoutPages} {...data} />
       </StaticQueryContext.Provider>
     )
   }

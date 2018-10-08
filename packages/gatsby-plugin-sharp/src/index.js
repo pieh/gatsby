@@ -190,10 +190,9 @@ const processFile = (file, jobs, cb, reporter) => {
     const onFinish = err => {
       imagesFinished += 1
       bar.tick()
-      boundActionCreators.setJob(
+      boundActionCreators.endJob(
         {
-          id: `processing image ${job.file.absolutePath}`,
-          imagesFinished,
+          id: `processing image ${job.outputPath}`,
         },
         { name: `gatsby-plugin-sharp` }
       )
@@ -309,35 +308,27 @@ const queueJob = (job, reporter) => {
 
   totalJobs += 1
 
-  if (notQueued) {
-    q.push(cb => {
-      const jobs = _.values(toProcess[inputFileKey])
-      // Delete the input key from the toProcess list so more jobs can be queued.
-      delete toProcess[inputFileKey]
-      boundActionCreators.createJob(
-        {
-          id: `processing image ${job.file.absolutePath}`,
-          imagesCount: _.values(toProcess[inputFileKey]).length,
-        },
-        { name: `gatsby-plugin-sharp` }
-      )
-      // We're now processing the file's jobs.
-      processFile(
-        job.file.absolutePath,
-        jobs,
-        () => {
-          boundActionCreators.endJob(
-            {
-              id: `processing image ${job.file.absolutePath}`,
-            },
-            { name: `gatsby-plugin-sharp` }
-          )
-          cb()
-        },
-        reporter
-      )
-    })
-  }
+  // console.log(`Job that creates`, job.outputPath)
+  boundActionCreators.createJob(
+    {
+      id: `processing image ${job.outputPath}`,
+      outputPath: job.outputPath,
+    },
+    { name: `gatsby-plugin-sharp` }
+  )
+
+  setTimeout(() => {
+    if (notQueued) {
+      q.push(cb => {
+        const jobs = _.values(toProcess[inputFileKey])
+        // Delete the input key from the toProcess list so more jobs can be queued.
+        delete toProcess[inputFileKey]
+
+        // We're now processing the file's jobs.
+        processFile(job.file.absolutePath, jobs, cb, reporter)
+      })
+    }
+  }, 5000)
 }
 
 function queueImageResizing({ file, args = {}, reporter }) {

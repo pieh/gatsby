@@ -114,6 +114,7 @@ class GatsbyLink extends React.Component {
         getProps={getProps}
         innerRef={this.handleRef}
         onMouseEnter={e => {
+          console.log(`hover`)
           // eslint-disable-line
           onMouseEnter && onMouseEnter(e)
           ___loader.hovering(parsePath(to).pathname)

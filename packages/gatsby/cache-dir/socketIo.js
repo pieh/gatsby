@@ -53,13 +53,14 @@ export default function socketIo() {
 }
 
 const inFlightGetPageDataPromiseCache = {}
-function getPageData(pathname) {
+function getPageData(pathname, fetchReason = `Navigation`) {
   if (inFlightGetPageDataPromiseCache[pathname]) {
     return inFlightGetPageDataPromiseCache[pathname]
   } else {
     inFlightGetPageDataPromiseCache[pathname] = new Promise(resolve => {
       if (pageQueryData[pathname]) {
         delete inFlightGetPageDataPromiseCache[pathname]
+        console.log(`already fetched`, pathname)
         resolve(pageQueryData[pathname])
       } else {
         const onPageDataCallback = msg => {
@@ -71,7 +72,7 @@ function getPageData(pathname) {
         }
         socket.on(`message`, onPageDataCallback)
 
-        socket.emit(`getDataForPath`, pathname)
+        socket.emit(`getDataForPath`, pathname, fetchReason)
       }
     })
   }
@@ -82,12 +83,13 @@ function getPageData(pathname) {
 // This will help the backend prioritize queries for this
 // path.
 function registerPath(path) {
+  console.log(`[socket.io] registerPath`, path)
   socket.emit(`registerPath`, path)
 }
 
-// Unregister the former path
-function unregisterPath(path) {
-  socket.emit(`unregisterPath`, path)
-}
+// // Unregister the former path
+// function unregisterPath(path) {
+//   socket.emit(`unregisterPath`, path)
+// }
 
-export { getPageData, registerPath, unregisterPath }
+export { getPageData, registerPath }

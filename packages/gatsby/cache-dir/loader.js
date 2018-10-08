@@ -6,7 +6,7 @@ import prefetchHelper from "./prefetch"
 const preferDefault = m => (m && m.default) || m
 
 let prefetcher
-let devGetPageData
+let devGetPageData, devRegisterPath
 let inInitialRender = true
 let hasFetched = Object.create(null)
 let syncRequires = {}
@@ -23,7 +23,9 @@ const MAX_HISTORY = 5
 const jsonPromiseStore = {}
 
 if (process.env.NODE_ENV !== `production`) {
-  devGetPageData = require(`./socketIo`).getPageData
+  const { getPageData, registerPath } = require(`./socketIo`)
+  devGetPageData = getPageData
+  devRegisterPath = registerPath
 }
 
 /**
@@ -183,7 +185,7 @@ const queue = {
   // pathname.
   hovering: rawPath => {
     const path = stripPrefix(rawPath, __PATH_PREFIX__)
-    queue.getResourcesForPathname(path)
+    queue.getResourcesForPathname(path, `Hover`)
   },
   enqueue: rawPath => {
     const path = stripPrefix(rawPath, __PATH_PREFIX__)
@@ -227,7 +229,7 @@ const queue = {
       process.env.NODE_ENV !== `production` &&
       process.env.NODE_ENV !== `test`
     ) {
-      devGetPageData(page.path)
+      devGetPageData(page.path, `Prefetch`)
     }
 
     // Prefetch resources.
@@ -267,7 +269,7 @@ const queue = {
   // Get resources (code/data) for a path. Fetches metdata first
   // if necessary and then the code/data bundles. Used for prefetching
   // and getting resources for page changes.
-  getResourcesForPathname: path =>
+  getResourcesForPathname: (path, fetchReason = `Navigation`) =>
     new Promise((resolve, reject) => {
       const doingInitialRender = inInitialRender
       inInitialRender = false
@@ -310,20 +312,18 @@ const queue = {
       // Use the path from the page so the pathScriptsCache uses
       // the normalized path.
       path = page.path
+      // console.log(
+      //   `[loader] before register`,
+      //   path,
+      //   process.env.gatsby_executing_command
+      // )
 
-      // Check if it's in the cache already.
-      if (pathScriptsCache[path]) {
-        emitter.emit(`onPostLoadPageResources`, {
-          page,
-          pageResources: pathScriptsCache[path],
-        })
-        return resolve(pathScriptsCache[path])
+      if (
+        process.env.gatsby_executing_command === `develop` &&
+        fetchReason === `Navigation`
+      ) {
+        devRegisterPath(path)
       }
-
-      // Nope, we need to load resource(s)
-      emitter.emit(`onPreLoadPageResources`, {
-        path,
-      })
 
       // In development we know the code is loaded already
       // so we just return with it immediately.
@@ -335,7 +335,7 @@ const queue = {
 
         // Add to the cache.
         pathScriptsCache[path] = pageResources
-        devGetPageData(page.path).then(pageData => {
+        return devGetPageData(page.path, fetchReason).then(pageData => {
           emitter.emit(`onPostLoadPageResources`, {
             page,
             pageResources,
@@ -343,7 +343,21 @@ const queue = {
           resolve(pageResources)
         })
       } else {
-        Promise.all([
+        // Check if it's in the cache already.
+        if (pathScriptsCache[path]) {
+          emitter.emit(`onPostLoadPageResources`, {
+            page,
+            pageResources: pathScriptsCache[path],
+          })
+          return resolve(pathScriptsCache[path])
+        }
+
+        // Nope, we need to load resource(s)
+        emitter.emit(`onPreLoadPageResources`, {
+          path,
+        })
+
+        return Promise.all([
           getResourceModule(page.componentChunkName),
           getResourceModule(page.jsonName),
         ]).then(([component, json]) => {

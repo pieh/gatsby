@@ -7,12 +7,13 @@ const chokidar = require(`chokidar`)
 const express = require(`express`)
 const graphqlHTTP = require(`express-graphql`)
 const parsePath = require(`parse-filepath`)
+const path = require(`path`)
 const request = require(`request`)
 const rl = require(`readline`)
 const webpack = require(`webpack`)
 const webpackConfig = require(`../utils/webpack.config`)
 const bootstrap = require(`../bootstrap`)
-const { store } = require(`../redux`)
+const { store, emitter } = require(`../redux`)
 const copyStaticDirectory = require(`../utils/copy-static-directory`)
 const developHtml = require(`./develop-html`)
 const { withBasePath } = require(`../utils/path`)
@@ -106,6 +107,38 @@ async function startServer(program) {
       `Origin, X-Requested-With, Content-Type, Accept`
     )
     next()
+  })
+
+  // Wait for side-effects if they are in progress
+  const nextMap = new Map()
+  emitter.on(`END_JOB`, action => {
+    const jobID = action.payload.id
+    if (nextMap.has(jobID)) {
+      console.log(`\n[develop] Job finished - serving: `, jobID)
+      const next = nextMap.get(jobID)
+      next()
+      nextMap.delete(jobID)
+    }
+  })
+  app.use((req, res, next) => {
+    const localPath = slash(directoryPath(path.join(`public`, req.originalUrl)))
+    const jobs = store.getState().jobs.active
+    const job = jobs.find(job => job.outputPath === localPath)
+
+    if (job) {
+      console.log(`[develop] Wait for job to finish before serving: `, job.id)
+      nextMap.set(job.id, next)
+    } else {
+      next()
+    }
+    // console.log(req)
+
+    // res.header(`Access-Control-Allow-Origin`, `*`)
+    // res.header(
+    //   `Access-Control-Allow-Headers`,
+    //   `Origin, X-Requested-With, Content-Type, Accept`
+    // )
+    // next()
   })
 
   /**
@@ -425,8 +458,13 @@ module.exports = async (program: any) => {
       printInstructions(program.sitePackageJson.name, urls, program.useYarn)
       printDeprecationWarnings()
       if (program.open) {
-        require(`opn`)(urls.localUrlForBrowser)
-          .catch(err => console.log(`${chalk.yellow(`warn`)} Browser not opened because no browser was found`))
+        require(`opn`)(urls.localUrlForBrowser).catch(err =>
+          console.log(
+            `${chalk.yellow(
+              `warn`
+            )} Browser not opened because no browser was found`
+          )
+        )
       }
     }
 

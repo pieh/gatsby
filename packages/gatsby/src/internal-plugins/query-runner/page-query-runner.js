@@ -6,17 +6,36 @@ import type { QueryJob } from "../query-runner"
  * Jobs of this module
  * - Ensure on bootstrap that all invalid page queries are run and report
  *   when this is done
- * - Watch for when a page's query is invalidated and re-run it.
+ * - Watch for when a page's query is invalidated and
+ *   - re-run it
+ *     - if building production
+ *     - or in develop and page is active.
+ *   - or mark page query as dirty
  */
 
 const _ = require(`lodash`)
 
 const queue = require(`./query-queue`)
 const { store, emitter } = require(`../../redux`)
+const { boundActionCreators } = require(`../../redux/actions`)
+const websocketManager = require(`../../utils/websocket-manager`)
 
 let queuedDirtyActions = []
 let active = false
 let running = false
+
+class PathFilter extends Set<string> {
+  add(path: string) {
+    if (!super.has(path)) {
+      super.add(path)
+      runQueuedActions()
+    }
+  }
+}
+
+let pathFilter = new PathFilter()
+
+websocketManager.activePaths = pathFilter
 
 const runQueriesForPathnamesQueue = new Set()
 exports.queueQueryForPathname = pathname => {
@@ -50,7 +69,7 @@ const runQueries = async () => {
     ...cleanIds,
   ])
 
-  runQueriesForPathnamesQueue.clear()
+  // runQueriesForPathnamesQueue.clear()
 
   // Run these paths
   await runQueriesForPathnames(pathnamesToRun)
@@ -69,6 +88,7 @@ const runQueuedActions = async () => {
   if (active && !running) {
     try {
       running = true
+      // console.trace()
       await runQueries()
     } finally {
       running = false
@@ -132,14 +152,40 @@ const runQueriesForPathnames = pathnames => {
       componentPath: staticQueryComponent.componentPath,
       context: { path: staticQueryComponent.jsonName },
     }
+    runQueriesForPathnamesQueue.delete(id)
     queue.push(queryJob)
   })
 
   const pages = state.pages
   let didNotQueueItems = true
+  const pathsToDeleteDeps = []
   pageQueries.forEach(id => {
     const page = pages.get(id)
     if (page) {
+      if (process.env.gatsby_executing_command === `develop`) {
+        // determine if need to run query or just mark page query as dirty
+        if (!pathFilter.has(page.path)) {
+          // this will make websocket not submit stale results
+          websocketManager.pageResults.delete(page.path)
+
+          // we don't want to point to old results
+          store.dispatch({
+            type: `SET_JSON_DATA_PATH`,
+            payload: {
+              key: page.jsonName,
+              value: null,
+            },
+          })
+
+          // add to queue
+          runQueriesForPathnamesQueue.add(page.path)
+          // let's clear deps for path - this will make run queries for builds
+          pathsToDeleteDeps.push(page.path)
+
+          return
+        }
+        console.log(`[page-query-runner] Run page query ${page.path}`)
+      }
       didNotQueueItems = false
       queue.push(
         ({
@@ -154,8 +200,13 @@ const runQueriesForPathnames = pathnames => {
           },
         }: QueryJob)
       )
+      runQueriesForPathnamesQueue.delete(id)
     }
   })
+
+  if (pathsToDeleteDeps.length > 0) {
+    boundActionCreators.deleteComponentsDependencies(pathsToDeleteDeps)
+  }
 
   if (didNotQueueItems || !pathnames || pathnames.length === 0) {
     return Promise.resolve()

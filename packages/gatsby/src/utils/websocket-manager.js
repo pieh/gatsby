@@ -1,8 +1,14 @@
 // @flow
 
 const path = require(`path`)
-const { store } = require(`../redux`)
+const { store, emitter } = require(`../redux`)
 const fs = require(`fs`)
+
+// const {
+//   getPathFilter,
+// } = require(`../internal-plugins/query-runner/page-query-runner`)
+// console.trace()
+// console.log(`getPathFilter`, getPathFilter)
 
 type QueryResult = {
   id: string,
@@ -10,6 +16,8 @@ type QueryResult = {
 }
 
 type QueryResultsMap = Map<string, QueryResult>
+
+type FetchPageQueryDataReason = "Navigation" | "Prefetch" | "Hover"
 
 /**
  * Get cached query result for given data path.
@@ -42,10 +50,10 @@ const getCachedPageData = (
     return null
   }
   const dataPath = jsonDataPaths[page.jsonName]
-  if (typeof dataPath === `undefined`) {
-    console.log(
-      `Error loading a result for the page query in "${pagePath}". Query was not run and no cached result was found.`
-    )
+  if (!dataPath) {
+    // console.log(
+    //   `Error loading a result for the page query in "${pagePath}". Query was not run and no cached result was found.`
+    // )
     return undefined
   }
 
@@ -71,7 +79,7 @@ const getCachedStaticQueryResults = (
     if (resultsMap.has(staticQueryComponent.hash)) return
 
     const dataPath = jsonDataPaths[staticQueryComponent.jsonName]
-    if (typeof dataPath === `undefined`) {
+    if (!dataPath) {
       console.log(
         `Error loading a result for the StaticQuery in "${
           staticQueryComponent.componentPath
@@ -98,7 +106,7 @@ class WebsocketManager {
 
   constructor() {
     this.isInitialised = false
-    this.activePaths = new Set()
+    // this.activePaths = getPathFilter()
     this.pageResults = new Map()
     this.staticQueryResults = new Map()
     this.websocket
@@ -144,17 +152,21 @@ class WebsocketManager {
         }
       }
 
-      const getDataForPath = path => {
+      const getDataForPath = (
+        path: string,
+        fetchReason: FetchPageQueryDataReason
+      ) => {
         if (!this.pageResults.has(path)) {
           const result = getCachedPageData(path, this.programDir)
           if (result) {
             this.pageResults.set(path, result)
           } else {
-            console.log(`Page not found`, path)
+            // console.log(`Results not found`, path)
             return
           }
         }
 
+        console.log(`[websocket-manager] Emitting results`, path)
         this.websocket.send({
           type: `pageQueryResult`,
           why: `getDataForPath`,
@@ -165,8 +177,14 @@ class WebsocketManager {
       s.on(`getDataForPath`, getDataForPath)
 
       s.on(`registerPath`, path => {
-        s.join(getRoomNameFromPath(path))
+        console.log(`[websocket-manager] Register path`, path)
+        if (activePath === path) {
+          return
+        } else if (activePath) {
+          leaveRoom(activePath)
+        }
         activePath = path
+        s.join(getRoomNameFromPath(path))
         this.activePaths.add(path)
       })
 
@@ -174,9 +192,9 @@ class WebsocketManager {
         leaveRoom(activePath)
       })
 
-      s.on(`unregisterPath`, path => {
-        leaveRoom(path)
-      })
+      // s.on(`unregisterPath`, path => {
+      //   leaveRoom(path)
+      // })
     })
 
     this.isInitialised = true
@@ -195,6 +213,7 @@ class WebsocketManager {
 
   emitPageData(data: QueryResult) {
     if (this.isInitialised) {
+      console.log(`[websocket-manager] Emitting results`, data.id)
       this.websocket.send({ type: `pageQueryResult`, payload: data })
     }
     this.pageResults.set(data.id, data)

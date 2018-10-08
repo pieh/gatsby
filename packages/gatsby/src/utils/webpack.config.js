@@ -66,6 +66,9 @@ module.exports = async (
     envObject.NODE_ENV = JSON.stringify(env)
     envObject.PUBLIC_DIR = JSON.stringify(`${process.cwd()}/public`)
     envObject.BUILD_STAGE = JSON.stringify(stage)
+    envObject.gatsby_executing_command = JSON.stringify(
+      process.env.gatsby_executing_command
+    )
 
     return Object.assign(envObject, gatsbyVarObject)
   }
