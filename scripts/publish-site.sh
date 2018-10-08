@@ -22,4 +22,4 @@ echo "=== Building website"
 # Once we get better cache invalidation, remove the following line
 rm -rf .cache
 
-NODE_ENV=production ./node_modules/.bin/gatsby build
+NODE_ENV=production GATSBY_SCREENSHOT_PLACEHOLDER=1 ./node_modules/.bin/gatsby build
