@@ -4,14 +4,13 @@ const imageSize = require(`probe-image-size`)
 const _ = require(`lodash`)
 const Promise = require(`bluebird`)
 const fs = require(`fs`)
-const ProgressBar = require(`progress`)
-const imagemin = require(`imagemin`)
-const imageminMozjpeg = require(`imagemin-mozjpeg`)
-const imageminPngquant = require(`imagemin-pngquant`)
-const imageminWebp = require(`imagemin-webp`)
-const queue = require(`async/queue`)
+// const ProgressBar = require(`progress`)
+
+// const queue = require(`async/queue`)
 const path = require(`path`)
 const existsSync = require(`fs-exists-cached`).sync
+
+const { reportError } = require(`./utils.js`)
 
 const imageSizeCache = new Map()
 const getImageSize = file => {
@@ -42,25 +41,15 @@ Promise.promisifyAll(sharp.prototype, { multiArgs: true })
 // adventurous and see what happens with it on.
 sharp.simd(true)
 
-const bar = new ProgressBar(
-  `Generating image thumbnails [:bar] :current/:total :elapsed secs :percent`,
-  {
-    total: 0,
-    width: 30,
-  }
-)
+// const bar = new ProgressBar(
+//   `Generating image thumbnails [:bar] :current/:total :elapsed secs :percent`,
+//   {
+//     total: 0,
+//     width: 30,
+//   }
+// )
 
-const reportError = (message, err, reporter) => {
-  if (reporter) {
-    reporter.error(message, err)
-  } else {
-    console.error(message, err)
-  }
-
-  if (process.env.gatsby_executing_command === `build`) {
-    process.exit(1)
-  }
-}
+const jobHandlerPath = path.join(__dirname, `job-handler.js`)
 
 const generalArgs = {
   quality: 50,
@@ -101,243 +90,251 @@ const healOptions = (args, defaultArgs) => {
   return options
 }
 
-const useMozjpeg = process.env.GATSBY_JPEG_ENCODER === `MOZJPEG`
+// const useMozjpeg = process.env.GATSBY_JPEG_ENCODER === `MOZJPEG`
 
-let totalJobs = 0
-const processFile = (file, jobs, cb, reporter) => {
-  // console.log("totalJobs", totalJobs)
-  bar.total = totalJobs
+// let totalJobs = 0
+// const processFile = (file, jobs, cb, reporter) => {
+//   // console.log("totalJobs", totalJobs)
+//   // bar.total = totalJobs
 
-  let imagesFinished = 0
+//   // let imagesFinished = 0
 
-  // Wait for each job promise to resolve.
-  Promise.all(jobs.map(job => job.finishedPromise)).then(() => cb())
+//   // Wait for each job promise to resolve.
+//   Promise.all(jobs.map(job => job.finishedPromise)).then(() => cb())
 
-  let pipeline
-  try {
-    pipeline = sharp(file).rotate()
-  } catch (err) {
-    reportError(`Failed to process image ${file}`, err, reporter)
-    jobs.forEach(job => job.outsideReject(err))
-    return
-  }
+//   let pipeline
+//   try {
+//     pipeline = sharp(file).rotate()
+//   } catch (err) {
+//     reportError(`Failed to process image ${file}`, err, reporter)
+//     jobs.forEach(job => job.outsideReject(err))
+//     return
+//   }
 
-  jobs.forEach(async job => {
-    const args = job.args
-    let clonedPipeline
-    if (jobs.length > 1) {
-      clonedPipeline = pipeline.clone()
-    } else {
-      clonedPipeline = pipeline
-    }
-    // Sharp only allows ints as height/width. Since both aren't always
-    // set, check first before trying to round them.
-    let roundedHeight = args.height
-    if (roundedHeight) {
-      roundedHeight = Math.round(roundedHeight)
-    }
+//   jobs.forEach(async job => {
+//     const args = job.args
+//     let clonedPipeline
+//     if (jobs.length > 1) {
+//       clonedPipeline = pipeline.clone()
+//     } else {
+//       clonedPipeline = pipeline
+//     }
+//     // Sharp only allows ints as height/width. Since both aren't always
+//     // set, check first before trying to round them.
+//     let roundedHeight = args.height
+//     if (roundedHeight) {
+//       roundedHeight = Math.round(roundedHeight)
+//     }
 
-    let roundedWidth = args.width
-    if (roundedWidth) {
-      roundedWidth = Math.round(roundedWidth)
-    }
+//     let roundedWidth = args.width
+//     if (roundedWidth) {
+//       roundedWidth = Math.round(roundedWidth)
+//     }
 
-    clonedPipeline
-      .resize(roundedWidth, roundedHeight)
-      .crop(args.cropFocus)
-      .png({
-        compressionLevel: args.pngCompressionLevel,
-        adaptiveFiltering: false,
-        force: args.toFormat === `png`,
-      })
-      .webp({
-        quality: args.quality,
-        force: args.toFormat === `webp`,
-      })
-      .tiff({
-        quality: args.quality,
-        force: args.toFormat === `tiff`,
-      })
+//     clonedPipeline
+//       .resize(roundedWidth, roundedHeight, {
+//         position: args.cropFocus,
+//       })
+//       .png({
+//         compressionLevel: args.pngCompressionLevel,
+//         adaptiveFiltering: false,
+//         force: args.toFormat === `png`,
+//       })
+//       .webp({
+//         quality: args.quality,
+//         force: args.toFormat === `webp`,
+//       })
+//       .tiff({
+//         quality: args.quality,
+//         force: args.toFormat === `tiff`,
+//       })
 
-    // jpeg
-    if (!useMozjpeg) {
-      clonedPipeline = clonedPipeline.jpeg({
-        quality: args.quality,
-        progressive: args.jpegProgressive,
-        force: args.toFormat === `jpg`,
-      })
-    }
+//     // jpeg
+//     if (!useMozjpeg) {
+//       clonedPipeline = clonedPipeline.jpeg({
+//         quality: args.quality,
+//         progressive: args.jpegProgressive,
+//         force: args.toFormat === `jpg`,
+//       })
+//     }
 
-    // grayscale
-    if (args.grayscale) {
-      clonedPipeline = clonedPipeline.grayscale()
-    }
+//     // grayscale
+//     if (args.grayscale) {
+//       clonedPipeline = clonedPipeline.grayscale()
+//     }
 
-    // rotate
-    if (args.rotate && args.rotate !== 0) {
-      clonedPipeline = clonedPipeline.rotate(args.rotate)
-    }
+//     // rotate
+//     if (args.rotate && args.rotate !== 0) {
+//       clonedPipeline = clonedPipeline.rotate(args.rotate)
+//     }
 
-    // duotone
-    if (args.duotone) {
-      clonedPipeline = await duotone(
-        args.duotone,
-        args.toFormat || job.file.extension,
-        clonedPipeline
-      )
-    }
+//     // duotone
+//     if (args.duotone) {
+//       clonedPipeline = await duotone(
+//         args.duotone,
+//         args.toFormat || job.file.extension,
+//         clonedPipeline
+//       )
+//     }
 
-    const onFinish = err => {
-      imagesFinished += 1
-      bar.tick()
-      boundActionCreators.setJob(
-        {
-          id: `processing image ${job.file.absolutePath}`,
-          imagesFinished,
-        },
-        { name: `gatsby-plugin-sharp` }
-      )
+//     const onFinish = err => {
+//       // imagesFinished += 1
+//       // bar.tick()
+//       boundActionCreators.endJob(
+//         {
+//           id: `processing image ${job.outputPath}`,
+//         },
+//         { name: `gatsby-plugin-sharp` }
+//       )
 
-      if (err) {
-        reportError(`Failed to process image ${file}`, err, reporter)
-        job.outsideReject(err)
-      } else {
-        job.outsideResolve()
-      }
-    }
+//       if (err) {
+//         reportError(`Failed to process image ${file}`, err, reporter)
+//         job.outsideReject(err)
+//       } else {
+//         job.outsideResolve()
+//       }
+//     }
 
-    if (
-      (job.file.extension === `png` && args.toFormat === ``) ||
-      args.toFormat === `png`
-    ) {
-      clonedPipeline
-        .toBuffer()
-        .then(sharpBuffer =>
-          imagemin
-            .buffer(sharpBuffer, {
-              plugins: [
-                imageminPngquant({
-                  quality: `${args.quality}-${Math.min(
-                    args.quality + 25,
-                    100
-                  )}`, // e.g. 40-65
-                }),
-              ],
-            })
-            .then(imageminBuffer => {
-              fs.writeFile(job.outputPath, imageminBuffer, onFinish)
-            })
-            .catch(onFinish)
-        )
-        .catch(onFinish)
-      // Compress jpeg
-    } else if (
-      useMozjpeg &&
-      ((job.file.extension === `jpg` && args.toFormat === ``) ||
-        (job.file.extension === `jpeg` && args.toFormat === ``) ||
-        args.toFormat === `jpg`)
-    ) {
-      clonedPipeline
-        .toBuffer()
-        .then(sharpBuffer =>
-          imagemin
-            .buffer(sharpBuffer, {
-              plugins: [
-                imageminMozjpeg({
-                  quality: args.quality,
-                  progressive: args.jpegProgressive,
-                }),
-              ],
-            })
-            .then(imageminBuffer => {
-              fs.writeFile(job.outputPath, imageminBuffer, onFinish)
-            })
-            .catch(onFinish)
-        )
-        .catch(onFinish)
-      // Compress webp
-    } else if (
-      (job.file.extension === `webp` && args.toFormat === ``) ||
-      args.toFormat === `webp`
-    ) {
-      clonedPipeline
-        .toBuffer()
-        .then(sharpBuffer =>
-          imagemin
-            .buffer(sharpBuffer, {
-              plugins: [imageminWebp({ quality: args.quality })],
-            })
-            .then(imageminBuffer => {
-              fs.writeFile(job.outputPath, imageminBuffer, onFinish)
-            })
-            .catch(onFinish)
-        )
-        .catch(onFinish)
-      // any other format (tiff) - don't compress it just handle output
-    } else {
-      clonedPipeline.toFile(job.outputPath, onFinish)
-    }
-  })
-}
+//     if (
+//       (job.file.extension === `png` && args.toFormat === ``) ||
+//       args.toFormat === `png`
+//     ) {
+//       clonedPipeline
+//         .toBuffer()
+//         .then(sharpBuffer =>
+//           imagemin
+//             .buffer(sharpBuffer, {
+//               plugins: [
+//                 imageminPngquant({
+//                   quality: `${args.quality}-${Math.min(
+//                     args.quality + 25,
+//                     100
+//                   )}`, // e.g. 40-65
+//                 }),
+//               ],
+//             })
+//             .then(imageminBuffer => {
+//               fs.writeFile(job.outputPath, imageminBuffer, onFinish)
+//             })
+//             .catch(onFinish)
+//         )
+//         .catch(onFinish)
+//       // Compress jpeg
+//     } else if (
+//       useMozjpeg &&
+//       ((job.file.extension === `jpg` && args.toFormat === ``) ||
+//         (job.file.extension === `jpeg` && args.toFormat === ``) ||
+//         args.toFormat === `jpg`)
+//     ) {
+//       clonedPipeline
+//         .toBuffer()
+//         .then(sharpBuffer =>
+//           imagemin
+//             .buffer(sharpBuffer, {
+//               plugins: [
+//                 imageminMozjpeg({
+//                   quality: args.quality,
+//                   progressive: args.jpegProgressive,
+//                 }),
+//               ],
+//             })
+//             .then(imageminBuffer => {
+//               fs.writeFile(job.outputPath, imageminBuffer, onFinish)
+//             })
+//             .catch(onFinish)
+//         )
+//         .catch(onFinish)
+//       // Compress webp
+//     } else if (
+//       (job.file.extension === `webp` && args.toFormat === ``) ||
+//       args.toFormat === `webp`
+//     ) {
+//       clonedPipeline
+//         .toBuffer()
+//         .then(sharpBuffer =>
+//           imagemin
+//             .buffer(sharpBuffer, {
+//               plugins: [imageminWebp({ quality: args.quality })],
+//             })
+//             .then(imageminBuffer => {
+//               fs.writeFile(job.outputPath, imageminBuffer, onFinish)
+//             })
+//             .catch(onFinish)
+//         )
+//         .catch(onFinish)
+//       // any other format (tiff) - don't compress it just handle output
+//     } else {
+//       clonedPipeline.toFile(job.outputPath, onFinish)
+//     }
+//   })
+// }
 
-const toProcess = {}
-const q = queue((task, callback) => {
-  task(callback)
-}, 1)
+const toProcess = new Set()
+// const q = queue((task, callback) => {
+//   task(callback)
+// }, 1)
 
 const queueJob = (job, reporter) => {
-  const inputFileKey = job.file.absolutePath.replace(/\./g, `%2E`)
-  const outputFileKey = job.outputPath.replace(/\./g, `%2E`)
-  const jobPath = `${inputFileKey}.${outputFileKey}`
+  // const inputFileKey = job.file.absolutePath.replace(/\./g, `%2E`)
+  // const outputFileKey = job.outputPath.replace(/\./g, `%2E`)
+  // const jobPath = `${inputFileKey}.${outputFileKey}`
 
   // Check if the job has already been queued. If it has, there's nothing
   // to do, return.
-  if (_.has(toProcess, jobPath)) {
+  // if (_.has(toProcess, jobPath)) {
+  //   return
+  // }
+  if (toProcess.has(job.outputPath)) {
     return
   }
+
+  toProcess.add(job.outputPath)
 
   // Check if the output file already exists so we don't redo work.
   if (existsSync(job.outputPath)) {
     return
   }
 
-  let notQueued = true
-  if (toProcess[inputFileKey]) {
-    notQueued = false
-  }
-  _.set(toProcess, jobPath, job)
+  // let notQueued = true
+  // if (toProcess[inputFileKey]) {
+  //   notQueued = false
+  // }
+  // _.set(toProcess, jobPath, job)
 
-  totalJobs += 1
+  // totalJobs += 1
 
-  if (notQueued) {
-    q.push(cb => {
-      const jobs = _.values(toProcess[inputFileKey])
-      // Delete the input key from the toProcess list so more jobs can be queued.
-      delete toProcess[inputFileKey]
-      boundActionCreators.createJob(
-        {
-          id: `processing image ${job.file.absolutePath}`,
-          imagesCount: _.values(toProcess[inputFileKey]).length,
-        },
-        { name: `gatsby-plugin-sharp` }
-      )
-      // We're now processing the file's jobs.
-      processFile(
-        job.file.absolutePath,
-        jobs,
-        () => {
-          boundActionCreators.endJob(
-            {
-              id: `processing image ${job.file.absolutePath}`,
-            },
-            { name: `gatsby-plugin-sharp` }
-          )
-          cb()
-        },
-        reporter
-      )
-    })
-  }
+  boundActionCreators.createJob(
+    {
+      id: `generating image ${job.outputPath}`,
+      outputPath: job.outputPath,
+      inputPath: job.file.absolutePath,
+      handler: jobHandlerPath,
+      // we want to batch jobs for same input
+      batchId: `processing ${job.file.absolutePath}`,
+      args: job.args,
+    },
+    { name: `gatsby-plugin-sharp` }
+  )
+
+  // file,
+  // args: options,
+  // finishedPromise,
+  // outsideResolve,
+  // outsideReject,
+  // inputPath: file.absolutePath,
+  // outputPath: filePath,
+  // setTimeout(() => {
+  //   if (notQueued) {
+  //     q.push(cb => {
+  //       const jobs = _.values(toProcess[inputFileKey])
+  //       // Delete the input key from the toProcess list so more jobs can be queued.
+  //       delete toProcess[inputFileKey]
+
+  //       // We're now processing the file's jobs.
+  //       processFile(job.file.absolutePath, jobs, cb, reporter)
+  //     })
+  //   }
+  // }, 5000)
 }
 
 function queueImageResizing({ file, args = {}, reporter }) {

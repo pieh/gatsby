@@ -10,6 +10,8 @@ const { store } = require(`../../redux`)
 const { generatePathChunkName } = require(`../../utils/js-chunk-names`)
 const { formatErrorDetails } = require(`./utils`)
 const mod = require(`hash-mod`)(999)
+const debug = require(`debug`)(`gatsby:query runner`)
+const convertHrtime = require(`convert-hrtime`)
 
 const resultHashes = {}
 
@@ -37,7 +39,14 @@ module.exports = async (queryJob: QueryJob, component: Any) => {
   if (!queryJob.query || queryJob.query === ``) {
     result = {}
   } else {
+    const start = process.hrtime()
     result = await graphql(queryJob.query, queryJob.context)
+    debug(
+      `Query for ${queryJob.context.path ||
+        queryJob.jsonName} took ${convertHrtime(process.hrtime(start))[
+        `seconds`
+      ].toFixed(3)}s`
+    )
   }
 
   // If there's a graphql error then log the error. If we're building, also

@@ -7,6 +7,7 @@ const chokidar = require(`chokidar`)
 const express = require(`express`)
 const graphqlHTTP = require(`express-graphql`)
 const parsePath = require(`parse-filepath`)
+const path = require(`path`)
 const request = require(`request`)
 const rl = require(`readline`)
 const webpack = require(`webpack`)
@@ -26,7 +27,9 @@ const websocketManager = require(`../utils/websocket-manager`)
 const getSslCert = require(`../utils/get-ssl-cert`)
 const slash = require(`slash`)
 const { initTracer } = require(`../utils/tracer`)
-
+const apiRunnerNode = require(`../utils/api-runner-node`)
+const { findJobGeneratingFile } = require(`../utils/jobs-runner`)
+const debug = require(`debug`)(`gatsby:devserver`)
 // const isInteractive = process.stdout.isTTY
 
 // Watch the static directory and copy files to public as they're added or
@@ -106,6 +109,19 @@ async function startServer(program) {
       `Origin, X-Requested-With, Content-Type, Accept`
     )
     next()
+  })
+
+  app.use((req, res, next) => {
+    const localPath = slash(directoryPath(path.join(`public`, req.originalUrl)))
+    const job = findJobGeneratingFile(localPath, () => {
+      debug(`Job finished, serving: ${job.id}`)
+      next()
+    })
+    if (job) {
+      debug(`Wait for job to finish before serving: ${job.id}`)
+    } else {
+      next()
+    }
   })
 
   /**
@@ -425,8 +441,13 @@ module.exports = async (program: any) => {
       printInstructions(program.sitePackageJson.name, urls, program.useYarn)
       printDeprecationWarnings()
       if (program.open) {
-        require(`opn`)(urls.localUrlForBrowser)
-          .catch(err => console.log(`${chalk.yellow(`warn`)} Browser not opened because no browser was found`))
+        require(`opn`)(urls.localUrlForBrowser).catch(err =>
+          console.log(
+            `${chalk.yellow(
+              `warn`
+            )} Browser not opened because no browser was found`
+          )
+        )
       }
     }
 

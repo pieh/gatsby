@@ -3,6 +3,8 @@
 const path = require(`path`)
 const { store } = require(`../redux`)
 const fs = require(`fs`)
+const _ = require(`lodash`)
+const debug = require(`debug`)(`gatsby:websocket-manager`)
 
 type QueryResult = {
   id: string,
@@ -10,6 +12,8 @@ type QueryResult = {
 }
 
 type QueryResultsMap = Map<string, QueryResult>
+
+type FetchPageQueryDataReason = "Navigation" | "Prefetch" | "Hover"
 
 /**
  * Get cached query result for given data path.
@@ -42,10 +46,10 @@ const getCachedPageData = (
     return null
   }
   const dataPath = jsonDataPaths[page.jsonName]
-  if (typeof dataPath === `undefined`) {
-    console.log(
-      `Error loading a result for the page query in "${pagePath}". Query was not run and no cached result was found.`
-    )
+  if (!dataPath) {
+    // console.log(
+    //   `Error loading a result for the page query in "${pagePath}". Query was not run and no cached result was found.`
+    // )
     return undefined
   }
 
@@ -71,7 +75,7 @@ const getCachedStaticQueryResults = (
     if (resultsMap.has(staticQueryComponent.hash)) return
 
     const dataPath = jsonDataPaths[staticQueryComponent.jsonName]
-    if (typeof dataPath === `undefined`) {
+    if (!dataPath) {
       console.log(
         `Error loading a result for the StaticQuery in "${
           staticQueryComponent.componentPath
@@ -98,7 +102,7 @@ class WebsocketManager {
 
   constructor() {
     this.isInitialised = false
-    this.activePaths = new Set()
+    // this.activePaths = getPathFilter()
     this.pageResults = new Map()
     this.staticQueryResults = new Map()
     this.websocket
@@ -144,20 +148,33 @@ class WebsocketManager {
         }
       }
 
-      const getDataForPath = path => {
+      const getDataForPath = (
+        path: string,
+        fetchReason: FetchPageQueryDataReason
+      ) => {
+        let howIHaveThis = `from memory`
         if (!this.pageResults.has(path)) {
           const result = getCachedPageData(path, this.programDir)
           if (result) {
+            howIHaveThis = `read from cache`
             this.pageResults.set(path, result)
           } else {
-            console.log(`Page not found`, path)
+            // console.log(`Results not found`, path)
             return
           }
         }
 
+        debug(
+          `Emitting results ${path} ${fetchReason} ${howIHaveThis} ${_.get(
+            this.pageResults.get(path),
+            `result.data.markdownRemark.excerpt`
+          )}`
+        )
+
         this.websocket.send({
           type: `pageQueryResult`,
           why: `getDataForPath`,
+          reason: fetchReason,
           payload: this.pageResults.get(path),
         })
       }
@@ -165,8 +182,14 @@ class WebsocketManager {
       s.on(`getDataForPath`, getDataForPath)
 
       s.on(`registerPath`, path => {
-        s.join(getRoomNameFromPath(path))
+        debug(`Register path`, path)
+        if (activePath === path) {
+          return
+        } else if (activePath) {
+          leaveRoom(activePath)
+        }
         activePath = path
+        s.join(getRoomNameFromPath(path))
         this.activePaths.add(path)
       })
 
@@ -174,9 +197,9 @@ class WebsocketManager {
         leaveRoom(activePath)
       })
 
-      s.on(`unregisterPath`, path => {
-        leaveRoom(path)
-      })
+      // s.on(`unregisterPath`, path => {
+      //   leaveRoom(path)
+      // })
     })
 
     this.isInitialised = true
@@ -194,10 +217,25 @@ class WebsocketManager {
   }
 
   emitPageData(data: QueryResult) {
+    this.pageResults.set(data.id, data)
     if (this.isInitialised) {
+      debug(`Emitting results`, data.id)
       this.websocket.send({ type: `pageQueryResult`, payload: data })
     }
-    this.pageResults.set(data.id, data)
+  }
+
+  removePageQueryResult(path: string) {
+    this.pageResults.delete(path)
+    if (this.isInitialised) {
+      debug(`Deleting page query results`, path)
+      this.websocket.send({
+        type: `pageQueryResult`,
+        payload: {
+          id: path,
+          result: null,
+        },
+      })
+    }
   }
 }
 

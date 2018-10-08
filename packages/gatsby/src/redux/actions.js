@@ -35,6 +35,9 @@ const findChildrenRecursively = (children = []) => {
 
 type Job = {
   id: string,
+  outputPath?: string,
+  batchId?: string,
+  handler?: string,
 }
 type PageInput = {
   path: string,
@@ -820,6 +823,15 @@ actions.deleteComponentsDependencies = (paths: string[]) => {
   }
 }
 
+actions.clearJsonDataPaths = (paths: string[]) => {
+  return {
+    type: `DELETE_JSON_DATA_PATHS`,
+    payload: {
+      paths,
+    },
+  }
+}
+
 /**
  * When the query watcher extracts a GraphQL query, it calls
  * this to store the query with its component.
@@ -840,6 +852,8 @@ actions.replaceComponentQuery = ({
     },
   }
 }
+
+actions.clearPageQuery = () => {}
 
 /**
  * When the query watcher extracts a "static" GraphQL query from <StaticQuery>
@@ -1009,12 +1023,14 @@ actions.setBabelPreset = (config: Object, plugin?: ?Plugin = null) => {
  * Gatsby doesn't finish its bootstrap until all jobs are ended.
  * @param {Object} job A job object with at least an id set
  * @param {id} job.id The id of the job
+ * @param {string} job.outputPath (optional) Path of file that this job will generate
+ * @param {string} job.handler (optional) Path to js file exporting handler function
  * @example
  * createJob({ id: `write file id: 123`, fileName: `something.jpeg` })
  */
 actions.createJob = (job: Job, plugin?: ?Plugin = null) => {
   return {
-    type: `CREATE_JOB`,
+    type: job.handler ? `CREATE_JOB_WITH_HANDLER` : `CREATE_JOB`,
     plugin,
     payload: job,
   }
@@ -1104,7 +1120,8 @@ actions.createRedirect = ({
   // url.parse will not cover protocol-relative urls so do a separate check for those
   const parsed = url.parse(toPath)
   const isRelativeProtocol = toPath.startsWith(`//`)
-  const toPathPrefix = parsed.protocol != null || isRelativeProtocol ? `` : pathPrefix
+  const toPathPrefix =
+    parsed.protocol != null || isRelativeProtocol ? `` : pathPrefix
 
   return {
     type: `CREATE_REDIRECT`,

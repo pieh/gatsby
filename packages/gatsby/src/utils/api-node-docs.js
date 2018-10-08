@@ -196,13 +196,6 @@ exports.setFieldsOnGraphQLNodeType = true
 exports.preprocessSource = true
 
 /**
- * Tell plugins with expensive "side effects" from queries to start running
- * those now. This is a soon-to-be-replaced API only currently in use by
- * `gatsby-plugin-sharp`.
- */
-exports.generateSideEffects = true
-
-/**
  * Let plugins extend/mutate the site's Babel configuration.
  * This API will change before 2.0 as it needs still to be converted to use
  * Redux actions.

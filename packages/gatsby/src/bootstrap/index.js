@@ -27,7 +27,7 @@ const {
   extractQueries,
 } = require(`../internal-plugins/query-runner/query-watcher`)
 const {
-  runInitialQueries,
+  runQueries,
 } = require(`../internal-plugins/query-runner/page-query-runner`)
 const queryQueue = require(`../internal-plugins/query-runner/query-queue`)
 const { writePages } = require(`../internal-plugins/query-runner/pages-writer`)
@@ -410,8 +410,12 @@ module.exports = async (args: BootstrapArgs) => {
       ).toFixed(2)} queries/second`
     )
   })
-  await runInitialQueries(activity)
+  await runQueries(activity)
   activity.end()
+
+  if (process.env.gatsby_executing_command === `build`) {
+    // TO-DO start executing queued jobs
+  }
 
   // Write out files.
   activity = report.activityTimer(`write out page data`, {
@@ -433,50 +437,48 @@ module.exports = async (args: BootstrapArgs) => {
   await writeRedirects()
   activity.end()
 
-  const checkJobsDone = _.debounce(resolve => {
-    const state = store.getState()
-    if (state.jobs.active.length === 0) {
-      report.log(``)
-      report.info(`bootstrap finished - ${process.uptime()} s`)
-      report.log(``)
-
+  const checkJobsDone = async () => {
+    if (store.getState().jobs.active.size === 0) {
       // onPostBootstrap
       activity = report.activityTimer(`onPostBootstrap`, {
         parentSpan: bootstrapSpan,
       })
       activity.start()
-      apiRunnerNode(`onPostBootstrap`, { parentSpan: activity.span }).then(
-        () => {
-          activity.end()
-          bootstrapSpan.finish()
-          resolve({ graphqlRunner })
-        }
-      )
+      await apiRunnerNode(`onPostBootstrap`, { parentSpan: activity.span })
+      activity.end()
+
+      bootstrapSpan.finish()
+
+      report.log(``)
+      report.info(`bootstrap finished - ${process.uptime()} s`)
+      report.log(``)
+
+      emitter.emit(`BOOTSTRAP_FINISHED`)
+
+      return true
     }
-  }, 100)
+    return false
+  }
 
-  if (store.getState().jobs.active.length === 0) {
-    // onPostBootstrap
-    activity = report.activityTimer(`onPostBootstrap`, {
-      parentSpan: bootstrapSpan,
-    })
-    activity.start()
-    await apiRunnerNode(`onPostBootstrap`, { parentSpan: activity.span })
-    activity.end()
-
-    bootstrapSpan.finish()
-
-    report.log(``)
-    report.info(`bootstrap finished - ${process.uptime()} s`)
-    report.log(``)
-    emitter.emit(`BOOTSTRAP_FINISHED`)
+  if (await checkJobsDone()) {
     return {
       graphqlRunner,
     }
   } else {
+    const debouncedCheckJobsDone = _.debounce(checkJobsDone, 100)
     return new Promise(resolve => {
       // Wait until all side effect jobs are finished.
-      emitter.on(`END_JOB`, () => checkJobsDone(resolve))
+      const onEndJob = () => {
+        debouncedCheckJobsDone().then(isJobDone => {
+          if (isJobDone) {
+            emitter.off(`END_JOB`, onEndJob)
+            resolve({
+              graphqlRunner,
+            })
+          }
+        })
+      }
+      emitter.on(`END_JOB`, onEndJob)
     })
   }
 }
