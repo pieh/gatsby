@@ -52,6 +52,12 @@ module.exports = {
               dashes: `oldschool`,
             },
           },
+          {
+            resolve: `gatsby-remark-embed-snippet`,
+            options: {
+              directory: `${__dirname}/src/snippets/`,
+            },
+          },
           `gatsby-remark-prismjs`,
           `gatsby-remark-autolink-headers`,
           `gatsby-remark-katex`,
