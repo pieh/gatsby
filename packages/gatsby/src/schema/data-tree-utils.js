@@ -266,7 +266,7 @@ const extractFieldExamples = (
     })
 
     const value = extractFromEntries(entries, nextSelector, key)
-    if (!isDefined(value)) continue
+    if (!isDefined(value) || isEmptyObjectOrArray(value)) continue
 
     example[key] = value
   }

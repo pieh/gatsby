@@ -21,7 +21,7 @@ const {
 } = require(`./data-tree-utils`)
 
 const { findLinkedNode } = require(`./infer-graphql-type`)
-const { getNodes } = require(`../redux`)
+const { getNodes, store } = require(`../redux`)
 const is32BitInteger = require(`../utils/is-32-bit-integer`)
 
 import type {
@@ -77,6 +77,8 @@ function inferGraphQLInputFields({
   value,
   nodes,
   prefix,
+  typeName,
+  selector,
 }): ?GraphQLInputFieldConfig {
   if (value == null || isEmptyObjectOrArray(value)) return null
 
@@ -110,6 +112,8 @@ function inferGraphQLInputFields({
             value: headValue,
             prefix,
             nodes,
+            selector,
+            typeName,
           })
           invariant(
             inferredField,
@@ -169,20 +173,18 @@ function inferGraphQLInputFields({
       }
     }
     case `object`: {
-      const fields = inferInputObjectStructureFromNodes({
-        nodes,
-        prefix,
-        exampleValue: value,
-      }).inferredFields
-      if (!_.isEmpty(fields)) {
-        return {
-          type: new GraphQLInputObjectType({
-            name: createTypeName(`${prefix}InputObject`),
-            fields,
-          }),
-        }
-      } else {
-        return null
+      return {
+        type: new GraphQLInputObjectType({
+          name: createTypeName(`${prefix}InputObject`),
+          fields: () =>
+            inferInputObjectStructureFromNodes({
+              nodes,
+              prefix,
+              exampleValue: value,
+              selector,
+              typeName,
+            }).inferredFields,
+        }),
       }
     }
     case `number`: {
@@ -219,35 +221,60 @@ type InferInputOptions = {
   exampleValue?: Object,
 }
 
-const recursiveOmitBy = (value, fn) => {
-  if (_.isObject(value)) {
-    if (_.isPlainObject(value)) {
-      value = _.omitBy(value, fn)
-    } else if (_.isArray(value)) {
-      // don't mutate original value
-      value = _.clone(value)
-    }
-    _.each(value, (v, k) => {
-      value[k] = recursiveOmitBy(v, fn)
-    })
-    if (_.isEmpty(value)) {
-      // don't return empty objects - gatsby doesn't support these
-      return null
-    }
-  }
-  return value
-}
+// const recursiveOmitBy = (value, fn) => {
+//   if (_.isObject(value)) {
+//     if (_.isPlainObject(value)) {
+//       value = _.omitBy(value, fn)
+//     } else if (_.isArray(value)) {
+//       // don't mutate original value
+//       value = _.clone(value)
+//     }
+//     _.each(value, (v, k) => {
+//       value[k] = recursiveOmitBy(v, fn)
+//     })
+//     if (_.isEmpty(value)) {
+//       // don't return empty objects - gatsby doesn't support these
+//       return null
+//     }
+//   }
+//   return value
+// }
 
-const linkedNodeCache = {}
+const RootNodeInputObjectMap = new Map()
+const getRootNodeInputObject = ({ typeName, isArray }) => {
+  const mapKey = `${typeName}_${isArray ? `[]` : ``}`
+  if (RootNodeInputObjectMap.has(mapKey)) {
+    return RootNodeInputObjectMap.get(mapKey)
+  }
+
+  const nodes = getNodes().filter(node => node.internal.type === typeName)
+  const exampleValue = getExampleValues({
+    nodes,
+    typeName,
+  })
+
+  const field = inferGraphQLInputFields({
+    nodes,
+    value: isArray ? [exampleValue] : exampleValue,
+    prefix: `Linked${typeName}${isArray ? `Array` : `Single`}`,
+    typeName,
+    selector: ``,
+  })
+  RootNodeInputObjectMap.set(mapKey, field)
+  return field
+}
 
 export function inferInputObjectStructureFromNodes({
   nodes,
   typeName = ``,
   prefix = ``,
+  selector = ``,
   exampleValue = null,
 }: InferInputOptions): Object {
   const inferredFields = {}
   const isRoot = !prefix
+  const config = store.getState().config
+  const mapping = config && config.mapping
 
   prefix = isRoot ? typeName : prefix
   if (exampleValue === null) {
@@ -267,38 +294,37 @@ export function inferInputObjectStructureFromNodes({
     // setting traversing up not try to automatically infer them.
     if (value === INVALID_VALUE || (isRoot && EXCLUDE_KEYS[key])) return
 
-    if (_.includes(key, `___NODE`)) {
+    // Several checks to see if a field is pointing to custom type
+    // before we try automatic inference.
+    const nextSelector = selector ? `${selector}.${key}` : key
+    const fieldSelector = `${typeName}.${nextSelector}`
+
+    let field
+    if (mapping && _.includes(Object.keys(mapping), fieldSelector)) {
+      field = getRootNodeInputObject({
+        typeName: mapping[fieldSelector].split(`.`)[0],
+        isArray: _.isArray(value),
+      })
+      console.log(`should map`, fieldSelector, k, v)
+    } else if (_.includes(key, `___NODE`)) {
       // TODO: Union the objects in array
       const nodeToFind = _.isArray(value) ? value[0] : value
       const linkedNode = findLinkedNode(nodeToFind)
 
-      // Get from cache if found, else store into it
-      if (linkedNodeCache[linkedNode.internal.type]) {
-        value = linkedNodeCache[linkedNode.internal.type]
-      } else {
-        const relatedNodes = getNodes().filter(
-          node => node.internal.type === linkedNode.internal.type
-        )
-        value = getExampleValues({
-          nodes: relatedNodes,
-          typeName: linkedNode.internal.type,
-        })
-        value = recursiveOmitBy(value, (_v, _k) => _.includes(_k, `___NODE`))
-        linkedNodeCache[linkedNode.internal.type] = value
-      }
-
-      if (_.isArray(value)) {
-        value = [value]
-      }
-
+      field = getRootNodeInputObject({
+        typeName: linkedNode.internal.type,
+        isArray: _.isArray(value),
+      })
       ;[key] = key.split(`___`)
+    } else {
+      field = inferGraphQLInputFields({
+        nodes,
+        value,
+        prefix: `${prefix}${_.upperFirst(key)}`,
+        typeName,
+        selector: nextSelector,
+      })
     }
-
-    let field = inferGraphQLInputFields({
-      nodes,
-      value,
-      prefix: `${prefix}${_.upperFirst(key)}`,
-    })
 
     if (field == null) return
     inferredFields[createKey(key)] = field
@@ -306,7 +332,7 @@ export function inferInputObjectStructureFromNodes({
 
   // Add sorting (but only to the top level).
   let sort = []
-  if (typeName) {
+  if (isRoot) {
     sort = extractFieldNames(nodes)
   }
 

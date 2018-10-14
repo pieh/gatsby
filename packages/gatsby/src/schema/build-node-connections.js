@@ -30,7 +30,7 @@ module.exports = (types: any) => {
 
     const inferredInputFieldsFromNodes = inferInputObjectStructureFromNodes({
       nodes,
-      typeName,
+      typeName: type.name,
     })
 
     const inferredInputFieldsFromPlugins = inferInputObjectStructureFromFields({

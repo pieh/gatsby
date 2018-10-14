@@ -152,6 +152,12 @@ function inferFromMapping(
   }
 
   const findNode = (fieldValue, path) => {
+    if (_.isPlainObject(fieldValue) && fieldValue.id) {
+      // if we filter by mapped value, run-sift will already run our resolver,
+      // so fieldValue will already be our node - we just need to return it
+      return fieldValue
+    }
+
     const linkedNode = _.find(
       getNodes(),
       n =>

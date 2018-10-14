@@ -2,7 +2,6 @@ const {
   getExampleValues,
   buildFieldEnumValues,
   clearTypeExampleValues,
-  INVALID_VALUE,
 } = require(`../data-tree-utils`)
 const {
   typeConflictReporter,
@@ -137,14 +136,14 @@ describe(`Gatsby data tree utils`, () => {
     let example = getExampleValues({
       nodes: [{ foo: null }, { foo: [1] }, { foo: { field: 1 } }],
     })
-    expect(example.foo).toBe(INVALID_VALUE)
+    expect(example.foo).toBe(undefined)
   })
 
   it(`handles polymorphic arrays`, () => {
     let example = getExampleValues({
       nodes: [{ foo: [[`foo`, `bar`]] }, { foo: [{ field: 1 }] }],
     })
-    expect(example.foo).toBe(INVALID_VALUE)
+    expect(example.foo).toBe(undefined)
   })
 
   it(`doesn't confuse empty fields for polymorhpic ones`, () => {
@@ -236,7 +235,7 @@ describe(`Gatsby data tree utils`, () => {
         { date: `2017-01-12T18:13:38.326Z` },
       ],
     })
-    expect(example.date).not.toBe(INVALID_VALUE)
+    expect(example.date).not.toBe(undefined)
 
     // should be invalid (string is not a date)
     example = getExampleValues({
@@ -245,7 +244,7 @@ describe(`Gatsby data tree utils`, () => {
         { date: `This is not a date!!!!!!` },
       ],
     })
-    expect(example.date).toBe(INVALID_VALUE)
+    expect(example.date).toBe(undefined)
 
     // should be valid - reversed order
     example = getExampleValues({
@@ -254,7 +253,7 @@ describe(`Gatsby data tree utils`, () => {
         { date: new Date(`2017-12-01T14:59:45.600Z`) },
       ],
     })
-    expect(example.date).not.toBe(INVALID_VALUE)
+    expect(example.date).not.toBe(undefined)
 
     // should be invalid (string is not a date) - reversed order
     example = getExampleValues({
@@ -263,7 +262,7 @@ describe(`Gatsby data tree utils`, () => {
         { date: new Date(`2017-12-01T14:59:45.600Z`) },
       ],
     })
-    expect(example.date).toBe(INVALID_VALUE)
+    expect(example.date).toBe(undefined)
   })
 
   it(`handles arrays with mix of date strings and date objects`, () => {
@@ -276,7 +275,7 @@ describe(`Gatsby data tree utils`, () => {
         { dates: [`2017-01-12T18:13:38.326Z`] },
       ],
     })
-    expect(example.dates).not.toBe(INVALID_VALUE)
+    expect(example.dates).not.toBe(undefined)
 
     // should be invalid - separate arrays of unique types (string is not a date)
     example = getExampleValues({
@@ -285,7 +284,7 @@ describe(`Gatsby data tree utils`, () => {
         { dates: [`This is not a date!!!!!!`] },
       ],
     })
-    expect(example.dates).toBe(INVALID_VALUE)
+    expect(example.dates).toBe(undefined)
 
     // should be valid - single array of mixed types
     example = getExampleValues({
@@ -298,7 +297,7 @@ describe(`Gatsby data tree utils`, () => {
         },
       ],
     })
-    expect(example.dates).not.toBe(INVALID_VALUE)
+    expect(example.dates).not.toBe(undefined)
 
     // should be invalid - single array of mixed types (string is not a date)
     example = getExampleValues({
@@ -311,7 +310,7 @@ describe(`Gatsby data tree utils`, () => {
         },
       ],
     })
-    expect(example.dates).toBe(INVALID_VALUE)
+    expect(example.dates).toBe(undefined)
 
     // should be valid - separate arrays of both unique types and mixed types
     example = getExampleValues({
@@ -326,7 +325,7 @@ describe(`Gatsby data tree utils`, () => {
         { dates: [`2017-01-12T18:13:38.326Z`] },
       ],
     })
-    expect(example.dates).not.toBe(INVALID_VALUE)
+    expect(example.dates).not.toBe(undefined)
 
     // should be valid - separate arrays of both unique types and mixed types (string is not a date) #1
     example = getExampleValues({
@@ -341,7 +340,7 @@ describe(`Gatsby data tree utils`, () => {
         { dates: [`2017-01-12T18:13:38.326Z`] },
       ],
     })
-    expect(example.dates).toBe(INVALID_VALUE)
+    expect(example.dates).toBe(undefined)
 
     // should be valid - separate arrays of both unique types and mixed types (string is not a date) #2
     example = getExampleValues({
@@ -356,7 +355,7 @@ describe(`Gatsby data tree utils`, () => {
         { dates: [`This is not a date!!!!!!`] },
       ],
     })
-    expect(example.dates).toBe(INVALID_VALUE)
+    expect(example.dates).toBe(undefined)
 
     // should be valid - separate arrays of both unique types and mixed types (string is not a date) #2
     example = getExampleValues({
@@ -371,7 +370,7 @@ describe(`Gatsby data tree utils`, () => {
         { dates: [`This is not a date!!!!!!`] },
       ],
     })
-    expect(example.dates).toBe(INVALID_VALUE)
+    expect(example.dates).toBe(undefined)
   })
 })
 
