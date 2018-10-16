@@ -93,8 +93,7 @@
     "deploy": "gatsby build --prefix-paths && gh-pages -d public",
     "develop": "gatsby develop",
     "serve": "gatsby serve",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "scrapeStarters": "cd src/data/StarterShowcase && node scraper.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
     "husky": "^1.0.0-rc.14",
