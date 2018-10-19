@@ -1,6 +1,6 @@
 import React from "react"
 import { withPrefix } from "gatsby"
-import fs from "fs"
+import fs from "fs-extra"
 let cacheId = null
 
 exports.onRenderBody = (
