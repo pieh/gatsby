@@ -463,7 +463,7 @@ module.exports = async (args: BootstrapArgs) => {
   await writeRedirects()
   activity.end()
 
-  const checkJobsDone = _.debounce((resolve, stopListening) => {
+  const checkJobsDone = _.debounce(resolve => {
     const state = store.getState()
     if (state.jobs.active.length === 0) {
       report.log(``)
@@ -480,7 +480,6 @@ module.exports = async (args: BootstrapArgs) => {
           activity.end()
           bootstrapSpan.finish()
           resolve({ graphqlRunner })
-          stopListening()
         }
       )
     }
@@ -508,10 +507,10 @@ module.exports = async (args: BootstrapArgs) => {
     return new Promise(resolve => {
       // Wait until all side effect jobs are finished.
       const onEndJob = () => {
-        checkJobsDone(resolve, stopListening)
-      }
-      const stopListening = () => {
-        emitter.off(`END_JOB`, onEndJob)
+        checkJobsDone(args => {
+          resolve(args)
+          emitter.off(`END_JOB`, onEndJob)
+        })
       }
       emitter.on(`END_JOB`, onEndJob)
     })
