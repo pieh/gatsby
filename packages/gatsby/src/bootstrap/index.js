@@ -29,7 +29,7 @@ const {
   extractQueries,
 } = require(`../internal-plugins/query-runner/query-watcher`)
 const {
-  runInitialQueries,
+  runQueries,
 } = require(`../internal-plugins/query-runner/page-query-runner`)
 const queryQueue = require(`../internal-plugins/query-runner/query-queue`)
 const { writePages } = require(`../internal-plugins/query-runner/pages-writer`)
@@ -440,7 +440,7 @@ module.exports = async (args: BootstrapArgs) => {
       ).toFixed(2)} queries/second`
     )
   })
-  await runInitialQueries(activity)
+  await runQueries(activity)
   activity.end()
 
   // Write out files.

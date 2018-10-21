@@ -42,16 +42,6 @@ exports.queueQueryForPathname = pathname => {
   runQueriesForPathnamesQueue.add(pathname)
 }
 
-// Do initial run of graphql queries during bootstrap.
-// Afterwards we listen "API_RUNNING_QUEUE_EMPTY" and check
-// for dirty nodes before running queries.
-exports.runInitialQueries = async () => {
-  await runQueries()
-
-  active = true
-  return
-}
-
 const runQueries = async () => {
   // Find paths dependent on dirty nodes
   queuedDirtyActions = _.uniq(queuedDirtyActions, a => a.payload.id)
@@ -82,6 +72,11 @@ emitter.on(`CREATE_NODE`, action => {
 
 emitter.on(`DELETE_NODE`, action => {
   queuedDirtyActions.push({ payload: action.payload })
+})
+
+emitter.on(`BOOTSTRAP_FINISHED`, () => {
+  active = true
+  runQueuedActions()
 })
 
 const runQueuedActions = async () => {
