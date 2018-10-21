@@ -463,53 +463,44 @@ module.exports = async (args: BootstrapArgs) => {
   await writeRedirects()
   activity.end()
 
-  const checkJobsDone = _.debounce(resolve => {
-    const state = store.getState()
-    if (state.jobs.active.length === 0) {
-      report.log(``)
-      report.info(`bootstrap finished - ${process.uptime()} s`)
-      report.log(``)
-
+  const checkJobsDone = async () => {
+    if (store.getState().jobs.active.length === 0) {
       // onPostBootstrap
       activity = report.activityTimer(`onPostBootstrap`, {
         parentSpan: bootstrapSpan,
       })
       activity.start()
-      apiRunnerNode(`onPostBootstrap`, { parentSpan: activity.span }).then(
-        () => {
-          activity.end()
-          bootstrapSpan.finish()
-          resolve({ graphqlRunner })
-        }
-      )
+      await apiRunnerNode(`onPostBootstrap`, { parentSpan: activity.span })
+      activity.end()
+
+      bootstrapSpan.finish()
+
+      report.log(``)
+      report.info(`bootstrap finished - ${process.uptime()} s`)
+      report.log(``)
+
+      return true
     }
-  }, 100)
+    return false
+  }
 
-  if (store.getState().jobs.active.length === 0) {
-    // onPostBootstrap
-    activity = report.activityTimer(`onPostBootstrap`, {
-      parentSpan: bootstrapSpan,
-    })
-    activity.start()
-    await apiRunnerNode(`onPostBootstrap`, { parentSpan: activity.span })
-    activity.end()
-
-    bootstrapSpan.finish()
-
-    report.log(``)
-    report.info(`bootstrap finished - ${process.uptime()} s`)
-    report.log(``)
-    emitter.emit(`BOOTSTRAP_FINISHED`)
+  const isJobDone = await checkJobsDone()
+  if (isJobDone) {
     return {
       graphqlRunner,
     }
   } else {
+    const debouncedCheckJobsDone = _.debounce(checkJobsDone, 100)
     return new Promise(resolve => {
       // Wait until all side effect jobs are finished.
       const onEndJob = () => {
-        checkJobsDone(args => {
-          resolve(args)
-          emitter.off(`END_JOB`, onEndJob)
+        debouncedCheckJobsDone().then(isJobDone => {
+          if (isJobDone) {
+            emitter.off(`END_JOB`, onEndJob)
+            resolve({
+              graphqlRunner,
+            })
+          }
         })
       }
       emitter.on(`END_JOB`, onEndJob)
