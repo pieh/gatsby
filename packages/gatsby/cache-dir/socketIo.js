@@ -3,6 +3,7 @@ let socket = null
 let staticQueryData = {}
 let pageQueryData = {}
 let isInitialized = false
+let currentPath = null
 
 export const getStaticQueryData = () => staticQueryData
 export const getPageQueryData = () => pageQueryData
@@ -15,6 +16,13 @@ export default function socketIo() {
       try {
         // eslint-disable-next-line no-undef
         socket = io()
+
+        socket.on(`connection`, () => {
+          console.log(`connection re-established`)
+          if (currentPath) {
+            registerPath(currentPath)
+          }
+        })
 
         const didDataChange = (msg, queryData) =>
           !(msg.payload.id in queryData) ||
@@ -83,6 +91,7 @@ function getPageData(pathname, fetchReason = `Navigation`) {
 // This will help the backend prioritize queries for this
 // path.
 function registerPath(path) {
+  currentPath = path
   console.log(`[socket.io] registerPath`, path)
   socket.emit(`registerPath`, path)
 }

@@ -212,11 +212,25 @@ class WebsocketManager {
   }
 
   emitPageData(data: QueryResult) {
+    this.pageResults.set(data.id, data)
     if (this.isInitialised) {
       console.log(`[websocket-manager] Emitting results`, data.id)
       this.websocket.send({ type: `pageQueryResult`, payload: data })
     }
-    this.pageResults.set(data.id, data)
+  }
+
+  removePageQueryResult(path: string) {
+    this.pageResults.delete(path)
+    if (this.isInitialised) {
+      console.log(`[websocket-manager] Deleting page query results`, path)
+      this.websocket.send({
+        type: `pageQueryResult`,
+        payload: {
+          id: path,
+          result: null,
+        },
+      })
+    }
   }
 }
 

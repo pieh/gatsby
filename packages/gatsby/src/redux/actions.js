@@ -810,6 +810,15 @@ actions.deleteComponentsDependencies = (paths: string[]) => {
   }
 }
 
+actions.clearJsonDataPaths = (paths: string[]) => {
+  return {
+    type: `DELETE_JSON_DATA_PATHS`,
+    payload: {
+      paths,
+    },
+  }
+}
+
 /**
  * When the query watcher extracts a GraphQL query, it calls
  * this to store the query with its component.
@@ -830,6 +839,8 @@ actions.replaceComponentQuery = ({
     },
   }
 }
+
+actions.clearPageQuery = () => {}
 
 /**
  * When the query watcher extracts a "static" GraphQL query from <StaticQuery>

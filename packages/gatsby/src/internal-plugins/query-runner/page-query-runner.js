@@ -66,6 +66,8 @@ const runQueries = async () => {
   return
 }
 
+exports.runQueries = runQueries
+
 emitter.on(`CREATE_NODE`, action => {
   queuedDirtyActions.push(action)
 })
@@ -132,6 +134,8 @@ const findIdsWithoutDataDependencies = () => {
   return notTrackedIds
 }
 
+const invalidatedPaths = new Set()
+
 const runQueriesForPathnames = pathnames => {
   const staticQueries = pathnames.filter(p => p.slice(0, 4) === `sq--`)
   const pageQueries = pathnames.filter(p => p.slice(0, 4) !== `sq--`)
@@ -154,32 +158,28 @@ const runQueriesForPathnames = pathnames => {
   const pages = state.pages
   let didNotQueueItems = true
   const pathsToDeleteDeps = []
+  const jsonDataPathsToClear = []
   pageQueries.forEach(id => {
     const page = pages.get(id)
     if (page) {
       if (process.env.gatsby_executing_command === `develop`) {
         // determine if need to run query or just mark page query as dirty
-        if (!pathFilter.has(page.path)) {
-          // this will make websocket not submit stale results
-          websocketManager.pageResults.delete(page.path)
+        if (!pathFilter.has(id)) {
+          // if we already cleared results and dependency
+          // don't do that again -
+          if (!invalidatedPaths.has(id)) {
+            // this will make websocket not submit stale results
+            websocketManager.removePageQueryResult(id)
 
-          // we don't want to point to old results
-          store.dispatch({
-            type: `SET_JSON_DATA_PATH`,
-            payload: {
-              key: page.jsonName,
-              value: null,
-            },
-          })
+            // let's clear deps for path - this will make run queries for builds
+            pathsToDeleteDeps.push(id)
+            jsonDataPathsToClear.push(page.jsonName)
 
-          // add to queue
-          runQueriesForPathnamesQueue.add(page.path)
-          // let's clear deps for path - this will make run queries for builds
-          pathsToDeleteDeps.push(page.path)
-
+            invalidatedPaths.add(id)
+          }
           return
         }
-        console.log(`[page-query-runner] Run page query ${page.path}`)
+        console.log(`[page-query-runner] Run page query ${id}`)
       }
       didNotQueueItems = false
       queue.push(
@@ -196,11 +196,16 @@ const runQueriesForPathnames = pathnames => {
         }: QueryJob)
       )
       runQueriesForPathnamesQueue.delete(id)
+      invalidatedPaths.delete(id)
     }
   })
 
   if (pathsToDeleteDeps.length > 0) {
     boundActionCreators.deleteComponentsDependencies(pathsToDeleteDeps)
+  }
+
+  if (jsonDataPathsToClear.length > 0) {
+    boundActionCreators.clearJsonDataPaths(jsonDataPathsToClear)
   }
 
   if (didNotQueueItems || !pathnames || pathnames.length === 0) {
