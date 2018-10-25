@@ -591,13 +591,10 @@ async function fluid({ file, args = {}, reporter }) {
   // the original image.
   filteredSizes.push(fixedDimension === `maxWidth` ? width : height)
 
-  // Sort sizes for prettiness.
-  const sortedSizes = _.sortBy(filteredSizes)
-
   // Queue sizes for processing.
   const dimensionAttr = fixedDimension === `maxWidth` ? `width` : `height`
   const otherDimensionAttr = fixedDimension === `maxWidth` ? `height` : `width`
-  const images = sortedSizes.map(size => {
+  const images = filteredSizes.map(size => {
     const arrrgs = {
       ...options,
       [otherDimensionAttr]: undefined,
@@ -616,7 +613,10 @@ async function fluid({ file, args = {}, reporter }) {
   })
 
   const base64Width = 20
-  const base64Height = Math.max(1, Math.round((base64Width * height) / width))
+  const base64Height = Math.max(
+    1,
+    Math.round((base64Width * images[0].height) / images[0].width)
+  )
   const base64Args = {
     duotone: options.duotone,
     grayscale: options.grayscale,
@@ -624,6 +624,7 @@ async function fluid({ file, args = {}, reporter }) {
     toFormat: options.toFormat,
     width: base64Width,
     height: base64Height,
+    cropFocus: options.cropFocus,
   }
 
   // Get base64 version
@@ -634,7 +635,7 @@ async function fluid({ file, args = {}, reporter }) {
   const fallbackSrc = _.minBy(images, image =>
     Math.abs(options[fixedDimension] - image[dimensionAttr])
   ).src
-  const srcSet = images
+  const srcSet = _.sortBy(images, image => image.width)
     .map(image => `${image.src} ${Math.round(image.width)}w`)
     .join(`,\n`)
   const originalName = file.base
@@ -672,6 +673,11 @@ async function fluid({ file, args = {}, reporter }) {
     density,
     presentationWidth,
     presentationHeight,
+
+    // fields below should not leak into transformer-sharp graphql fields
+    // those are here only to use to properly crop image for tracedSvg
+    width: images[0].width,
+    height: images[0].height,
   }
 }
 
@@ -786,10 +792,7 @@ async function notMemoizedtraceSVG({ file, args, fileArgs, reporter }) {
     turnPolicy: potrace.Potrace.TURNPOLICY_MAJORITY,
   }
   const optionsSVG = _.defaults(args, defaultArgs)
-  const options = healOptions(fileArgs, {
-    ...(fileArgs.maxHeight ? { height: fileArgs.maxHeight } : {}),
-    ...(fileArgs.maxWidth ? { width: fileArgs.maxWidth } : {}),
-  })
+  const options = healOptions(fileArgs, {})
   let pipeline
   try {
     pipeline = sharp(file.absolutePath).rotate()

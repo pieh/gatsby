@@ -177,7 +177,16 @@ const fluidNodeType = ({
         base64: { type: GraphQLString },
         tracedSVG: {
           type: GraphQLString,
-          resolve: parent => getTracedSVG(parent),
+          resolve: parent => {
+            // need to move
+            // - parent.width -> parent.fieldArgs.width
+            // - parent.height -> parent.fieldArgs.height
+            // and also not mutate original object
+            const { width, height, ...clone } = parent
+            clone.fieldArgs = { ...clone.fieldArgs, width, height }
+
+            return getTracedSVG(clone)
+          },
         },
         aspectRatio: { type: GraphQLFloat },
         src: { type: GraphQLString },
