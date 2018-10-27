@@ -18,6 +18,7 @@ import BlogPostPreviewItem from "../components/blog-post-preview-item"
 import FuturaParagraph from "../components/futura-paragraph"
 import Button from "../components/button"
 import TechWithIcon from "../components/tech-with-icon"
+import EmailCaptureForm from "../components/email-capture-form"
 
 class IndexRoute extends React.Component {
   render() {
@@ -54,6 +55,7 @@ class IndexRoute extends React.Component {
               }}
             >
               <main
+                id={`reach-skip-nav`}
                 css={{
                   display: `flex`,
                   flexDirection: `row`,
@@ -100,7 +102,7 @@ class IndexRoute extends React.Component {
                   <Card>
                     <CardHeadline>Future-proof your website</CardHeadline>
                     <FuturaParagraph>
-                      Don't build a website with last decade's tech. The future
+                      Do not build a website with last decade’s tech. The future
                       of the web is mobile, JavaScript and APIs—the {` `}
                       <a href="https://jamstack.org/">JAMstack</a>. Every
                       website is a web app and every web app is a website.
@@ -176,6 +178,14 @@ class IndexRoute extends React.Component {
                         paddingBottom: `0 !important`,
                       }}
                     >
+                      <EmailCaptureForm
+                        signupMessage="Want to keep up to date with the latest posts on our blog? Subscribe to our newsletter!"
+                        overrideCSS={{
+                          marginTop: 0,
+                          marginBottom: rhythm(2),
+                          border: `none`,
+                        }}
+                      />
                       <h2
                         css={{
                           textAlign: `left`,

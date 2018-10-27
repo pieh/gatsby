@@ -8,12 +8,13 @@ const crypto = require(`crypto`)
 const del = require(`del`)
 const path = require(`path`)
 const convertHrtime = require(`convert-hrtime`)
+const Promise = require(`bluebird`)
 
 const apiRunnerNode = require(`../utils/api-runner-node`)
+const mergeGatsbyConfig = require(`../utils/merge-gatsby-config`)
 const { graphql } = require(`graphql`)
 const { store, emitter } = require(`../redux`)
 const loadPlugins = require(`./load-plugins`)
-const { initCache } = require(`../utils/cache`)
 const report = require(`gatsby-cli/lib/reporter`)
 const getConfigFile = require(`./get-config-file`)
 const tracer = require(`opentracing`).globalTracer()
@@ -63,13 +64,41 @@ module.exports = async (args: BootstrapArgs) => {
   })
 
   // Try opening the site's gatsby-config.js file.
-  let activity = report.activityTimer(`open and validate gatsby-config`, {
+  let activity = report.activityTimer(`open and validate gatsby-configs`, {
     parentSpan: bootstrapSpan,
   })
   activity.start()
-  const config = await preferDefault(
+  let config = await preferDefault(
     getConfigFile(program.directory, `gatsby-config`)
   )
+
+  // theme gatsby configs can be functions or objects
+  if (config && config.__experimentalThemes) {
+    const themesConfig = await Promise.mapSeries(
+      config.__experimentalThemes,
+      async ([themeName, themeConfig]) => {
+        const theme = await preferDefault(
+          getConfigFile(themeName, `gatsby-config`)
+        )
+        // if theme is a function, call it with the themeConfig
+        let themeConfigObj = theme
+        if (_.isFunction(theme)) {
+          themeConfigObj = theme(themeConfig)
+        }
+        // themes function as plugins too (gatsby-node, etc)
+        return {
+          ...themeConfigObj,
+          plugins: [
+            ...(themeConfigObj.plugins || []),
+            // theme plugin is last so it's gatsby-node, etc can override it's declared plugins, like a normal site.
+            { resolve: themeName, options: themeConfig },
+          ],
+        }
+      }
+    ).reduce(mergeGatsbyConfig, {})
+
+    config = mergeGatsbyConfig(themesConfig, config)
+  }
 
   if (config && config.polyfill) {
     report.warn(
@@ -175,7 +204,7 @@ module.exports = async (args: BootstrapArgs) => {
 
   // Now that we know the .cache directory is safe, initialize the cache
   // directory.
-  initCache()
+  await fs.ensureDir(`${program.directory}/.cache`)
 
   // Ensure the public/static directory
   await fs.ensureDir(`${program.directory}/public/static`)
