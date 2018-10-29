@@ -13,7 +13,7 @@ const rl = require(`readline`)
 const webpack = require(`webpack`)
 const webpackConfig = require(`../utils/webpack.config`)
 const bootstrap = require(`../bootstrap`)
-const { store, emitter } = require(`../redux`)
+const { store } = require(`../redux`)
 const copyStaticDirectory = require(`../utils/copy-static-directory`)
 const developHtml = require(`./develop-html`)
 const { withBasePath } = require(`../utils/path`)
@@ -28,7 +28,8 @@ const getSslCert = require(`../utils/get-ssl-cert`)
 const slash = require(`slash`)
 const { initTracer } = require(`../utils/tracer`)
 const apiRunnerNode = require(`../utils/api-runner-node`)
-
+const { findJobGeneratingFile } = require(`../utils/jobs-runner`)
+const debug = require(`debug`)(`gatsby:devserver`)
 // const isInteractive = process.stdout.isTTY
 
 // Watch the static directory and copy files to public as they're added or
@@ -110,25 +111,14 @@ async function startServer(program) {
     next()
   })
 
-  // Wait for side-effects if they are in progress
-  const nextMap = new Map()
-  emitter.on(`END_JOB`, action => {
-    const jobID = action.payload.id
-    if (nextMap.has(jobID)) {
-      console.log(`\n[develop] Job finished - serving: `, jobID)
-      const next = nextMap.get(jobID)
-      next()
-      nextMap.delete(jobID)
-    }
-  })
   app.use((req, res, next) => {
     const localPath = slash(directoryPath(path.join(`public`, req.originalUrl)))
-    const jobs = store.getState().jobs.active
-    const job = jobs.find(job => job.outputPath === localPath)
-
+    const job = findJobGeneratingFile(localPath, () => {
+      debug(`Job finished, serving: ${job.id}`)
+      next()
+    })
     if (job) {
-      console.log(`[develop] Wait for job to finish before serving: `, job.id)
-      nextMap.set(job.id, next)
+      debug(`Wait for job to finish before serving: ${job.id}`)
     } else {
       next()
     }

@@ -19,6 +19,7 @@ const queue = require(`./query-queue`)
 const { store, emitter } = require(`../../redux`)
 const { boundActionCreators } = require(`../../redux/actions`)
 const websocketManager = require(`../../utils/websocket-manager`)
+const debug = require(`debug`)(`gatsby:page-query-runner`)
 
 let queuedDirtyActions = []
 let active = false
@@ -28,6 +29,7 @@ class PathFilter extends Set<string> {
   add(path: string) {
     if (!super.has(path)) {
       super.add(path)
+      debug(`add to path filter ${path}`)
       runQueuedActions()
     }
   }
@@ -137,6 +139,8 @@ const findIdsWithoutDataDependencies = () => {
 const invalidatedPaths = new Set()
 
 const runQueriesForPathnames = pathnames => {
+  debug(`runQueriesForPathnames()`)
+
   const staticQueries = pathnames.filter(p => p.slice(0, 4) === `sq--`)
   const pageQueries = pathnames.filter(p => p.slice(0, 4) !== `sq--`)
   const state = store.getState()
@@ -176,10 +180,15 @@ const runQueriesForPathnames = pathnames => {
             jsonDataPathsToClear.push(page.jsonName)
 
             invalidatedPaths.add(id)
+
+            // need to explicitely add to queue, so we actually run query for the path
+            // for develop
+            runQueriesForPathnamesQueue.add(id)
+            debug(`Invalidate page query ${id}`)
           }
           return
         }
-        console.log(`[page-query-runner] Run page query ${id}`)
+        debug(`Run page query ${id}`)
       }
       didNotQueueItems = false
       queue.push(

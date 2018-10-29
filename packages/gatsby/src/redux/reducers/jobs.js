@@ -1,49 +1,62 @@
 const _ = require(`lodash`)
 const { oneLine } = require(`common-tags`)
 const moment = require(`moment`)
+const slash = require(`slash`)
+const debug = require(`debug`)(`gatsby:reducers:jobs`)
 
-module.exports = (state = { active: [], done: [] }, action) => {
+const validateJobAction = action => {
+  if (!action.payload.id) {
+    throw new Error(`An ID must be provided when creating or setting job`)
+  }
+}
+
+module.exports = (
+  state = { active: new Map(), done: new Map(), queued: new Map() },
+  action
+) => {
   switch (action.type) {
+    case `CREATE_JOB_WITH_HANDLER`:
     case `CREATE_JOB`:
     case `SET_JOB`: {
-      if (!action.payload.id) {
-        throw new Error(`An ID must be provided when creating or setting job`)
+      validateJobAction(action)
+
+      if (action.payload.outputPath) {
+        // normalize path
+        action.payload.outputPath = slash(action.payload.outputPath)
       }
-      const index = _.findIndex(state.active, j => j.id === action.payload.id)
-      const mergedJob = _.merge(state.active[index], {
-        ...action.payload,
-        createdAt: Date.now(),
-        plugin: action.plugin,
-      })
-      if (index !== -1) {
-        return {
-          done: state.done,
-          active: [
-            ...state.active
-              .slice(0, index)
-              .concat([mergedJob])
-              .concat(state.active.slice(index + 1)),
-          ],
-        }
+
+      if (action.type === `CREATE_JOB_WITH_HANDLER`) {
+        debug(`CREATE_JOB_WITH_HANDLER ${action.payload.id}`)
+        state.queued.set(action.payload.id, {
+          ...action.payload,
+          plugin: action.plugin,
+        })
       } else {
-        return {
-          done: state.done,
-          active: state.active.concat([
-            {
-              ...action.payload,
-              createdAt: Date.now(),
-              plugin: action.plugin,
-            },
-          ]),
-        }
+        debug(`CREATE_JOB ${action.payload.id}`)
+        state.active.set(action.payload.id, {
+          ...(state.active.get(action.payload.id) || {}),
+          ...action.payload,
+          createdAt: Date.now(),
+          plugin: action.plugin,
+        })
       }
+      return state
+    }
+    case `HANDLE_JOB`: {
+      validateJobAction(action)
+      debug(`HANDLE_JOB ${action.payload.id}`)
+      state.active.set(action.payload.id, {
+        ...state.queued.get(action.payload.id),
+        createdAt: Date.now(),
+      })
+      state.queued.delete(action.payload.id)
+      return state
     }
     case `END_JOB`: {
-      if (!action.payload.id) {
-        throw new Error(`An ID must be provided when ending a job`)
-      }
+      validateJobAction(action)
+      debug(`END_JOB ${action.payload.id}`)
       const completedAt = Date.now()
-      const job = state.active.find(j => j.id === action.payload.id)
+      const job = state.active.get(action.payload.id)
       if (!job) {
         throw new Error(oneLine`
           The plugin "${_.get(action, `plugin.name`, `anonymous`)}"
@@ -51,16 +64,14 @@ module.exports = (state = { active: [], done: [] }, action) => {
           that either hasn't yet been created or has already been ended`)
       }
 
-      return {
-        done: state.done.concat([
-          {
-            ...job,
-            completedAt,
-            runTime: moment(completedAt).diff(moment(job.createdAt)),
-          },
-        ]),
-        active: state.active.filter(j => j.id !== action.payload.id),
-      }
+      state.active.delete(action.payload.id)
+      state.done.set(action.payload.id, {
+        ...job,
+        completedAt,
+        runTime: moment(completedAt).diff(moment(job.createdAt)),
+      })
+
+      return state
     }
   }
 

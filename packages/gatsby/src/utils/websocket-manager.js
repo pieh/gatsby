@@ -1,14 +1,10 @@
 // @flow
 
 const path = require(`path`)
-const { store, emitter } = require(`../redux`)
+const { store } = require(`../redux`)
 const fs = require(`fs`)
-
-// const {
-//   getPathFilter,
-// } = require(`../internal-plugins/query-runner/page-query-runner`)
-// console.trace()
-// console.log(`getPathFilter`, getPathFilter)
+const _ = require(`lodash`)
+const debug = require(`debug`)(`gatsby:websocket-manager`)
 
 type QueryResult = {
   id: string,
@@ -156,9 +152,11 @@ class WebsocketManager {
         path: string,
         fetchReason: FetchPageQueryDataReason
       ) => {
+        let howIHaveThis = `from memory`
         if (!this.pageResults.has(path)) {
           const result = getCachedPageData(path, this.programDir)
           if (result) {
+            howIHaveThis = `read from cache`
             this.pageResults.set(path, result)
           } else {
             // console.log(`Results not found`, path)
@@ -166,10 +164,17 @@ class WebsocketManager {
           }
         }
 
-        console.log(`[websocket-manager] Emitting results`, path)
+        debug(
+          `Emitting results ${path} ${fetchReason} ${howIHaveThis} ${_.get(
+            this.pageResults.get(path),
+            `result.data.markdownRemark.excerpt`
+          )}`
+        )
+
         this.websocket.send({
           type: `pageQueryResult`,
           why: `getDataForPath`,
+          reason: fetchReason,
           payload: this.pageResults.get(path),
         })
       }
@@ -177,7 +182,7 @@ class WebsocketManager {
       s.on(`getDataForPath`, getDataForPath)
 
       s.on(`registerPath`, path => {
-        console.log(`[websocket-manager] Register path`, path)
+        debug(`Register path`, path)
         if (activePath === path) {
           return
         } else if (activePath) {
@@ -214,7 +219,7 @@ class WebsocketManager {
   emitPageData(data: QueryResult) {
     this.pageResults.set(data.id, data)
     if (this.isInitialised) {
-      console.log(`[websocket-manager] Emitting results`, data.id)
+      debug(`Emitting results`, data.id)
       this.websocket.send({ type: `pageQueryResult`, payload: data })
     }
   }
@@ -222,7 +227,7 @@ class WebsocketManager {
   removePageQueryResult(path: string) {
     this.pageResults.delete(path)
     if (this.isInitialised) {
-      console.log(`[websocket-manager] Deleting page query results`, path)
+      debug(`Deleting page query results`, path)
       this.websocket.send({
         type: `pageQueryResult`,
         payload: {

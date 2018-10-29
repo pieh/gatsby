@@ -443,6 +443,10 @@ module.exports = async (args: BootstrapArgs) => {
   await runQueries(activity)
   activity.end()
 
+  if (process.env.gatsby_executing_command === `build`) {
+    // TO-DO start executing queued jobs
+  }
+
   // Write out files.
   activity = report.activityTimer(`write out page data`, {
     parentSpan: bootstrapSpan,
@@ -464,7 +468,7 @@ module.exports = async (args: BootstrapArgs) => {
   activity.end()
 
   const checkJobsDone = async () => {
-    if (store.getState().jobs.active.length === 0) {
+    if (store.getState().jobs.active.size === 0) {
       // onPostBootstrap
       activity = report.activityTimer(`onPostBootstrap`, {
         parentSpan: bootstrapSpan,
@@ -486,8 +490,7 @@ module.exports = async (args: BootstrapArgs) => {
     return false
   }
 
-  const isJobDone = await checkJobsDone()
-  if (isJobDone) {
+  if (await checkJobsDone()) {
     return {
       graphqlRunner,
     }

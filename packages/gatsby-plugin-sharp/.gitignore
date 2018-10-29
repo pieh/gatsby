@@ -2,3 +2,5 @@
 /node_modules
 /gatsby-node.js
 /duotone.js
+/job-handler.js
+/utils.js
