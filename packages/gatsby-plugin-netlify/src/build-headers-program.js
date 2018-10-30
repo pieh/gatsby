@@ -9,6 +9,7 @@ import {
   CACHING_HEADERS,
   LINK_REGEX,
   NETLIFY_HEADERS_FILENAME,
+  PERMAMENT_CACHING_RULE,
 } from "./constants"
 
 function validHeaders(headers) {
@@ -208,10 +209,18 @@ const applySecurityHeaders = ({ mergeSecurityHeaders }) => headers => {
   return defaultMerge(headers, SECURITY_HEADERS)
 }
 
-const applyCachingHeaders = ({ mergeCachingHeaders }) => headers => {
+const applyCachingHeaders = (
+  { mergeCachingHeaders },
+  { manifest }
+) => headers => {
   if (!mergeCachingHeaders) {
     return headers
   }
+
+  const producedJSFiles = Object.values(manifest)
+  producedJSFiles.forEach(jsFile => {
+    headers[jsFile] = [PERMAMENT_CACHING_RULE]
+  })
 
   return defaultMerge(headers, CACHING_HEADERS)
 }
@@ -230,7 +239,7 @@ export default function buildHeadersProgram(pluginData, pluginOptions) {
     validateUserOptions(pluginOptions),
     mapUserLinkHeaders(pluginData, pluginOptions),
     applySecurityHeaders(pluginOptions),
-    applyCachingHeaders(pluginOptions),
+    applyCachingHeaders(pluginOptions, pluginData),
     mapUserLinkAllPageHeaders(pluginData, pluginOptions),
     applyLinkHeaders(pluginData, pluginOptions),
     applyTransfromHeaders(pluginOptions),

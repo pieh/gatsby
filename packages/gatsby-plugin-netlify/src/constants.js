@@ -24,8 +24,10 @@ export const SECURITY_HEADERS = {
   ],
 }
 
+export const PERMAMENT_CACHING_RULE = `Cache-Control: public, max-age=31536000, immutable`
+
 export const CACHING_HEADERS = {
-  "/static/*": [`Cache-Control: public, max-age=31536000, immutable`],
+  "/static/*": [PERMAMENT_CACHING_RULE],
 }
 
 export const LINK_REGEX = /^(Link: <\/)(.+)(>;.+)/
