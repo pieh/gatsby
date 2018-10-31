@@ -37,12 +37,9 @@
     "no-inner-declarations": "off",
     "prettier/prettier": "error",
     "quotes": ["error", "backtick"],
-    "react/prop-types": [
-      "error",
-      {
-        "ignore": ["children"]
-      }
-    ],
+    "react/display-name": "off",
+    "react/jsx-key": "warn",
+    "react/prop-types": "off",
     "require-jsdoc": "off",
     "valid-jsdoc": "off"
   },
@@ -58,6 +55,23 @@
       "globals": {
         "___loader": false,
         "___emitter": false
+      }
+    },
+    {
+      "files": [
+        "examples/src"
+      ],
+      "env": {
+        "browser": true
+      }
+    },
+    {
+      "files": [
+        "**/cypress/integration/**/*"
+      ],
+      "globals": {
+        "cy": false,
+        "Cypress": false
       }
     }
   ],
