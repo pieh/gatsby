@@ -1,4 +1,12 @@
-// TODO: make this message nicer
 console.log(
-  `There were linting errors in your commit, you can fix them and run "git commit --amend"\nTo disable git hooks you can run "yarn run hooks:uninstall"\n`
+  `Gatsby uses precommit hooks to run our linting and style checks. We do this
+to avoid additional hassle during pull request reviews, so please fix any linting
+problems before submitting pull request, because all PRs must pass these checks.
+
+If you're doing something temporary, you can disable this hook with:
+  git commit --no-verify
+
+If you want disable this hook for all future commits:
+  npm run hooks:uninstall
+`
 )
