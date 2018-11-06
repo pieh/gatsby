@@ -10,8 +10,8 @@ describe(`JavaScript page creator`, () => {
       { path: `somedir/dir2/test1.js` },
     ]
 
-    expect(validFiles.filter(file => validatePath(file.path)).length).toEqual(
-      validFiles.length
+    expect(validFiles.filter(file => validatePath(file.path))).toEqual(
+      validFiles
     )
   })
 
@@ -23,8 +23,8 @@ describe(`JavaScript page creator`, () => {
       { path: `_blah.js` },
     ])
 
-    expect(testFiles.filter(file => validatePath(file.path)).length).toEqual(
-      validFiles.length
+    expect(testFiles.filter(file => validatePath(file.path))).toEqual(
+      validFiles
     )
   })
 
@@ -39,8 +39,8 @@ describe(`JavaScript page creator`, () => {
       { path: `something/.markdownlint.json` },
     ])
 
-    expect(testFiles.filter(file => validatePath(file.path)).length).toEqual(
-      validFiles.length
+    expect(testFiles.filter(file => validatePath(file.path))).toEqual(
+      validFiles
     )
   })
 
@@ -55,8 +55,8 @@ describe(`JavaScript page creator`, () => {
       { path: `dir1/dir2/file.json` },
     ])
 
-    expect(testFiles.filter(file => validatePath(file.path)).length).toEqual(
-      validFiles.length
+    expect(testFiles.filter(file => validatePath(file.path))).toEqual(
+      validFiles
     )
   })
 
@@ -67,8 +67,8 @@ describe(`JavaScript page creator`, () => {
       { path: `template-cool-page-type.js` },
     ])
 
-    expect(testFiles.filter(file => validatePath(file.path)).length).toEqual(
-      validFiles.length
+    expect(testFiles.filter(file => validatePath(file.path))).toEqual(
+      validFiles
     )
   })
 
@@ -83,8 +83,8 @@ describe(`JavaScript page creator`, () => {
       { path: `something-else/other-declaration-file.d.tsx` },
     ])
 
-    expect(testFiles.filter(file => validatePath(file.path)).length).toEqual(
-      validFiles.length
+    expect(testFiles.filter(file => validatePath(file.path))).toEqual(
+      validFiles
     )
   })
 
@@ -92,13 +92,20 @@ describe(`JavaScript page creator`, () => {
     const validFiles = [{ path: `page.js` }, { path: `page.jsx` }]
 
     const testFiles = validFiles.concat([
-      { path: `__tests__/something.test.js` },
-      { path: `foo.spec.js` },
-      { path: `bar.test.js` },
+      { path: `src/pages/__tests__/something.test.js` },
+      { path: `src/pages/__tests__/something.test.tsx` },
+      { path: `src/pages/__tests__/something.js` },
+      { path: `src/pages/__tests__/nested-directory/something.js` },
+      { path: `src/pages/foo.spec.js` },
+      { path: `src/pages/foo.spec.tsx` },
+      { path: `src/pages/bar.test.js` },
+      { path: `src/pages/bar.test.tsx` },
+      { path: `src\\pages\\bar.test.js` },
+      { path: `src\\pages\\__tests__\\nested-directory\\something.js` },
     ])
 
-    expect(testFiles.filter(file => validatePath(file.path)).length).toEqual(
-      validFiles.length
+    expect(testFiles.filter(file => validatePath(file.path))).toEqual(
+      validFiles
     )
   })
 
