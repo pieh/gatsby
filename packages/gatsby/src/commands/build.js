@@ -7,6 +7,7 @@ const bootstrap = require(`../bootstrap`)
 const apiRunnerNode = require(`../utils/api-runner-node`)
 const copyStaticDirectory = require(`../utils/copy-static-directory`)
 const { initTracer, stopTracer } = require(`../utils/tracer`)
+const { getSaveStatePromise } = require(`../redux`)
 const tracer = require(`opentracing`).globalTracer()
 
 function reportFailure(msg, err: Error) {
@@ -76,6 +77,10 @@ module.exports = async function build(program: BuildArgs) {
   })
 
   report.info(`Done building in ${process.uptime()} sec`)
+
+  await getSaveStatePromise()
+
+  report.info(`Done building + saving state in ${process.uptime()} sec`)
 
   buildSpan.finish()
 

@@ -1,8 +1,14 @@
 const Redux = require(`redux`)
 const _ = require(`lodash`)
-const fs = require(`fs`)
+const fs = require(`fs-extra`)
 const mitt = require(`mitt`)
 const stringify = require(`json-stream-stringify`)
+const Queue = require(`better-queue`)
+const path = require(`path`)
+const crypto = require(`crypto`)
+const os = require(`os`)
+
+const debug = require(`debug`)(`gatsby:redux/index`)
 
 // Create event emitter for actions
 const emitter = mitt()
@@ -62,8 +68,15 @@ const store = Redux.createStore(
   })
 )
 
+const reduxStateFilePath = `${process.cwd()}/.cache/redux-state.json`
+const getTmpFilePath = () =>
+  path.join(os.tmpdir(), crypto.randomBytes(20).toString(`hex`))
+let saveTaskPromise = Promise.resolve()
+let saveTaskResolve
+
 // Persist state.
-const saveState = state => {
+const queue = new Queue(async ({ state }, cb) => {
+  saveTaskPromise = new Promise(resolve => (saveTaskResolve = resolve))
   const pickedState = _.pick(state, [
     `nodes`,
     `status`,
@@ -79,21 +92,36 @@ const saveState = state => {
   pickedState.components = mapToObject(pickedState.components)
   pickedState.nodes = mapToObject(pickedState.nodes)
 
-  const writeStream = fs.createWriteStream(
-    `${process.cwd()}/.cache/redux-state.json`
-  )
+  const tmpFilePath = getTmpFilePath()
+  debug(`saving state to ${tmpFilePath}`)
+  const writeStream = fs.createWriteStream(tmpFilePath)
 
   new stringify(pickedState, null, 2, true)
     .pipe(writeStream)
     .on(`finish`, () => {
       writeStream.destroy()
       writeStream.end()
+
+      debug(`saved state to ${tmpFilePath}, moving to ${reduxStateFilePath}`)
+      fs.move(tmpFilePath, reduxStateFilePath, { overwrite: true }, error => {
+        debug(
+          `saved moved to ${reduxStateFilePath} ${error ? `with error` : `OK`}`
+        )
+        cb(error)
+      })
     })
-    .on(`error`, () => {
+    .on(`error`, error => {
       writeStream.destroy()
       writeStream.end()
+      cb(error)
     })
-}
+})
+
+queue.on(`drain`, () => {
+  saveTaskResolve()
+})
+
+const saveState = state => queue.push({ state, id: `saveState` })
 const saveStateDebounced = _.debounce(saveState, 1000)
 
 store.subscribe(() => {
@@ -101,29 +129,25 @@ store.subscribe(() => {
   emitter.emit(lastAction.type, lastAction)
 })
 
-// During development, once bootstrap is finished, persist state on changes.
-let bootstrapFinished = false
-if (process.env.gatsby_executing_command === `develop`) {
-  emitter.on(`BOOTSTRAP_FINISHED`, () => {
-    bootstrapFinished = true
-    saveState(store.getState())
-  })
-  emitter.on(`*`, () => {
-    if (bootstrapFinished) {
+const onBootstrapFinished = () => {
+  saveState(store.getState())
+  emitter.off(`BOOTSTRAP_FINISHED`, onBootstrapFinished)
+
+  // During development, once bootstrap is finished, persist state on changes.
+  if (process.env.gatsby_executing_command === `develop`) {
+    store.subscribe(() => {
       saveStateDebounced(store.getState())
-    }
-  })
+    })
+  }
 }
 
-// During builds, persist state once bootstrap has finished.
-if (process.env.gatsby_executing_command === `build`) {
-  emitter.on(`BOOTSTRAP_FINISHED`, () => {
-    saveState(store.getState())
-  })
-}
+// Persist state once bootstrap has finished.
+emitter.on(`BOOTSTRAP_FINISHED`, onBootstrapFinished)
 
 /** Event emitter */
 exports.emitter = emitter
 
 /** Redux store */
 exports.store = store
+
+exports.getSaveStatePromise = () => saveTaskPromise
