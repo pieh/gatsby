@@ -2,6 +2,8 @@
 
 module.exports = (state = {}, action) => {
   switch (action.type) {
+    case `FROM_PERSISTENCE_LAYER`:
+      return action.payload.jsonDataPaths || state
     // case `DELETE_ALL_JSON_DATA_PATHS`:
     //   return {}
     case `SET_JSON_DATA_PATH`:

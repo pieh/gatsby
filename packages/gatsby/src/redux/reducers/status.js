@@ -2,6 +2,8 @@ const _ = require(`lodash`)
 
 module.exports = (state = { plugins: {} }, action) => {
   switch (action.type) {
+    case `FROM_PERSISTENCE_LAYER`:
+      return action.payload.status || state
     case `DELETE_CACHE`:
       return { plugins: {} }
     case `UPDATE_PLUGINS_HASH`:

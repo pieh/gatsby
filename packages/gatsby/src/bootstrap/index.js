@@ -13,7 +13,7 @@ const Promise = require(`bluebird`)
 const apiRunnerNode = require(`../utils/api-runner-node`)
 const mergeGatsbyConfig = require(`../utils/merge-gatsby-config`)
 const { graphql } = require(`graphql`)
-const { store, emitter } = require(`../redux`)
+const { store, emitter, start: startLokiAndRedux } = require(`../redux`)
 const loadPlugins = require(`./load-plugins`)
 const report = require(`gatsby-cli/lib/reporter`)
 const getConfigFile = require(`./get-config-file`)
@@ -61,6 +61,10 @@ module.exports = async (args: BootstrapArgs) => {
     // Fix program directory path for windows env.
     directory: slash(args.directory),
   }
+
+  await startLokiAndRedux({
+    saveFile: `${program.directory}/.cache/loki/loki.db`,
+  })
 
   store.dispatch({
     type: `SET_PROGRAM`,
@@ -211,6 +215,7 @@ module.exports = async (args: BootstrapArgs) => {
   // Now that we know the .cache directory is safe, initialize the cache
   // directory.
   await fs.ensureDir(`${program.directory}/.cache`)
+  await fs.ensureDir(`${program.directory}/.cache/loki`)
 
   // Ensure the public/static directory
   await fs.ensureDir(`${program.directory}/public/static`)

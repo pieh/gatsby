@@ -33,10 +33,10 @@ function handleQueryResult({ results, queryArgs, path }) {
 }
 
 function buildResolver(gqlType) {
-  return async (object, queryArgs, b, { rootValue }) => {
+  return async (object, queryArgs, context) => {
     let path
-    if (typeof rootValue !== `undefined`) {
-      path = rootValue.path
+    if (typeof context !== `undefined`) {
+      path = context.path
     }
     const results = await runQuery({
       queryArgs,

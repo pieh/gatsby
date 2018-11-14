@@ -1,5 +1,7 @@
 module.exports = (state = new Map(), action) => {
   switch (action.type) {
+    case `FROM_PERSISTENCE_LAYER`:
+      return action.payload.staticQueryComponents || state
     case `DELETE_CACHE`:
       return new Map()
     case `REPLACE_STATIC_QUERY`:

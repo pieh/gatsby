@@ -2,6 +2,8 @@ const _ = require(`lodash`)
 
 module.exports = (state = { nodes: {}, connections: {} }, action) => {
   switch (action.type) {
+    case `FROM_PERSISTENCE_LAYER`:
+      return action.payload.componentDataDependencies || state
     case `DELETE_CACHE`:
       return { nodes: {}, connections: {} }
     case `CREATE_COMPONENT_DEPENDENCY`:

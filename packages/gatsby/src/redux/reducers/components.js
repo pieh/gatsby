@@ -3,6 +3,8 @@ const normalize = require(`normalize-path`)
 
 module.exports = (state = new Map(), action) => {
   switch (action.type) {
+    case `FROM_PERSISTENCE_LAYER`:
+      return action.payload.components || state
     case `DELETE_CACHE`:
       return new Map()
     case `CREATE_PAGE`:
