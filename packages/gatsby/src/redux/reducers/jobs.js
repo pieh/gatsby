@@ -2,13 +2,18 @@ const _ = require(`lodash`)
 const { oneLine } = require(`common-tags`)
 const moment = require(`moment`)
 
+const validateJobAction = action => {
+  if (!action.payload.id) {
+    throw new Error(`An ID must be provided when creating or setting job`)
+  }
+}
+
 module.exports = (state = { active: [], done: [] }, action) => {
   switch (action.type) {
     case `CREATE_JOB`:
     case `SET_JOB`: {
-      if (!action.payload.id) {
-        throw new Error(`An ID must be provided when creating or setting job`)
-      }
+      validateJobAction(action)
+
       const index = _.findIndex(state.active, j => j.id === action.payload.id)
       const mergedJob = _.merge(state.active[index], {
         ...action.payload,
@@ -39,9 +44,8 @@ module.exports = (state = { active: [], done: [] }, action) => {
       }
     }
     case `END_JOB`: {
-      if (!action.payload.id) {
-        throw new Error(`An ID must be provided when ending a job`)
-      }
+      validateJobAction(action)
+
       const completedAt = Date.now()
       const job = state.active.find(j => j.id === action.payload.id)
       if (!job) {
