@@ -475,7 +475,7 @@ module.exports = async (args: BootstrapArgs) => {
 
   const checkJobsDone = _.debounce(resolve => {
     const state = store.getState()
-    if (state.jobs.active.length === 0) {
+    if (state.jobs.active.size === 0) {
       report.log(``)
       report.info(`bootstrap finished - ${process.uptime()} s`)
       report.log(``)
@@ -495,7 +495,7 @@ module.exports = async (args: BootstrapArgs) => {
     }
   }, 100)
 
-  if (store.getState().jobs.active.length === 0) {
+  if (store.getState().jobs.active.size === 0) {
     // onPostBootstrap
     activity = report.activityTimer(`onPostBootstrap`, {
       parentSpan: bootstrapSpan,

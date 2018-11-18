@@ -2,16 +2,16 @@
 
 exports[`Job actions/reducer allows completing jobs 1`] = `
 Object {
-  "active": Array [],
-  "done": Array [
-    Object {
+  "active": Map {},
+  "done": Map {
+    "test job" => Object {
       "completedAt": 1482363367071,
       "createdAt": 1482363367071,
       "id": "test job",
       "plugin": null,
       "runTime": 0,
     },
-  ],
+  },
 }
 `;
 

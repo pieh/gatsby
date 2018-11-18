@@ -17,7 +17,7 @@ describe(`Job actions/reducer`, () => {
   it(`allows updating jobs`, () => {
     let state = jobsReducer(undefined, actions.createJob({ id: `test job` }))
     state = jobsReducer(state, actions.setJob({ id: `test job`, progress: 40 }))
-    expect(state.active[0].progress).toBeDefined()
+    expect(state.active.get(`test job`).progress).toBeDefined()
   })
 
   it(`Allows you to set other info on the job`, () => {
@@ -25,7 +25,7 @@ describe(`Job actions/reducer`, () => {
       undefined,
       actions.createJob({ id: `test job`, word: `yo` })
     )
-    expect(state.active[0].word).toBeDefined()
+    expect(state.active.get(`test job`).word).toBeDefined()
   })
 
   it(`throws an error if an ID isn't provided`, done => {
