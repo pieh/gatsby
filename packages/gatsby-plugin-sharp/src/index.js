@@ -207,10 +207,7 @@ const processFile = (file, jobs, cb, reporter) => {
       }
     }
 
-    if (
-      (job.file.extension === `png` && args.toFormat === ``) ||
-      args.toFormat === `png`
-    ) {
+    if (args.toFormat === `png`) {
       clonedPipeline
         .toBuffer()
         .then(sharpBuffer =>
@@ -232,12 +229,7 @@ const processFile = (file, jobs, cb, reporter) => {
         )
         .catch(onFinish)
       // Compress jpeg
-    } else if (
-      useMozjpeg &&
-      ((job.file.extension === `jpg` && args.toFormat === ``) ||
-        (job.file.extension === `jpeg` && args.toFormat === ``) ||
-        args.toFormat === `jpg`)
-    ) {
+    } else if (useMozjpeg && args.toFormat === `jpg`) {
       clonedPipeline
         .toBuffer()
         .then(sharpBuffer =>
@@ -257,10 +249,7 @@ const processFile = (file, jobs, cb, reporter) => {
         )
         .catch(onFinish)
       // Compress webp
-    } else if (
-      (job.file.extension === `webp` && args.toFormat === ``) ||
-      args.toFormat === `webp`
-    ) {
+    } else if (args.toFormat === `webp`) {
       clonedPipeline
         .toBuffer()
         .then(sharpBuffer =>
@@ -361,6 +350,9 @@ function queueImageResizing({ file, args = {}, reporter }) {
   })
   const sortedArgs = _.sortBy(filteredArgs, arg => arg[0] === `width`)
   const fileExtension = options.toFormat ? options.toFormat : file.extension
+  if (!options.toFormat) {
+    options.toFormat = file.extension === `jpeg` ? `jpg` : file.extension
+  }
 
   const argsDigest = crypto
     .createHash(`md5`)
