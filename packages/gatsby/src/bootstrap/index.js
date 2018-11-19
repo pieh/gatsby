@@ -473,50 +473,38 @@ module.exports = async (args: BootstrapArgs) => {
   await writeRedirects()
   activity.end()
 
-  const checkJobsDone = _.debounce(resolve => {
-    const state = store.getState()
-    if (state.jobs.active.size === 0) {
-      report.log(``)
-      report.info(`bootstrap finished - ${process.uptime()} s`)
-      report.log(``)
-
-      // onPostBootstrap
-      activity = report.activityTimer(`onPostBootstrap`, {
-        parentSpan: bootstrapSpan,
-      })
-      activity.start()
-      apiRunnerNode(`onPostBootstrap`, { parentSpan: activity.span }).then(
-        () => {
-          activity.end()
-          bootstrapSpan.finish()
-          resolve({ graphqlRunner })
-        }
-      )
-    }
-  }, 100)
-
-  if (store.getState().jobs.active.size === 0) {
-    // onPostBootstrap
-    activity = report.activityTimer(`onPostBootstrap`, {
-      parentSpan: bootstrapSpan,
-    })
-    activity.start()
-    await apiRunnerNode(`onPostBootstrap`, { parentSpan: activity.span })
-    activity.end()
-
-    bootstrapSpan.finish()
-
-    report.log(``)
-    report.info(`bootstrap finished - ${process.uptime()} s`)
-    report.log(``)
-    emitter.emit(`BOOTSTRAP_FINISHED`)
-    return {
-      graphqlRunner,
-    }
-  } else {
-    return new Promise(resolve => {
+  // Wait for all running jobs to finish before finishing bootstrap
+  const areAllJobsDone = () => store.getState().jobs.active.size === 0
+  if (!areAllJobsDone()) {
+    await new Promise(resolve => {
       // Wait until all side effect jobs are finished.
-      emitter.on(`END_JOB`, () => checkJobsDone(resolve))
+      const onEndJob = async () => {
+        if (areAllJobsDone()) {
+          emitter.off(`END_JOB`, debouncedOnEndJob)
+          resolve()
+        }
+      }
+      const debouncedOnEndJob = _.debounce(onEndJob, 100)
+      emitter.on(`END_JOB`, debouncedOnEndJob)
     })
+  }
+
+  // onPostBootstrap
+  activity = report.activityTimer(`onPostBootstrap`, {
+    parentSpan: bootstrapSpan,
+  })
+  activity.start()
+  await apiRunnerNode(`onPostBootstrap`, { parentSpan: activity.span })
+  activity.end()
+
+  bootstrapSpan.finish()
+
+  report.log(``)
+  report.info(`bootstrap finished - ${process.uptime()} s`)
+  report.log(``)
+  emitter.emit(`BOOTSTRAP_FINISHED`)
+
+  return {
+    graphqlRunner,
   }
 }
