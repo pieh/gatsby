@@ -104,8 +104,8 @@ const healOptions = (args, defaultArgs) => {
 const useMozjpeg = process.env.GATSBY_JPEG_ENCODER === `MOZJPEG`
 
 let totalJobs = 0
-const processFile = (file, jobs, cb, reporter) => {
-  // console.log("totalJobs", totalJobs)
+const processFile = (jobs, cb, reporter) => {
+  const file = jobs[0].inputPath
   bar.total = totalJobs
 
   let imagesFinished = 0
@@ -313,7 +313,6 @@ const queueJob = (job, reporter) => {
       )
       // We're now processing the file's jobs.
       processFile(
-        job.inputPath,
         jobs,
         () => {
           boundActionCreators.endJob(
