@@ -193,7 +193,7 @@ const processFile = (file, jobs, cb, reporter) => {
       bar.tick()
       boundActionCreators.setJob(
         {
-          id: `processing image ${job.file.absolutePath}`,
+          id: `processing image ${job.inputPath}`,
           imagesFinished,
         },
         { name: `gatsby-plugin-sharp` }
@@ -276,7 +276,7 @@ const q = queue((task, callback) => {
 }, 1)
 
 const queueJob = (job, reporter) => {
-  const inputFileKey = job.file.absolutePath.replace(/\./g, `%2E`)
+  const inputFileKey = job.inputPath.replace(/\./g, `%2E`)
   const outputFileKey = job.outputPath.replace(/\./g, `%2E`)
   const jobPath = `${inputFileKey}.${outputFileKey}`
 
@@ -306,19 +306,19 @@ const queueJob = (job, reporter) => {
       delete toProcess[inputFileKey]
       boundActionCreators.createJob(
         {
-          id: `processing image ${job.file.absolutePath}`,
+          id: `processing image ${job.inputPath}`,
           imagesCount: _.values(toProcess[inputFileKey]).length,
         },
         { name: `gatsby-plugin-sharp` }
       )
       // We're now processing the file's jobs.
       processFile(
-        job.file.absolutePath,
+        job.inputPath,
         jobs,
         () => {
           boundActionCreators.endJob(
             {
-              id: `processing image ${job.file.absolutePath}`,
+              id: `processing image ${job.inputPath}`,
             },
             { name: `gatsby-plugin-sharp` }
           )
@@ -407,7 +407,6 @@ function queueImageResizing({ file, args = {}, reporter }) {
 
   // Create job and process.
   const job = {
-    file,
     args: options,
     finishedPromise,
     outsideResolve,
