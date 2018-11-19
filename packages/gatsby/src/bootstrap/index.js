@@ -15,6 +15,7 @@ const mergeGatsbyConfig = require(`../utils/merge-gatsby-config`)
 const getBrowserslist = require(`../utils/browserslist`)
 const { graphql } = require(`graphql`)
 const { store, emitter } = require(`../redux`)
+const { areAllJobsDone } = require(`../db/jobs`)
 const loadPlugins = require(`./load-plugins`)
 const report = require(`gatsby-cli/lib/reporter`)
 const getConfigFile = require(`./get-config-file`)
@@ -474,7 +475,6 @@ module.exports = async (args: BootstrapArgs) => {
   activity.end()
 
   // Wait for all running jobs to finish before finishing bootstrap
-  const areAllJobsDone = () => store.getState().jobs.active.size === 0
   if (!areAllJobsDone()) {
     await new Promise(resolve => {
       // Wait until all side effect jobs are finished.
