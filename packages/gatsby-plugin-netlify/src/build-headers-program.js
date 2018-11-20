@@ -35,20 +35,23 @@ function pathChunkName(path) {
 
 function createScriptHeaderGenerator(manifest, pathPrefix) {
   return script => {
-    const chunk = manifest[script]
+    let chunks = manifest[script]
 
-    if (!chunk) {
+    if (!chunks) {
       return null
+    } // Always add starting slash, as link entries start with slash as relative to deploy root
+
+    if (!_.isArray(chunks)) {
+      chunks = [chunks]
     }
 
-    // Always add starting slash, as link entries start with slash as relative to deploy root
-    return linkTemplate(`${pathPrefix}/${chunk}`)
+    return chunks.map(chunk => linkTemplate(`${pathPrefix}/${chunk}`))
   }
 }
 
-function linkHeaders(scripts, manifest, pathPrefix) {
+function linkHeaders(assets, manifest, pathPrefix) {
   return _.compact(
-    scripts.map(createScriptHeaderGenerator(manifest, pathPrefix))
+    _.flatten(assets.map(createScriptHeaderGenerator(manifest, pathPrefix)))
   )
 }
 
@@ -60,7 +63,7 @@ function preloadHeadersByPage(pages, manifest, pathPrefix) {
   let linksByPage = {}
 
   pages.forEach(page => {
-    const scripts = [
+    const assets = [
       ...COMMON_BUNDLES,
       pathChunkName(page.path),
       page.componentChunkName,
@@ -68,7 +71,7 @@ function preloadHeadersByPage(pages, manifest, pathPrefix) {
 
     const pathKey = headersPath(pathPrefix, page.path)
 
-    linksByPage[pathKey] = linkHeaders(scripts, manifest, pathPrefix)
+    linksByPage[pathKey] = linkHeaders(assets, manifest, pathPrefix)
   })
 
   return linksByPage
