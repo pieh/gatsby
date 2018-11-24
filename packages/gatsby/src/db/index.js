@@ -12,7 +12,6 @@ if (process.env.GATSBY_DB_NODES === `loki`) {
 // calls `saveState()` on all DBs
 function saveState() {
   for (const db of dbs) {
-    console.log(`save state`)
     db.saveState()
   }
 }
