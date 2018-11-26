@@ -271,9 +271,17 @@ const processFile = (jobs, cb, reporter) => {
 }
 
 const toProcess = {}
-const q = queue((task, callback) => {
-  task(callback)
-}, 1)
+const q = queue(
+  (task, callback) => {
+    task(callback)
+  },
+  {
+    merge: (oldTask, newTask, cb) => {
+      oldTask.jobs = oldTask.jobs.concat(newTask.jobs)
+      return cb(null, oldTask)
+    },
+  }
+)
 
 const queueJob = (job, reporter) => {
   const inputFileKey = job.inputPath.replace(/\./g, `%2E`)
@@ -307,7 +315,6 @@ const queueJob = (job, reporter) => {
       boundActionCreators.createJob(
         {
           id: `processing image ${job.inputPath}`,
-          imagesCount: _.values(toProcess[inputFileKey]).length,
         },
         { name: `gatsby-plugin-sharp` }
       )
@@ -412,6 +419,7 @@ function queueImageResizing({ file, args = {}, reporter }) {
     outsideReject,
     inputPath: file.absolutePath,
     outputPath: filePath,
+    batchId: file.absolutePath,
   }
 
   queueJob(job, reporter)

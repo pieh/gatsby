@@ -1009,6 +1009,16 @@ actions.createJob = (job: Job, plugin?: ?Plugin = null) => {
   }
 }
 
+if (process.env.GATSBY_JOB_WITH_HANDLER) {
+  actions.createJobWithHandler = (job: Job, plugin?: ?Plugin = null) => {
+    return {
+      type: `CREATE_JOB_WITH_HANDLER`,
+      plugin,
+      payload: job,
+    }
+  }
+}
+
 /**
  * Set (update) a "job". Sometimes on really long running jobs you want
  * to update the job as it continues.
