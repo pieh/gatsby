@@ -3773,9 +3773,12 @@ better-assert@~1.0.0:
   dependencies:
     callsite "1.0.0"
 
-better-opn@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/better-opn/-/better-opn-0.1.0.tgz#375f62e2a912a37450eec7800f596ed9fe9bc0bf"
+better-opn@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/better-opn/-/better-opn-0.1.1.tgz#2088560bad9132a8bade341c56bb3f597b72d086"
+  integrity sha512-PdB0HLrIkpKl5bfsOo40yGFlJPLvvUr9mGlRw37jq3HbuxcnwUbu7KVzuvPSp7uOnKS7u69vH313vyQuUNbJpQ==
+  dependencies:
+    opn "^5.4.0"
 
 better-queue-memory@^1.0.1:
   version "1.0.3"
@@ -13851,6 +13854,13 @@ opn@^5.1.0, opn@^5.3.0:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/opn/-/opn-5.3.0.tgz#64871565c863875f052cfdf53d3e3cb5adb53b1c"
   integrity sha512-bYJHo/LOmoTd+pfiYhfZDnf9zekVJrY+cnS2a5F2x+w5ppvTqObojTP7WiFG+kVZs9Inw+qQ/lw7TroWwhdd2g==
+  dependencies:
+    is-wsl "^1.1.0"
+
+opn@^5.4.0:
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/opn/-/opn-5.4.0.tgz#cb545e7aab78562beb11aa3bfabc7042e1761035"
+  integrity sha512-YF9MNdVy/0qvJvDtunAOzFw9iasOQHpVthTCvGzxt61Il64AYSGdK+rYwld7NAfk9qJ7dt+hymBNSc9LNYS+Sw==
   dependencies:
     is-wsl "^1.1.0"
 
