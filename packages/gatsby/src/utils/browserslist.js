@@ -6,10 +6,10 @@ function installedGatsbyVersion(directory) {
     const { version } = require(path.join(
       directory,
       `node_modules`,
-      `gatsby`,
+                        `gatsby`,
       `package.json`
     ))
-    return parseInt(version.split(`.`)[0], 10)
+    return parseInt(version.split(`.`)[0], 10);
   } catch (e) {
     return undefined
   }
