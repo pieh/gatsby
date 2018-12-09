@@ -2,7 +2,7 @@
 title: Making a site with user authentication
 ---
 
-Sometimes, you need to create a site with gated content, available only to authenticated users. Using Gatsby, you may achieve this using the concept of [client-only routes](/docs/building-apps-with-gatsby/#client-only-routes), to define which pages a user can view only after logging in.
+Sometimes, you need to create a site with just a word gated content, available only to authenticated users. Using Gatsby, you may achieve this using the concept of [client-only routes](/docs/building-apps-with-gatsby/#client-only-routes), to define which pages a user can view only after logging in.
 
 ## Prerequisites
 
