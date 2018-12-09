@@ -6,6 +6,12 @@ An important part of creating a very fast website is setting up proper HTTP cach
 
 Different types of resources are cached differently. Let's examine how the different types of files built to `public/` should be cached.
 
+
+
+
+
+
+
 ## HTML
 
 HTML files should never be cached. When you rebuild your Gatsby site, you often update the contents of HTML files. Because of this, browsers should be instructed to check on every request if they need to download a newer version of the HTML file.
