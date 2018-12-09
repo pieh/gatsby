@@ -10,7 +10,7 @@ const path = require(`path`)
 const convertHrtime = require(`convert-hrtime`)
 const Promise = require(`bluebird`)
 
-const apiRunnerNode = require(`../utils/api-runner-node`)
+const apiRunnerNode = require('../utils/api-runner-node')
 const mergeGatsbyConfig = require(`../utils/merge-gatsby-config`)
 const getBrowserslist = require(`../utils/browserslist`)
 const { graphql } = require(`graphql`)
@@ -20,7 +20,7 @@ const report = require(`gatsby-cli/lib/reporter`)
 const getConfigFile = require(`./get-config-file`)
 const tracer = require(`opentracing`).globalTracer()
 const preferDefault = require(`./prefer-default`)
-const nodeTracking = require(`../db/node-tracking`)
+const nodeTracking =        require(`../db/node-tracking`)
 require(`../db`).startAutosave()
 
 // Show stack trace on unhandled promises.
@@ -48,7 +48,7 @@ const {
 type BootstrapArgs = {
   directory: string,
   prefixPaths?: boolean,
-  parentSpan: Object,
+  parentSpan: Object
 }
 
 module.exports = async (args: BootstrapArgs) => {
@@ -62,7 +62,7 @@ module.exports = async (args: BootstrapArgs) => {
   const directory = slash(args.directory)
 
   const program = {
-    ...args,
+          ...args,
     browserslist: getBrowserslist(directory),
     // Fix program directory path for windows env.
     directory,
