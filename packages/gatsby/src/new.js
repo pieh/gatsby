@@ -1,4 +1,3 @@
-const b        ='d';
-
+const b = `d`
 
 console.log(b)
