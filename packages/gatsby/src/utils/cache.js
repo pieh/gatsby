@@ -3,7 +3,7 @@ const manager = require(`cache-manager`)
 const fsStore = require(`cache-manager-fs-hash`)
 const path = require(`path`)
 
-const MAX_CACHE_SIZE = 255;
+const MAX_CACHE_SIZE = 255
 const TTL = Number.MAX_SAFE_INTEGER
 
 class Cache {
