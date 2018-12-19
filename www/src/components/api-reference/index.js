@@ -1,80 +1,77 @@
-import { graphql } from "gatsby"
 import React from "react"
+import { graphql } from "gatsby"
 
-import { rhythm, scale, options } from "../utils/typography"
+import DocBlock from "./doc-block"
 
-const Param = (param, depth = 0) => {
-  // The "plugin" parameter is used internally but not
-  // something a user should use.
-  if (param.name === `plugin` || param.name === `traceId`) {
-    return null
-  }
-
-  return (
-    <div
-      key={`param ${JSON.stringify(param)}`}
+import { rhythm, scale, options } from "../../utils/typography"
+/*
+const Param = (param, depth = 0) => (
+  <div
+    key={`param ${JSON.stringify(param)}`}
+    css={{
+      marginLeft: `${depth * 1.05}rem`,
+      ...(depth > 0 && scale((depth === 1 ? -1 : -1.5) / 5)),
+      lineHeight: options.baseLineHeight,
+    }}
+  >
+    <h5
       css={{
-        marginLeft: `${depth * 1.05}rem`,
-        ...(depth > 0 && scale((depth === 1 ? -1 : -1.5) / 5)),
-        lineHeight: options.baseLineHeight,
+        margin: 0,
+        ...(depth > 0 && scale((depth === 1 ? 0 : -0.5) / 5)),
       }}
     >
-      <h5
-        css={{
-          margin: 0,
-          ...(depth > 0 && scale((depth === 1 ? 0 : -0.5) / 5)),
-        }}
-      >
-        {param.name === `$0` ? `destructured object` : param.name}
-        {` `}
-        {param.type &&
-          param.name !== `$0` && (
-            <span css={{ color: `#73725f` }}>{`{${param.type.name}}`}</span>
-          )}
-        {param.default && (
-          <span css={{ color: `#73725f` }}>
-            [default=
-            {param.default}]
-          </span>
+      {param.name === `$0` ? `destructured object` : param.name}
+      {` `}
+      {param.type &&
+        param.name !== `$0` && (
+          <span css={{ color: `#73725f` }}>{`{${param.type.name}}`}</span>
         )}
-      </h5>
-      {param.description && (
-        <div
-          css={{ marginBottom: rhythm(-1 / 4) }}
-          dangerouslySetInnerHTML={{
-            __html: param.description.childMarkdownRemark.html,
-          }}
-        />
+      {param.default && (
+        <span css={{ color: `#73725f` }}>
+          [default=
+          {param.default}]
+        </span>
       )}
-      {param.properties && (
-        <div css={{ marginBottom: rhythm(1), marginTop: rhythm(1 / 2) }}>
-          {param.properties.map(param => Param(param, depth + 1))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-export default ({ functions }) => (
-  <div>
-    {functions.map((node, i) => (
+    </h5>
+    {param.description && (
       <div
-        id={node.name}
-        key={`reference list ${node.name}`}
+        css={{ marginBottom: rhythm(-1 / 4) }}
+        dangerouslySetInnerHTML={{
+          __html: param.description.childMarkdownRemark.html,
+        }}
+      />
+    )}
+    {param.properties && (
+      <div css={{ marginBottom: rhythm(1), marginTop: rhythm(1 / 2) }}>
+        {param.properties.map(param => Param(param, depth + 1))}
+      </div>
+    )}
+  </div>
+)
+*/
+
+export default ({
+  docs,
+  showTopLevelSignatures = false,
+  ignoreParams = [],
+}) => (
+  <React.Fragment>
+    {docs.map((definition, i) => (
+      <div
+        id={definition.name}
+        key={`reference list ${definition.name}`}
         css={{ marginBottom: rhythm(1) }}
       >
         {i !== 0 && <hr />}
-        <h3>
-          <a href={`#${node.name}`}>
-            <code>{node.name}</code>
-          </a>
-        </h3>
-        <div
-          dangerouslySetInnerHTML={{
-            __html: node.description.childMarkdownRemark.html,
-          }}
+        <DocBlock
+          definition={definition}
+          showSignature={showTopLevelSignatures}
+          level={0}
+          linkableTitle={true}
+          ignoreParams={ignoreParams}
         />
-        {(node.params && node.params.length) > 0 && (
+
+        {/* {(node.params && node.params.length) > 0 && (
           <div>
             <h4>Parameters</h4>
             {node.params.map(param => Param(param, 0))}
@@ -123,36 +120,40 @@ export default ({ functions }) => (
               <h4 css={{ marginTop: rhythm(1) }}>Example</h4>
               {` `}
               {node.examples.map((example, i) => (
-                <div
-                  className="gatsby-highlight"
-                  key={`${node.name} example ${i}`}
-                >
-                  <pre className="language-javascript">
-                    <code
-                      className="language-javascript"
-                      dangerouslySetInnerHTML={{
-                        __html: example.highlighted,
-                      }}
-                    />
-                  </pre>
-                </div>
+                <Example example={example} key={`${node.name} example ${i}`} />
               ))}
             </div>
-          )}
+          )} */}
       </div>
     ))}
-  </div>
+  </React.Fragment>
 )
 
 export const pageQuery = graphql`
-  fragment FunctionList on DocumentationJs {
+  fragment DocumentationDescriptionFragment on DocumentationJs {
     name
     description {
       childMarkdownRemark {
         html
       }
     }
-    returns {
+    deprecated {
+      childMarkdownRemark {
+        html
+      }
+    }
+  }
+
+  fragment DocumentationFragment on DocumentationJs {
+    ...DocumentationDescriptionFragment
+    ...DocumentationExampleFragment
+    ...DocumentationParamsFragment
+    ...DocumentationReturnsFragment
+  }
+`
+
+/*
+returns {
       type {
         name
         type
@@ -160,20 +161,32 @@ export const pageQuery = graphql`
           name
           type
         }
+        expression {
+          type
+          name
+        }
+        applications {
+          type
+          name
+        }
       }
+
       description {
         childMarkdownRemark {
           html
         }
       }
     }
-    examples {
-      highlighted
-    }
+
     params {
       name
       type {
+        type
         name
+        elements {
+          type
+          name
+        }
       }
       description {
         childMarkdownRemark {
@@ -183,6 +196,7 @@ export const pageQuery = graphql`
       properties {
         name
         type {
+          type
           name
         }
         default
@@ -194,6 +208,7 @@ export const pageQuery = graphql`
         properties {
           name
           type {
+            type
             name
           }
           description {
@@ -204,5 +219,4 @@ export const pageQuery = graphql`
         }
       }
     }
-  }
-`
+*/

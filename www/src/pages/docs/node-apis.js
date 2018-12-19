@@ -3,7 +3,7 @@ import { graphql } from "gatsby"
 import { Helmet } from "react-helmet"
 import sortBy from "lodash/sortBy"
 
-import Functions from "../../components/function-list"
+import APIReference from "../../components/api-reference"
 import { rhythm, scale } from "../../utils/typography"
 import Layout from "../../components/layout"
 import Container from "../../components/container"
@@ -11,10 +11,48 @@ import { itemListDocs } from "../../utils/sidebar/item-list"
 
 class NodeAPIDocs extends React.Component {
   render() {
-    const funcs = sortBy(
-      this.props.data.file.childrenDocumentationJs,
-      func => func.name
+    const docs = sortBy(
+      this.props.data.allDocumentationJs.edges.map(({ node }) => node),
+      docs => docs.name
     )
+
+    const spreadDefaultHelpersEntry = {
+      name: `...DefaultNodeHelpers`,
+      // description: ,
+    }
+
+    const nodeHelpersDescription = {
+      childMarkdownRemark: {
+        html: `<p>description</p>`,
+      },
+    }
+
+    // look for "gatsbyNodeHelpers" params and inject information about node helpers page
+    docs.forEach(doc => {
+      if (!doc.type || !doc.type.typeDef || !doc.type.typeDef.params) {
+        return
+      }
+
+      if (doc.type.typeDef.params[0].name === `gatsbyNodeHelpers`) {
+        const param = doc.type.typeDef.params[0]
+
+        if (!param.type) {
+          return
+        }
+
+        param.description = nodeHelpersDescription
+
+        // need to change both - one for signature
+        // and one for detailed param list
+        // param.type.name = `Object`
+        // param.type.typeDef.name = `Object`
+
+        if (param.type.typeDef.members && param.type.typeDef.members.static) {
+          param.type.typeDef.members.static.unshift(spreadDefaultHelpersEntry)
+        }
+      }
+    })
+
     return (
       <Layout location={this.props.location} itemList={itemListDocs}>
         <Container>
@@ -68,7 +106,7 @@ class NodeAPIDocs extends React.Component {
           <hr />
           <h2 css={{ marginBottom: rhythm(1 / 2) }}>APIs</h2>
           <ul css={{ ...scale(-1 / 5) }}>
-            {funcs.map((node, i) => (
+            {docs.map((node, i) => (
               <li key={`function list ${node.name}`}>
                 <a href={`#${node.name}`}>{node.name}</a>
               </li>
@@ -77,7 +115,7 @@ class NodeAPIDocs extends React.Component {
           <br />
           <hr />
           <h2>Reference</h2>
-          <Functions functions={funcs} />
+          <APIReference docs={docs} />
         </Container>
       </Layout>
     )
@@ -88,10 +126,12 @@ export default NodeAPIDocs
 
 export const pageQuery = graphql`
   query {
-    file(relativePath: { regex: "/src.*api-node-docs.js/" }) {
-      childrenDocumentationJs {
-        name
-        ...FunctionList
+    allDocumentationJs(filter: { memberof: { eq: "api-node-docs" } }) {
+      edges {
+        node {
+          name
+          ...DocumentationFragment
+        }
       }
     }
   }

@@ -91,9 +91,10 @@ const fileOkCache = {}
  * @param {Object} page a page object
  * @param {string} page.path Any valid URL. Must start with a forward slash
  * @param {string} page.component The absolute path to the component for this page
- * @param {Object} page.context Context data for this page. Passed as props
+ * @param {Object} [page.context] Context data for this page. Passed as props
  * to the component `this.props.pageContext` as well as to the graphql query
  * as graphql arguments.
+ * @param {string} [page.matchPath]
  * @example
  * createPage({
  *   path: `/my-sweet-new-page/`,
@@ -399,7 +400,7 @@ const typeOwners = {}
  * @param {string} node.parent The ID of the parent's node. If the node is
  * derived from another node, set that node as the parent. Otherwise it can
  * just be `null`.
- * @param {Array} node.children An array of children node IDs. If you're
+ * @param {string[]} node.children An array of children node IDs. If you're
  * creating the children nodes while creating the parent node, add the
  * children node IDs here directly. If you're adding a child node to a
  * parent node created by a plugin, you can't mutate this value directly
@@ -407,7 +408,7 @@ const typeOwners = {}
  * @param {Object} node.internal node fields that aren't generally
  * interesting to consumers of node data but are very useful for plugin writers
  * and Gatsby core.
- * @param {string} node.internal.mediaType An optional field to indicate to
+ * @param {string} [node.internal.mediaType] An optional field to indicate to
  * transformer plugins that your node has raw content they can transform.
  * Use either an official media type (we use mime-db as our source
  * (https://www.npmjs.com/package/mime-db) or a made-up one if your data
@@ -420,13 +421,13 @@ const typeOwners = {}
  * node as the type is used in forming GraphQL types so users will query
  * for nodes based on the type choosen here. Nodes of a given type can
  * only be created by one plugin.
- * @param {string} node.internal.content An optional field. The raw content
+ * @param {string} [node.internal.content] An optional field. The raw content
  * of the node. Can be excluded if it'd require a lot of memory to load in
  * which case you must define a `loadNodeContent` function for this node.
  * @param {string} node.internal.contentDigest the digest for the content
  * of this node. Helps Gatsby avoid doing extra work on data that hasn't
  * changed.
- * @param {string} node.internal.description An optional field. Human
+ * @param {string} [node.internal.description] An optional field. Human
  * readable description of what this node represent / its source. It will
  * be displayed when type conflicts are found, making it easier to find
  * and correct type conflicts.
@@ -456,7 +457,7 @@ const typeOwners = {}
  */
 actions.createNode = (
   node: any,
-  plugin?: Plugin,
+  plugin?: Plugin = null,
   actionOptions?: ActionOptions = {}
 ) => {
   if (!_.isObject(node)) {
@@ -1122,8 +1123,8 @@ actions.createRedirect = ({
  */
 actions.addThirdPartySchema = (
   { schema }: { schema: GraphQLSchema },
-  plugin: Plugin,
-  traceId?: string
+  plugin: Plugin = null,
+  traceId?: string = null,
 ) => {
   return {
     type: `ADD_THIRD_PARTY_SCHEMA`,

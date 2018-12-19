@@ -1,9 +1,75 @@
+/* eslint-disable no-unused-vars, prettier/prettier */
+const IGatsbyNodeHelpers = require(`./api-node-helpers-docs`);
+
+/**
+ * Description of plugin options - you can pass them in gatsby-config etc.
+ *
+ * Do we have a link to explain plugin options?
+ * @typedef PluginOptions
+ * @type {Object}
+ */
+const PluginOptions = true;
+
+/** */
+const GatsbyNodeHelpers = {
+  ...IGatsbyNodeHelpers,
+};
+
+/**
+ * Description
+ * @callback Callback dsadaw
+ * Desciption
+ */
+const Callback = true;
+
+/**
+ * @callback Hook
+ * @param {GatsbyNodeHelpers} gatsbyNodeHelpers
+ * @param {PluginOptions} pluginOptions
+ * @param {Callback} [cb]
+ * @returns {void|Promise}
+ */
+
+/**
+ * @callback HookForResolvableExtensions
+ * @param {GatsbyNodeHelpers} gatsbyNodeHelpers
+ * @param {PluginOptions} pluginOptions
+ * @returns {String[]|Promise<String[]>}
+ */
+
 /**
  * Lets plugins implementing support for other compile-to-js add to the list
  * of "resolvable" file extensions. Gatsby supports `.js` and `.jsx` by default.
- * @returns {Array} array of extensions
+ * @type {Hook}
+ * @example
  */
-exports.resolvableExtensions = true
+exports.resolvableExtensions = true;
+
+/**
+ * @type {Object}
+ */
+const GatsbyNodeHelpersWithGraphql = {
+  ...GatsbyNodeHelpers,
+
+  /**
+   * @callback GraphqlFn
+   * @param {string} query GraphQL query string
+   * @returns {Promise<QueryExecutionResult>}
+   */
+
+  /**
+   * Execute GraphQL query
+   * @type {GraphqlFn}
+   */
+  graphql: true,
+};
+
+/**
+ * @callback HookWithGraphql
+ * @param {GatsbyNodeHelpersWithGraphql} gatsbyNodeHelpers
+ * @param {PluginOptions} pluginOptions
+ * @returns {void|Promise}
+ */
 
 /**
  * Tell plugins to add pages. This extension point is called only after the initial
@@ -11,6 +77,7 @@ exports.resolvableExtensions = true
  * complete so you can query your data in order to create pages.
  *
  * See also [the documentation for the action `createPage`](/docs/actions/#createPage).
+ * @type {HookWithGraphql}
  * @example
  * const path = require(`path`)
  *
@@ -58,8 +125,7 @@ exports.resolvableExtensions = true
  *   })
  * }
  */
-
-exports.createPages = true
+exports.createPages = true;
 
 /**
  * Like `createPages` but for plugins who want to manage creating and removing
@@ -74,8 +140,9 @@ exports.createPages = true
  * pages. As its source of truth, files in the pages directory, is not known by
  * Gatsby, it needs to keep its own state about its world to know when to
  * add and remove pages.
+ * @type {HookWithGraphql}
  */
-exports.createPagesStatefully = true
+exports.createPagesStatefully = true;
 
 /**
  * Extension point to tell plugins to source nodes. This API is called during
@@ -86,6 +153,7 @@ exports.createPagesStatefully = true
  * creating nodes.
  *
  * See also the documentation for [`createNode`](/docs/actions/#createNode).
+ * @type {Hook}
  * @example
  * exports.sourceNodes = ({ actions, createNodeId, createContentDigest }) => {
  *   const { createNode } = actions
@@ -115,7 +183,26 @@ exports.createPagesStatefully = true
  *   createNode(node)
  * }
  */
-exports.sourceNodes = true
+exports.sourceNodes = true;
+
+/**
+ * @type {Object}
+ */
+const GatsbyNodeHelpersWithNode = {
+  ...GatsbyNodeHelpers,
+
+  /**
+   * @type {Node}
+   */
+  node: true,
+};
+
+/**
+ * @callback HookWithNode
+ * @param {GatsbyNodeHelpersWithNode} gatsbyNodeHelpers
+ * @param {PluginOptions} pluginOptions
+ * @returns {void|Promise}
+ */
 
 /**
  * Called when a new node is created. Plugins wishing to extend or
@@ -123,6 +210,7 @@ exports.sourceNodes = true
  *
  * See also the documentation for [`createNode`](/docs/actions/#createNode)
  * and [`createNodeField`](/docs/actions/#createNodeField)
+ * @type {HookWithNode}
  * @example
  * exports.onCreateNode = ({ node, actions }) => {
  *   const { createNode, createNodeField } = actions
@@ -130,7 +218,26 @@ exports.sourceNodes = true
  *   // create a new node field.
  * }
  */
-exports.onCreateNode = true
+exports.onCreateNode = true;
+
+/**
+ * @type {Object}
+ */
+const GatsbyNodeHelpersWithPage = {
+  ...GatsbyNodeHelpers,
+
+  /**
+   * @type {Page}
+   */
+  page: true,
+};
+
+/**
+ * @callback HookWithPage
+ * @param {GatsbyNodeHelpersWithPage} gatsbyNodeHelpers
+ * @param {PluginOptions} pluginOptions
+ * @returns {void|Promise}
+ */
 
 /**
  * Called when a new page is created. This extension API is useful
@@ -139,8 +246,36 @@ exports.onCreateNode = true
  *
  * See the guide [Creating and Modifying Pages](/docs/creating-and-modifying-pages/)
  * for more on this API.
+ * @type {HookWithPage}
  */
-exports.onCreatePage = true
+exports.onCreatePage = true;
+
+/**
+ * @typedef IntermediateType
+ * @type {Object}
+ * @property {string} name
+ * @property {Nodes[]} nodes
+ */
+const IntermediateType = true;
+
+/**
+ * @type {Object}
+ */
+const GatsbyNodeHelpersWithType = {
+  ...GatsbyNodeHelpers,
+
+  /**
+   * @type {IntermediateType}
+   */
+  type: true,
+};
+
+/**
+ * @callback HookWithType
+ * @param {GatsbyNodeHelpersWithType} gatsbyNodeHelpers
+ * @param {PluginOptions} pluginOptions
+ * @returns {GraphQLFieldConfigMap|Promise<GraphQLFieldConfigMap>}
+ */
 
 /**
  * Called during the creation of the GraphQL schema. Allows plugins
@@ -165,8 +300,7 @@ exports.onCreatePage = true
  * * [`gatsby-transformer-sharp`](/packages/gatsby-transformer-sharp/) exposes
  * many image transformation options as GraphQL fields.
  *
- * @param {object} $0
- * @param {object} $0.type Object containing `name` and `nodes`
+ * @type {HookWithType}
  * @example
  * import { GraphQLString } from "gatsby/graphql"
  *
@@ -192,41 +326,91 @@ exports.onCreatePage = true
  *   return {}
  * }
  */
-exports.setFieldsOnGraphQLNodeType = true
+exports.setFieldsOnGraphQLNodeType = true;
+
+/**
+ * @callback HookForPreprocessSource
+ * @param {GatsbyNodeHelpers} gatsbyNodeHelpers
+ * @param {PluginOptions} pluginOptions
+ * @returns {String|Promise<String>}
+ */
 
 /**
  * Ask compile-to-js plugins to process source to JavaScript so the query
  * runner can extract out GraphQL queries for running.
+ * @type {HookForPreprocessSource}
  */
-exports.preprocessSource = true
+exports.preprocessSource = true;
 
 /**
- * Tell plugins with expensive "side effects" from queries to start running
- * those now. This is a soon-to-be-replaced API only currently in use by
- * `gatsby-plugin-sharp`.
+ * @type {Object}
  */
-exports.generateSideEffects = true
+const GatsbyNodeHelpersBabelConfig = {
+  ...GatsbyNodeHelpers,
+
+  /**
+   * The current build stage. One of 'develop', 'develop-html',
+   * 'build-javascript', or 'build-html'
+   */
+  stage: true,
+};
+
+/**
+ * @callback HookWithStage
+ * @param {GatsbyNodeHelpersBabelConfig} gatsbyNodeHelpers
+ * @param {PluginOptions} pluginOptions
+ * @returns {void|Promise}
+ */
 
 /**
  * Let plugins extend/mutate the site's Babel configuration.
  * This API will change before 2.0 as it needs still to be converted to use
  * Redux actions.
+ * @type {HookWithStage}
  */
-exports.onCreateBabelConfig = true
+exports.onCreateBabelConfig = true;
+
+/**
+ * @type {Object}
+ */
+const GatsbyNodeHelpersWebpackConfig = {
+  ...GatsbyNodeHelpers,
+  /**
+   * Returns the current webpack config
+   */
+  getConfig: true,
+  /**
+   * The current build stage. One of 'develop', 'develop-html',
+   * 'build-javascript', or 'build-html'
+   */
+  stage: true,
+  /**
+   * A set of preconfigured webpack config rules
+   */
+  rules: true,
+  /**
+   * A set of preconfigured webpack config loaders
+   */
+  loaders: true,
+  /**
+   * A set of preconfigured webpack config plugins
+   */
+  plugins: true,
+};
+
+/**
+ * @callback HookWithWebpackUtils
+ * @param {GatsbyNodeHelpersWebpackConfig} gatsbyNodeHelpers
+ * @param {PluginOptions} pluginOptions
+ * @returns {void|Promise}
+ */
 
 /**
  * Let plugins extend/mutate the site's webpack configuration.
  *
  * See also the documentation for [`setWebpackConfig`](/docs/actions/#setWebpackConfig).
  *
- * @param {object} $0
- * @param {string} $0.stage The current build stage. One of 'develop', 'develop-html',
- * 'build-javascript', or 'build-html'
- * @param {function} $0.getConfig Returns the current webpack config
- * @param {object} $0.rules A set of preconfigured webpack config rules
- * @param {object} $0.loaders A set of preconfigured webpack config loaders
- * @param {object} $0.plugins A set of preconfigured webpack config plugins
- * @param {object} $0.actions
+ * @type {HookWithWebpackUtils}
  * @example
  * exports.onCreateWebpackConfig = ({
  *  stage, getConfig, rules, loaders, actions
@@ -243,47 +427,78 @@ exports.onCreateBabelConfig = true
  *   });
  * }
  */
-exports.onCreateWebpackConfig = true
+exports.onCreateWebpackConfig = true;
 
 /**
  * The first API called during Gatsby execution, runs as soon as plugins are loaded, before cache initialization and bootstrap preparation.
+ * @type {Hook}
  */
-exports.onPreInit = true
+exports.onPreInit = true;
 
 /**
  * Called once Gatsby has initialized itself and is ready to bootstrap your site.
+ * @type {Hook}
  */
-exports.onPreBootstrap = true
+exports.onPreBootstrap = true;
 
 /**
  * Called at the end of the bootstrap process after all other extension APIs have been called.
+ * @type {Hook}
  */
-exports.onPostBootstrap = true
+exports.onPostBootstrap = true;
 
 /**
  * The first extension point called during the build process. Called after the bootstrap has completed but before the build steps start.
+ * @type {HookWithGraphql}
  */
-exports.onPreBuild = true
+exports.onPreBuild = true;
 
 /**
  * The last extension point called after all other parts of the build process
  * are complete.
+ * @type {HookWithGraphql}
  */
-exports.onPostBuild = true
+exports.onPostBuild = true;
 
 /**
  * Run before GraphQL queries/fragments are extracted from JavaScript files. Useful for plugins
  * to add more JavaScript files with queries/fragments e.g. from node_modules.
  *
  * See gatsby-transformer-sharp and gatsby-source-contentful for examples.
+ * @type {Hook}
  */
-exports.onPreExtractQueries = true
+exports.onPreExtractQueries = true;
+
+/**
+ * @type {Object}
+ */
+const GatsbyNodeHelpersWithExpressApp = {
+  ...GatsbyNodeHelpers,
+
+  /**
+   * @callback GraphqlFn
+   * @param {string} query GraphQL query string
+   * @returns {Promise<QueryExecutionResult>}
+   */
+
+  /**
+   * The [Express app](https://expressjs.com/en/4x/api.html#app) used to run the dev server
+   * @type {Express}
+   */
+  app: true,
+};
+
+/**
+ * @callback HookWithExpressApp
+ * @param {GatsbyNodeHelpersWithExpressApp} gatsbyNodeHelpers
+ * @param {PluginOptions} pluginOptions
+ * @returns {void|Promise}
+ */
 
 /**
  * Run when gatsby develop server is started, its useful to add proxy and middleware
  * to the dev server app
- * @param {object} $0
- * @param {Express} $0.app The [Express app](https://expressjs.com/en/4x/api.html#app) used to run the dev server
+ * @type {HookWithExpressApp}
  * @example
  * exports.onCreateDevServer = ({ app }) => {
  *   app.get('/hello', function (req, res) {
@@ -291,4 +506,4 @@ exports.onPreExtractQueries = true
  *   })
  * }
  */
-exports.onCreateDevServer = true
+exports.onCreateDevServer = true;
