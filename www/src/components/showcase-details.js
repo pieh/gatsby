@@ -131,6 +131,7 @@ const ShowcaseDetails = ({ parent, data, isModal, categories }) => (
       const allSitesYaml = staticData.allSitesYaml
       const nextSite = parent.getNext(allSitesYaml)
       const previousSite = parent.getPrevious(allSitesYaml)
+      const { filters } = parent.props.location.state || {}
 
       return (
         <Layout
@@ -144,6 +145,7 @@ const ShowcaseDetails = ({ parent, data, isModal, categories }) => (
               to={nextSite.fields.slug}
               state={{
                 isModal: true,
+                filters,
               }}
               css={{
                 display: `block`,
@@ -196,6 +198,7 @@ const ShowcaseDetails = ({ parent, data, isModal, categories }) => (
               to={previousSite.fields.slug}
               state={{
                 isModal: true,
+                filters,
               }}
               css={{
                 display: `block`,

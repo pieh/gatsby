@@ -208,3 +208,18 @@
   bio: Full-stack developer, speaker and trainer with passion for anything new and intriguing. Opensource contributor. Dev evangelist @ Kentico Cloud.
   avatar: avatars/ondrej-polesny.jpg
   twitter: "@ondrabus"
+- id: John O’Nolan
+  bio: Founder at @TryGhost - Publishing, open source, independent business.
+  avatar: avatars/john-o-nolan.jpg
+  twitter: "@JohnONolan"
+- id: Thibaut Remy
+  bio: Frontend engineer at Daniel Wellington.
+  avatar: avatars/thibaut-remy.jpg
+- id: Knut Melvær
+  bio: Humanities technologist & inbetween stack developer. Runs developer relations for sanity.io
+  avatar: avatars/knut-melvaer.jpg
+  twitter: "@kmelve"
+- id: Marisa Morby
+  bio: Product manager solving problems with research and process. Aspiring gardener and baker of delicious treats.
+  avatar: avatars/marisa-morby.jpg
+  twitter: "@marisamorby"
