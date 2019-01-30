@@ -12,7 +12,7 @@ import { itemListDocs } from "../../utils/sidebar/item-list"
 class NodeAPIDocs extends React.Component {
   render() {
     const funcs = sortBy(
-      this.props.data.file.childrenDocumentationJs,
+      this.props.data.allDocumentationJs.edges.map(edge => edge.node),
       func => func.name
     )
     return (
@@ -88,10 +88,12 @@ export default NodeAPIDocs
 
 export const pageQuery = graphql`
   query {
-    file(relativePath: { regex: "/src.*api-node-docs.js/" }) {
-      childrenDocumentationJs {
-        name
-        ...FunctionList
+    allDocumentationJs(filter: { memberof: { eq: "api-node-docs" } }) {
+      edges {
+        node {
+          name
+          ...FunctionList
+        }
       }
     }
   }

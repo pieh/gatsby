@@ -9,12 +9,14 @@ import Layout from "../../components/layout"
 import Container from "../../components/container"
 import { itemListDocs } from "../../utils/sidebar/item-list"
 
+const skipDocs = [`deleteNodes`, `actions`, `boundActionCreators`]
+
 class ActionCreatorsDocs extends React.Component {
   render() {
     const funcs = sortBy(
-      this.props.data.file.childrenDocumentationJs,
+      this.props.data.allDocumentationJs.edges.map(edge => edge.node),
       func => func.name
-    ).filter(func => func.name !== `deleteNodes`)
+    ).filter(func => !skipDocs.includes(func.name))
 
     return (
       <Layout location={this.props.location} itemList={itemListDocs}>
@@ -72,10 +74,12 @@ export default ActionCreatorsDocs
 
 export const pageQuery = graphql`
   query {
-    file(relativePath: { eq: "gatsby/src/redux/actions.js" }) {
-      childrenDocumentationJs {
-        name
-        ...FunctionList
+    allDocumentationJs(filter: { memberof: { eq: "actions" } }) {
+      edges {
+        node {
+          name
+          ...FunctionList
+        }
       }
     }
   }

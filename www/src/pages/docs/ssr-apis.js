@@ -12,7 +12,7 @@ import { itemListDocs } from "../../utils/sidebar/item-list"
 class SSRAPIs extends React.Component {
   render() {
     const funcs = sortBy(
-      this.props.data.file.childrenDocumentationJs,
+      this.props.data.allDocumentationJs.edges.map(edge => edge.node),
       func => func.name
     )
     return (
@@ -53,10 +53,12 @@ export default SSRAPIs
 
 export const pageQuery = graphql`
   query {
-    file(relativePath: { regex: "/api-ssr-docs.js/" }) {
-      childrenDocumentationJs {
-        name
-        ...FunctionList
+    allDocumentationJs(filter: { memberof: { eq: "api-ssr-docs" } }) {
+      edges {
+        node {
+          name
+          ...FunctionList
+        }
       }
     }
   }
