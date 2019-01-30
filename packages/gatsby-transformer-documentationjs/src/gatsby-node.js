@@ -31,8 +31,6 @@ function prepareDescriptionNode(node, markdownStr, name, helpers) {
     },
   }
 
-  node.children = node.children.concat([descriptionNode.id])
-
   return descriptionNode
 }
 
@@ -77,13 +75,36 @@ exports.onCreateNode = async ({ node, actions, ...helpers }) => {
       )
 
       if (index !== -1) {
-        return createNodeForDocs(documentationJson[index], index)
+        return prepareNodeForDocs(documentationJson[index], {
+          commentNumber: index,
+        }).node.id
       }
 
       return null
     }
 
-    const createNodeForDocs = (docsJson, commentNumber = null) => {
+    const tryToAddTypeDef = type => {
+      if (type.applications) {
+        type.applications.forEach(tryToAddTypeDef)
+      }
+
+      if (type.expression) {
+        tryToAddTypeDef(type.expression)
+      }
+
+      if (type.elements) {
+        type.elements.forEach(tryToAddTypeDef)
+      }
+
+      if (type.type === `NameExpression` && type.name) {
+        type.typeDef___NODE = getNodeIDForType(type.name)
+      }
+    }
+
+    const prepareNodeForDocs = (
+      docsJson,
+      { commentNumber = null, level = 0, parent = node.id } = {}
+    ) => {
       if (handledDocs.has(docsJson)) {
         // this was already handled
         return handledDocs.get(docsJson)
@@ -91,15 +112,16 @@ exports.onCreateNode = async ({ node, actions, ...helpers }) => {
 
       const docSkeletonNode = {
         commentNumber,
+        level,
         id: createNodeId(docId(node.id, docsJson)),
-        parent: node.id,
+        parent,
         children: [],
         internal: {
           type: `DocumentationJs`,
         },
       }
 
-      const childrenNode = []
+      const children = []
 
       const picked = _.pick(docsJson, [
         `kind`,
@@ -110,8 +132,15 @@ exports.onCreateNode = async ({ node, actions, ...helpers }) => {
         `default`,
       ])
 
-      if (picked.type && picked.name !== picked.type.name) {
-        picked.type.typeDef___NODE = getNodeIDForType(docsJson.type.name)
+      picked.optional = false
+
+      if (picked.type) {
+        if (picked.type.type === `OptionalType` && picked.type.expression) {
+          picked.optional = true
+          picked.type = picked.type.expression
+        }
+
+        tryToAddTypeDef(picked.type)
       }
 
       const mdFields = [`description`, `deprecated`]
@@ -124,8 +153,11 @@ exports.onCreateNode = async ({ node, actions, ...helpers }) => {
             `comment.${fieldName}`,
             helpers
           )
-          childrenNode.push(childNode)
+
           picked[`${fieldName}___NODE`] = childNode.id
+          children.push({
+            node: childNode,
+          })
         }
       })
 
@@ -147,7 +179,13 @@ exports.onCreateNode = async ({ node, actions, ...helpers }) => {
                 ...docObj,
                 path: [...docsJson.path, { fieldName, fieldIndex }],
               }
-              return createNodeForDocs(adjustedObj)
+
+              const nodeHierarchy = prepareNodeForDocs(adjustedObj, {
+                level: level + 1,
+                parent: docSkeletonNode.id,
+              })
+              children.push(nodeHierarchy)
+              return nodeHierarchy.node.id
             }
           )
         }
@@ -169,9 +207,14 @@ exports.onCreateNode = async ({ node, actions, ...helpers }) => {
           docsJson.members,
           (acc, membersOfType, key) => {
             if (membersOfType.length > 0) {
-              acc[`${key}___NODE`] = membersOfType.map(member =>
-                createNodeForDocs(member)
-              )
+              acc[`${key}___NODE`] = membersOfType.map(member => {
+                const nodeHierarchy = prepareNodeForDocs(member, {
+                  level: level + 1,
+                  parent: docSkeletonNode.id,
+                })
+                children.push(nodeHierarchy)
+                return nodeHierarchy.node.id
+              })
             }
             return acc
           },
@@ -195,26 +238,42 @@ exports.onCreateNode = async ({ node, actions, ...helpers }) => {
         ...docSkeletonNode,
         ...picked,
       }
-      docNode.internal.contentDigest = createContentDigest(picked)
-
-      createParentChildLink({
-        parent: node,
-        child: docNode,
-      })
+      docNode.internal.contentDigest = createContentDigest(docNode)
 
       if (docNode.kind === `typedef`) {
         typeDefs.set(docNode.name, docNode.id)
       }
 
-      createNode(docNode)
-      childrenNode.forEach(childNode => {
-        createNode(childNode)
-      })
-      handledDocs.set(docsJson, docNode.id)
-      return docNode.id
+      const nodeHierarchy = {
+        node: docNode,
+        children,
+      }
+      handledDocs.set(docsJson, nodeHierarchy)
+      return nodeHierarchy
     }
 
-    documentationJson.forEach(createNodeForDocs)
+    const rootNodes = documentationJson.map((docJson, index) =>
+      prepareNodeForDocs(docJson, { commentNumber: index })
+    )
+
+    const createChildrenNodesRecursively = ({ node: parent, children }) => {
+      if (children) {
+        children.forEach(nodeHierarchy => {
+          createNode(nodeHierarchy.node)
+          createParentChildLink({
+            parent,
+            child: nodeHierarchy.node,
+          })
+          createChildrenNodesRecursively(nodeHierarchy)
+        })
+      }
+    }
+
+    createChildrenNodesRecursively({
+      node,
+      children: rootNodes,
+    })
+
     return true
   } else {
     return null
