@@ -68,11 +68,13 @@ export default ({ functions }) => (
             <code>{node.name}</code>
           </a>
         </h3>
-        <div
-          dangerouslySetInnerHTML={{
-            __html: node.description.childMarkdownRemark.html,
-          }}
-        />
+        {node.description && node.description.childMarkdownRemark && (
+          <div
+            dangerouslySetInnerHTML={{
+              __html: node.description.childMarkdownRemark.html,
+            }}
+          />
+        )}
         {(node.params && node.params.length) > 0 && (
           <div>
             <h4>Parameters</h4>
