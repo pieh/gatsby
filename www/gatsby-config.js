@@ -31,6 +31,8 @@ module.exports = {
       options: {
         name: `packages`,
         path: `${__dirname}/../packages/`,
+        // skip creating nodes for files in build directories
+        ignore: [`**/dist/**`, `**/commonjs/**`],
       },
     },
     {
