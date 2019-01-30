@@ -900,9 +900,6 @@
   tags:
     - Styling:CSS-in-JS
     - i18n
-    - Formik
-    - Yup
-    - Netlify Form
   features:
     - Based on default starter
     - i18n with rtl text
@@ -1288,7 +1285,6 @@
   description: Machine learning ready and scientific blog starter
   tags:
     - Blog
-    - Katex
     - Tensorflow
     - CSV
     - Charts
@@ -1613,7 +1609,6 @@
     - Ghost
     - Headless CMS
     - Blog
-    - Journalism
   features:
     - Ghost integration with ready to go placeholder content and webhooks support
     - Minimal responsive design
@@ -1711,6 +1706,27 @@
     - Registration form
     - Signup form
     - User sign in
+- url: https://frosty-ride-4ff3b9.netlify.com/
+  repo: https://github.com/damassi/gatsby-starter-typescript-rebass-netlifycms
+  description:
+    A Gatsby starter built on top of MDX (React + Markdown), NetlifyCMS (with
+    MDX and netlify-cms-backend-fs support -- no need to deploy), TypeScript,
+    Rebass for UI, Styled Components, and Jest for testing. Very little visual
+    styling has been applied so that you can bring your own :)
+  tags:
+    - MDX
+    - Netlify CMS
+    - TypeScript
+    - Styling:Rebass
+    - Styling:CSS-in-JS
+  features:
+    - MDX - Markdown + React
+    - Netlify CMS (with MDX support)
+    - Read and write to local file system via netlify-cms-backend-fs
+    - TypeScript
+    - Rebass
+    - Styled Components
+    - Jest
 - url: https://bluepeter.github.io/gatsby-material-ui-business-starter/
   repo: https://github.com/bluepeter/gatsby-material-ui-business-starter
   description: Beautiful Gatsby Material Design Business Starter
@@ -1738,3 +1754,17 @@
     - Full Render Control with Portable Text
     - gatsby-image support
     - Content types for company info, pages, projects, people, and blog posts
+- url: https://gatsby-starter-under-construction.netlify.com/
+  repo: https://github.com/robinmetral/gatsby-starter-under-construction
+  description: Blazing fast "Under Construction" page with a blazing quick setup.
+  tags:
+    - Under Construction
+    - Onepage
+    - Styling:CSS-in-JS
+    - SEO
+    - PWA
+  features:
+    - Configure everything in gatsby-config.js
+    - Creative CSS3 background patterns by Lea Verou
+    - Built-in Google Fonts support
+    - Social icons with react-social-icons
