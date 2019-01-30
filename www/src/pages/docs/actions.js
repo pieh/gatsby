@@ -3,7 +3,8 @@ import { graphql } from "gatsby"
 import { Helmet } from "react-helmet"
 import sortBy from "lodash/sortBy"
 
-import Functions from "../../components/function-list"
+// import Functions from "../../components/function-list"
+import APIReference from "../../components/api-reference"
 import { rhythm, scale } from "../../utils/typography"
 import Layout from "../../components/layout"
 import Container from "../../components/container"
@@ -11,10 +12,14 @@ import { itemListDocs } from "../../utils/sidebar/item-list"
 
 class ActionCreatorsDocs extends React.Component {
   render() {
-    const funcs = sortBy(
-      this.props.data.file.childrenDocumentationJs,
-      func => func.name
-    ).filter(func => func.name !== `deleteNodes`)
+    const docs = sortBy(
+      this.props.data.allDocumentationJs.edges.map(({ node }) => node),
+      docs => docs.name
+    )
+    // const funcs = sortBy(
+    //   this.props.data.file.childrenDocumentationJs,
+    //   func => func.name
+    // ).filter(func => func.name !== `deleteNodes`)
 
     return (
       <Layout location={this.props.location} itemList={itemListDocs}>
@@ -53,7 +58,7 @@ class ActionCreatorsDocs extends React.Component {
           </div>
           <h2 css={{ marginBottom: rhythm(1 / 2) }}>Functions</h2>
           <ul css={{ ...scale(-1 / 5) }}>
-            {funcs.map((node, i) => (
+            {docs.map((node, i) => (
               <li key={`function list ${node.name}`}>
                 <a href={`#${node.name}`}>{node.name}</a>
               </li>
@@ -61,7 +66,11 @@ class ActionCreatorsDocs extends React.Component {
           </ul>
           <hr />
           <h2>Reference</h2>
-          <Functions functions={funcs} />
+          <APIReference
+            docs={docs}
+            showTopLevelSignatures={true}
+            ignoreParams={[`plugin`, `actionOptions`, `traceId`]}
+          />
         </Container>
       </Layout>
     )
@@ -72,10 +81,17 @@ export default ActionCreatorsDocs
 
 export const pageQuery = graphql`
   query {
-    file(relativePath: { eq: "gatsby/src/redux/actions.js" }) {
-      childrenDocumentationJs {
-        name
-        ...FunctionList
+    allDocumentationJs(
+      filter: {
+        memberof: { eq: "actions" }
+        name: { nin: ["actions", "boundActionCreators", "deleteNodes"] }
+      }
+    ) {
+      edges {
+        node {
+          name
+          ...DocumentationFragment
+        }
       }
     }
   }
