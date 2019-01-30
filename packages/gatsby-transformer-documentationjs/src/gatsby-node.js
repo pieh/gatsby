@@ -1,10 +1,4 @@
 const documentation = require(`documentation`)
-const crypto = require(`crypto`)
-const digest = str =>
-  crypto
-    .createHash(`md5`)
-    .update(str)
-    .digest(`hex`)
 const remark = require(`remark`)
 const _ = require(`lodash`)
 const Prism = require(`prismjs`)
@@ -17,49 +11,37 @@ const stringifyMarkdownAST = (node = ``) => {
   }
 }
 
-const commentId = (parentId, commentNumber) =>
-  `documentationJS ${parentId} comment #${commentNumber}`
+const docId = (parentId, docsJson) =>
+  `documentationJS ${parentId} path #${JSON.stringify(docsJson.path)}`
 const descriptionId = (parentId, name) =>
   `${parentId}--DocumentationJSComponentDescription--${name}`
 
-function createDescriptionNode(
-  node,
-  docNodeId,
-  markdownStr,
-  name,
-  actions,
-  createNodeId
-) {
-  const { createNode } = actions
+function prepareDescriptionNode(node, markdownStr, name, helpers) {
+  const { createNodeId, createContentDigest } = helpers
 
   const descriptionNode = {
-    id: createNodeId(descriptionId(docNodeId, name)),
+    id: createNodeId(descriptionId(node.id, name)),
     parent: node.id,
     children: [],
     internal: {
       type: `DocumentationJSComponentDescription`,
       mediaType: `text/markdown`,
       content: markdownStr,
-      contentDigest: digest(markdownStr),
+      contentDigest: createContentDigest(markdownStr),
     },
   }
 
   node.children = node.children.concat([descriptionNode.id])
-  createNode(descriptionNode)
 
-  return descriptionNode.id
+  return descriptionNode
 }
 
 /**
  * Implement the onCreateNode API to create documentation.js nodes
  * @param {Object} super this is a super param
  */
-exports.onCreateNode = async ({
-  node,
-  loadNodeContent,
-  actions,
-  createNodeId,
-}) => {
+exports.onCreateNode = async ({ node, actions, ...helpers }) => {
+  const { createNodeId, createContentDigest } = helpers
   const { createNode, createParentChildLink } = actions
 
   if (
@@ -80,75 +62,121 @@ exports.onCreateNode = async ({
   }
 
   if (documentationJson && documentationJson.length > 0) {
-    documentationJson.forEach((docsJson, i) => {
-      const picked = _.pick(docsJson, [`kind`, `memberof`, `name`, `scope`])
+    const handledDocs = new WeakMap()
+    const typeDefs = new Map()
 
-      // Defaults
-      picked.params = [{ name: ``, type: { type: ``, name: `` } }]
-      picked.returns = [{ type: { type: ``, name: `` } }]
-      picked.examples = [{ raw: ``, highlighted: `` }]
-
-      // Prepare various sub-pieces.
-      if (docsJson.description) {
-        picked.description___NODE = createDescriptionNode(
-          node,
-          commentId(node.id, i),
-          stringifyMarkdownAST(docsJson.description),
-          `comment.description`,
-          actions,
-          createNodeId
-        )
+    const getNodeIDForType = typeName => {
+      if (typeDefs.has(typeName)) {
+        return typeDefs.get(typeName)
       }
 
-      const transformParam = param => {
-        if (param.description) {
-          param.description___NODE = createDescriptionNode(
-            node,
-            commentId(node.id, i),
-            stringifyMarkdownAST(param.description),
-            param.name,
-            actions,
-            createNodeId
+      const index = documentationJson.findIndex(
+        docsJson =>
+          docsJson.name === typeName &&
+          [`typedef`, `constant`].includes(docsJson.kind)
+      )
+
+      if (index !== -1) {
+        return createNodeForDocs(documentationJson[index], index)
+      }
+
+      return null
+    }
+
+    const createNodeForDocs = (docsJson, commentNumber = null) => {
+      if (handledDocs.has(docsJson)) {
+        // this was already handled
+        return handledDocs.get(docsJson)
+      }
+
+      const docSkeletonNode = {
+        commentNumber,
+        id: createNodeId(docId(node.id, docsJson)),
+        parent: node.id,
+        children: [],
+        internal: {
+          type: `DocumentationJs`,
+        },
+      }
+
+      const childrenNode = []
+
+      const picked = _.pick(docsJson, [
+        `kind`,
+        `memberof`,
+        `name`,
+        `scope`,
+        `type`,
+        `default`,
+      ])
+
+      if (picked.type && picked.name !== picked.type.name) {
+        picked.type.typeDef___NODE = getNodeIDForType(docsJson.type.name)
+      }
+
+      const mdFields = [`description`, `deprecated`]
+
+      mdFields.forEach(fieldName => {
+        if (docsJson[fieldName]) {
+          const childNode = prepareDescriptionNode(
+            docSkeletonNode,
+            stringifyMarkdownAST(docsJson[fieldName]),
+            `comment.${fieldName}`,
+            helpers
           )
-          delete param.description
+          childrenNode.push(childNode)
+          picked[`${fieldName}___NODE`] = childNode.id
         }
-        delete param.lineNumber
+      })
 
-        // When documenting destructured parameters, the name
-        // is parent.child where we just want the child.
-        if (param.name.split(`.`).length > 1) {
-          param.name = param.name
-            .split(`.`)
-            .slice(-1)
-            .join(`.`)
+      const docsSubfields = [`params`, `properties`, `returns`]
+      docsSubfields.forEach(fieldName => {
+        if (docsJson[fieldName] && docsJson[fieldName].length > 0) {
+          picked[`${fieldName}___NODE`] = docsJson[fieldName].map(
+            (docObj, fieldIndex) => {
+              // When documenting destructured parameters, the name
+              // is parent.child where we just want the child.
+              if (docObj.name && docObj.name.split(`.`).length > 1) {
+                docObj.name = docObj.name
+                  .split(`.`)
+                  .slice(-1)
+                  .join(`.`)
+              }
+
+              const adjustedObj = {
+                ...docObj,
+                path: [...docsJson.path, { fieldName, fieldIndex }],
+              }
+              return createNodeForDocs(adjustedObj)
+            }
+          )
         }
+      })
 
-        if (param.properties) {
-          param.properties = param.properties.map(transformParam)
+      if (_.isPlainObject(docsJson.members)) {
+        /*
+        docsJson.members = {
+          events: [],
+          global: [],
+          inner: [],
+          instance: [],
+          static: [],
         }
-
-        return param
-      }
-
-      if (docsJson.params) {
-        picked.params = docsJson.params.map(transformParam)
-      }
-
-      if (docsJson.returns) {
-        picked.returns = docsJson.returns.map(ret => {
-          if (ret.description) {
-            ret.description___NODE = createDescriptionNode(
-              node,
-              commentId(node.id, i),
-              stringifyMarkdownAST(ret.description),
-              ret.title,
-              actions,
-              createNodeId
-            )
-          }
-
-          return ret
-        })
+        each member type has array of jsdocs in same shape as top level jsdocs
+        so we use same transformation as top level ones
+        */
+        picked.members = _.reduce(
+          docsJson.members,
+          (acc, membersOfType, key) => {
+            if (membersOfType.length > 0) {
+              acc[`${key}___NODE`] = membersOfType.map(member =>
+                createNodeForDocs(member)
+              )
+            }
+            return acc
+          },
+          {}
+        )
       }
 
       if (docsJson.examples) {
@@ -163,24 +191,30 @@ exports.onCreateNode = async ({
         })
       }
 
-      const strContent = JSON.stringify(picked, null, 4)
-
       const docNode = {
+        ...docSkeletonNode,
         ...picked,
-        commentNumber: i,
-        id: createNodeId(commentId(node.id, i)),
-        parent: node.id,
-        children: [],
-        internal: {
-          contentDigest: digest(strContent),
-          type: `DocumentationJs`,
-        },
+      }
+      docNode.internal.contentDigest = createContentDigest(picked)
+
+      createParentChildLink({
+        parent: node,
+        child: docNode,
+      })
+
+      if (docNode.kind === `typedef`) {
+        typeDefs.set(docNode.name, docNode.id)
       }
 
-      createParentChildLink({ parent: node, child: docNode })
       createNode(docNode)
-    })
+      childrenNode.forEach(childNode => {
+        createNode(childNode)
+      })
+      handledDocs.set(docsJson, docNode.id)
+      return docNode.id
+    }
 
+    documentationJson.forEach(createNodeForDocs)
     return true
   } else {
     return null
