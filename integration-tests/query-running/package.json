@@ -2,7 +2,8 @@
   "name": "query-running-test",
   "license": "MIT",
   "scripts": {
-    "clean-and-build": "rm -rf .cache && gatsby build"
+    "clean-and-build": "rm -rf .cache && gatsby build",
+    "generate-queries": "gqlg --schemaFilePath ./.cache/schema.graphql --destDirPath ./.cache/output"
   },
   "dependencies": {
     "gatsby": "^2.0.107",
@@ -11,6 +12,7 @@
   },
   "devDependencies": {
     "execa": "^1.0.0",
-    "fs-extra": "^7.0.1"
+    "fs-extra": "^7.0.1",
+    "gql-generator": "^1.0.9"
   }
 }
