@@ -2,7 +2,6 @@ import React from "react"
 import styled, { css } from "react-emotion"
 import { graphql } from "gatsby"
 
-// import { options, scale } from "../../utils/typography"
 import { SubHeader } from "./utils"
 import { options, rhythm } from "../../utils/typography"
 
@@ -29,7 +28,6 @@ const Wrapper = styled(`span`)`
       margin-top: ${rhythm(0.35)};
     `};
 `
-const isOptional = type => type && type.type === `OptionalType`
 
 const TypeComponent = ({ children }) => (
   <span className="token builtin">{children}</span>
@@ -75,8 +73,6 @@ const TypeExpression = ({ type }) => {
           <Operator>[]</Operator>
         </React.Fragment>
       )
-
-      // `${typeToString(type.applications[0])}[]`
     } else {
       return (
         <React.Fragment>
@@ -87,8 +83,6 @@ const TypeExpression = ({ type }) => {
         </React.Fragment>
       )
     }
-  } else if (isOptional(type) && type.expression) {
-    return <TypeExpression type={type.expression} />
   }
   return null
 }
@@ -103,7 +97,7 @@ const FunctionSignature = ({ definition, block, ignoreParams }) => {
             {param.name}
             {param.type && (
               <React.Fragment>
-                <Punctuation>{isOptional(param.type) && `?`}:</Punctuation>
+                <Punctuation>{param.optional && `?`}:</Punctuation>
                 {` `}
                 <TypeExpression type={param.type} />
               </React.Fragment>
@@ -194,11 +188,11 @@ export {
   SignatureBlock,
   TypeComponent,
   Wrapper as SignatureWrapper,
-  isOptional as isOptionalType,
 }
 
 export const fragment = graphql`
   fragment DocumentationTypeFragment on DocumentationJs {
+    optional
     type {
       name
       type

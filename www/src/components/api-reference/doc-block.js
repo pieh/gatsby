@@ -8,7 +8,6 @@ import {
   TypeComponent,
   SignatureElement,
   isFunctionDef,
-  isOptionalType,
 } from "./signature"
 import ReturnBlock from "./returns"
 import { Header } from "./utils"
@@ -109,7 +108,7 @@ const DocBlock = ({
               <TypeComponent>Function</TypeComponent>
             </SignatureWrapper>
           ))}
-        {isOptionalType(definition.type) && <Optional />}
+        {definition.optional && <Optional />}
       </Header>
 
       <Description definition={definition} />
