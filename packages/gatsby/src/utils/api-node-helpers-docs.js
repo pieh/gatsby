@@ -57,9 +57,7 @@ const GatsbyCache = {
    * @param {string} key
    * @returns {Promise<any>}
    * @example
-   * cache.get(`unique-key`).then(value => {
-   *   // do something with value
-   * })
+   * const value = await cache.get(`unique-key`)
    */
   get: true,
 
@@ -68,32 +66,86 @@ const GatsbyCache = {
    * @param {any} value
    * @returns {Promise<any>}
    * @example
-   * cache.set(`unique-key`, value).then(() => {
-   *   // value was cached, continue your stuff
-   * })
+   * await cache.set(`unique-key`, value)
    */
   set: true,
 };
 
 /** */
+const GatsbyTracing = {
+  /**
+   * Global tracer instance. Check
+   * [opentracing Tracer documentation](https://opentracing-javascript.surge.sh/classes/tracer.html)
+   * for more details.
+   * @type {Opentracing.Tracer}
+   */
+  tracer: true,
+
+  /**
+   * Tracer span representing API run. Check
+   * [opentracing Span documentation](https://opentracing-javascript.surge.sh/classes/span.html)
+   * for more details.
+   * @type {Opentracing.Span}
+   */
+  parentSpan: true,
+
+  /**
+   * @callback GatsbyTracing.StartSpan
+   * @param {string} spanName name of the span
+   * @returns {Opentracing.Span}
+   */
+
+  /**
+   * Convience function to start span using API run span as parent.
+   * @type {GatsbyTracing.StartSpan}
+   * @example
+   * exports.sourceNodes = async ({ actions, tracing }) => {
+   *   const span = tracing.startSpan(`foo`)
+   *
+   *   // Perform any span operations. E.g add a tag to your span
+   *   span.setTag(`bar`, `baz`)
+   *
+   *   // Rest of your plugin code
+   *
+   *   span.finish()
+   * }
+   */
+  startSpan: true,
+};
+
+/** */
 const GatsbyNodeHelpers = {
   /**
-   * Key-value store used to persist results of time/memory/cpu instensive tasks. All functions are async and return promises.
+   * Key-value store used to persist results of time/memory/cpu instensive
+   * tasks. All functions are async and return promises.
    * @type {GatsbyCache}
    */
   cache: true,
 
   /**
-   * Get cache instance by name - this should only be used by plugins that accept subplugins.
+   * Get cache instance by name - this should only be used by plugins that
+   * accept subplugins.
    * @param {string} id Test
    * @returns {GatsbyCache} See [`cache`](#cache) section for reference.
    */
   getCache: true,
 
   /**
-   * Create content digest from string or object
+   * Create stable content digest from string or object. Useful to set
+   * `internal.contentDigest` field on nodes to make sure that Gatsby
+   * either invalidates cached node and GraphQL query results depending
+   * on that if data changed or reuse cached query results if data didn't
+   * change.
    * @param {(string|object)} input
-   * @returns {string}
+   * @returns {string} Hash string
+   * @example
+   * const node = {
+   *   ...nodeData,
+   *   internal: {
+   *     type: `TypeOfNode`,
+   *     contentDigest: createContentDigest(nodeData)
+   *   }
+   * }
    */
   createContentDigest: true,
 
@@ -102,7 +154,8 @@ const GatsbyNodeHelpers = {
    *
    * See [`actions`](/docs/actions/) reference.
    * @type {Actions}
-   * @deprecated Will be removed in gatsby 3.0. Use [actions](#actions) instead.
+   * @deprecated Will be removed in gatsby 3.0. Use [actions](#actions)
+   * instead.
    */
   boundActionCreators: true,
 
@@ -115,43 +168,61 @@ const GatsbyNodeHelpers = {
   actions: true,
 
   /**
-   * @type {Function}
    * @param {Node} node
-   * @returns {string}
+   * @returns {Promise<string>}
+   * @example
+   * module.exports = async function onCreateNode(
+   *   { node, loadNodeContent, actions, createNodeId }
+   * ) {
+   *   if (node.internal.mediaType === 'text/markdown') {
+   *     const { createNode, createParentChildLink } = actions
+   *     const textContent = await loadNodeContent(node)
+   *     // process textContent and create child nodes
+   *   }
+   * }
    */
   loadNodeContent: true,
 
   /**
-   * Internal redux state used for application state. Do not use, unless you absolutely must. Store is considered private API and can change with any version.
-   * @type {ReduxStore}
+   * Internal redux state used for application state. Do not use, unless you
+   * absolutely must. Store is considered private API and can change with
+   * any version.
+   * @type {Redux.Store}
    */
   store: true,
 
   /**
-   * Internal event emitter / listener.  Do not use, unless you absolutely must. Emitter is considered private API and can change with any version.
+   * Internal event emitter / listener.  Do not use, unless you absolutely
+   * must. Emitter is considered private API and can change with any version.
    * @type {Emitter}
    */
   emitter: true,
 
   /**
    * Get array of all nodes.
-   * @type {Function}
-   * @returns {Node[]}
+   * @returns {Node[]} Array of nodes.
+   * @example
+   * const allNodes = getNodes()
    */
   getNodes: true,
 
   /**
    * Get single node by given ID.
-   * Don't use this in graphql resolvers - see [`getNodeAndSavePathDependency`](#getNodeAndSavePathDependency).
+   * Don't use this in graphql resolvers - see
+   * [`getNodeAndSavePathDependency`](#getNodeAndSavePathDependency).
    * @param {string} ID id of the node.
    * @returns {Node} Single node instance.
+   * @example
+   * const node = getNode(id)
    */
   getNode: true,
 
   /**
    * Get array of nodes of given type.
    * @param {string} Type of nodes
-   * @returns {Node[]} Array nodes.
+   * @returns {Node[]} Array of nodes.
+   * @example
+   * const markdownNodes = getNodesByType(`MarkdownRemark`)
    */
   getNodesByType: true,
 
@@ -171,7 +242,9 @@ const GatsbyNodeHelpers = {
    * Get single node by given ID and creates dependency for given path.
    * This should be used instead of `getNode` in graphql resolvers to enable
    * tracking dependencies for query results. If it's not used Gatsby will
-   * not rerun query if node. See [Page -> Node Dependency Tracking](/docs/page-node-dependencies/) for more details.
+   * not rerun query if node. See
+   * [Page -> Node Dependency Tracking](/docs/page-node-dependencies/)
+   * for more details.
    * @param {string} ID id of the node.
    * @param {string} path of the node.
    * @returns {Node} Single node instance.
@@ -179,14 +252,26 @@ const GatsbyNodeHelpers = {
   getNodeAndSavePathDependency: true,
 
   /**
-   * Create UUIDv5 id
+   * Utility function useful to generate globally unique and stable node IDs.
+   * It will generate different IDs for different plugin if they use same
+   * input.
+   *
    * @param {string} input
-   * @returns {string}
+   * @returns {string} UUIDv5 ID string
+   * @example
+   * const node = {
+   *   id: createNodeId(`${backendData.type}${backendData.id}`),
+   *   ...restOfNodeData
+   * }
    */
   createNodeId: true,
 
   /**
-   * Stub description
+   * Set of utilities that allow adding more detailed tracing for plugins.
+   * Check
+   * [Performance tracing](https://www.gatsbyjs.org/docs/performance-tracing)
+   * page for more details.
+   * @type {GatsbyTracing}
    */
   tracing: true,
 
