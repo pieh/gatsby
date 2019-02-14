@@ -38,5 +38,17 @@ module.exports = {
         accessToken: process.env.SHOPIFY_ACCESS_TOKEN,
       },
     },
+    {
+      resolve: `gatsby-source-graphql`,
+      options: {
+        typeName: `Shopify`,
+        fieldName: `shopify`,
+        url: `https://gatsby-swag.myshopify.com/api/graphql`,
+        headers: {
+          "X-Shopify-Storefront-Access-Token":
+            process.env.SHOPIFY_ACCESS_TOKEN,
+        },
+      },
+    },
   ],
 }
