@@ -53,6 +53,8 @@ const runQueries = async () => {
 
   runQueriesForPathnamesQueue.clear()
 
+  console.log(`Running queries for`, pathnamesToRun)
+
   // Run these paths
   await runQueriesForPathnames(pathnamesToRun)
   return

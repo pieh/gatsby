@@ -110,6 +110,11 @@ ${formatErrorDetails(errorDetails)}`)
     }
   }
 
+  console.log(`comparing hash`, {
+    stored: resultHashes[queryJob.id],
+    resultHash,
+    id: queryJob.id,
+  })
   if (resultHashes[queryJob.id] !== resultHash) {
     resultHashes[queryJob.id] = resultHash
     let modInt = ``
@@ -136,6 +141,10 @@ ${formatErrorDetails(errorDetails)}`)
 
     await fs.outputFile(resultPath, resultJSON)
 
+    console.log(`Dispatching`, {
+      jsonName: queryJob.jsonName,
+      dataPath,
+    })
     store.dispatch({
       type: `SET_JSON_DATA_PATH`,
       payload: {

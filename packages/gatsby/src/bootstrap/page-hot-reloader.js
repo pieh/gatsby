@@ -16,6 +16,7 @@ emitter.on(`CREATE_NODE`, action => {
 emitter.on(`DELETE_NODE`, action => {
   if (action.payload.internal.type !== `SitePage`) {
     pagesDirty = true
+    console.log(`running fake api call`)
     apiRunnerNode(`FAKE_API_CALL`)
   }
 })
@@ -46,7 +47,7 @@ const runCreatePages = async () => {
     })
     .map(p => p.id)
 
-  const timestamp = new Date().toJSON()
+  const timestamp = Date.now()
 
   await apiRunnerNode(`createPages`, {
     graphql,
@@ -54,12 +55,18 @@ const runCreatePages = async () => {
     waitForCascadingActions: true,
   })
 
+  // const pages = Array.from(store.getState().pages.values())
+  // console.log(timestamp, pages)
+
+  // console.log({ statefulPlugins, pages })
+
   // Delete pages that weren't updated when running createPages.
   Array.from(store.getState().pages.values()).forEach(page => {
     if (
       !_.includes(statefulPlugins, page.pluginCreatorId) &&
       page.updatedAt < timestamp
     ) {
+      console.log(`Deleting page ${page.path}`)
       deleteComponentsDependencies([page.path])
       deletePage(page)
     }

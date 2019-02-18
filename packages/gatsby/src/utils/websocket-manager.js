@@ -43,6 +43,11 @@ const getCachedPageData = (
   }
   const dataPath = jsonDataPaths[page.jsonName]
   if (typeof dataPath === `undefined`) {
+    console.log({
+      page,
+      jsonDataPaths,
+    })
+
     console.log(
       `Error loading a result for the page query in "${pagePath}". Query was not run and no cached result was found.`
     )
