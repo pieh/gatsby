@@ -2,7 +2,8 @@ const _ = require(`lodash`)
 const ProgressBar = require(`progress`)
 const existsSync = require(`fs-exists-cached`).sync
 const queue = require(`async/queue`)
-const processFile = require(`./process-file`)
+// const processFile = require(`./process-file`)
+const { processFile } = require(`./remote/master`)
 
 const toProcess = {}
 let totalJobs = 0
@@ -11,7 +12,7 @@ const q = queue((task, callback) => {
 }, 1)
 
 const bar = new ProgressBar(
-  `Generating image thumbnails [:bar] :current/:total :elapsed secs :percent`,
+  `Generating image thumbnails on remote worker [:bar] :current/:total :elapsed secs :percent`,
   {
     total: 0,
     width: 30,
@@ -81,7 +82,8 @@ function runJobs(
   cb
 ) {
   const jobs = _.values(toProcess[inputFileKey])
-  const findDeferred = job => jobs.find(j => j.job === job).deferred
+  const findDeferred = job =>
+    jobs.find(j => j.job.outputPath === job.outputPath).deferred
   const { job } = jobs[0]
 
   // Delete the input key from the toProcess list so more jobs can be queued.
