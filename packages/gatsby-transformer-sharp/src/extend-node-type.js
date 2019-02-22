@@ -71,7 +71,7 @@ const fixedNodeType = ({
         srcSet: { type: GraphQLString },
         srcWebp: {
           type: GraphQLString,
-          resolve: ({ file, image, fieldArgs }) => {
+          resolve: ({ file, image, fieldArgs, context }) => {
             // If the file is already in webp format or should explicitly
             // be converted to webp, we do not create additional webp files
             if (file.extension === `webp` || fieldArgs.toFormat === `webp`) {
@@ -152,7 +152,13 @@ const fixedNodeType = ({
         defaultValue: 0,
       },
     },
-    resolve: (image, fieldArgs, context) => {
+    resolve: (image, fieldArgs, context, info) => {
+      console.log({
+        image,
+        fieldArgs,
+        context,
+        info,
+      })
       const file = getNodeAndSavePathDependency(image.parent, context.path)
       const args = { ...fieldArgs, pathPrefix }
       return Promise.resolve(
@@ -287,7 +293,13 @@ const fluidNodeType = ({
         description: `A list of image widths to be generated. Example: [ 200, 340, 520, 890 ]`,
       },
     },
-    resolve: (image, fieldArgs, context) => {
+    resolve: (image, fieldArgs, context, info) => {
+      // console.log({
+      //   image,
+      //   fieldArgs,
+      //   context,
+      //   info,
+      // })
       const file = getNodeAndSavePathDependency(image.parent, context.path)
       const args = { ...fieldArgs, pathPrefix }
       return Promise.resolve(
@@ -296,6 +308,8 @@ const fluidNodeType = ({
           args,
           reporter,
           cache,
+          // hack
+          context,
         })
       ).then(o =>
         Object.assign({}, o, {

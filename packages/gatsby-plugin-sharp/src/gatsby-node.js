@@ -17,6 +17,10 @@ const getQueueFromCache = store => {
   return new Map(pluginStatus.queue)
 }
 
+exports.invalidateSideEffect = ({ id }) => {
+  console.log(`should invalidate job that produces`, id)
+}
+
 const saveQueueToCache = async (store, setPluginStatus, queue) => {
   const cachedQueue = getQueueFromCache(store)
 

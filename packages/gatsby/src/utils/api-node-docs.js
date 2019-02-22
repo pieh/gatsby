@@ -292,3 +292,5 @@ exports.onPreExtractQueries = true
  * }
  */
 exports.onCreateDevServer = true
+
+exports.invalidateSideEffect = true

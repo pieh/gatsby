@@ -145,7 +145,7 @@ let apisRunningById = new Map()
 let apisRunningByTraceId = new Map()
 let waitingForCasacadeToFinish = []
 
-module.exports = async (api, args = {}, pluginSource) =>
+module.exports = async (api, args = {}, pluginSource, { runOnlyFor } = {}) =>
   new Promise(resolve => {
     const { parentSpan } = args
     const apiSpanArgs = parentSpan ? { childOf: parentSpan } : {}
@@ -175,7 +175,9 @@ module.exports = async (api, args = {}, pluginSource) =>
     // In these cases, we should avoid calling the originating plugin
     // again.
     let noSourcePluginPlugins = filteredPlugins
-    if (pluginSource) {
+    if (runOnlyFor) {
+      noSourcePluginPlugins = filteredPlugins.filter(p => p.name === runOnlyFor)
+    } else if (pluginSource) {
       noSourcePluginPlugins = filteredPlugins.filter(
         p => p.name !== pluginSource
       )

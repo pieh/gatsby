@@ -81,6 +81,7 @@ function saveState() {
     `jsonDataPaths`,
     `components`,
     `staticQueryComponents`,
+    `sideEffects`,
   ])
 
   pickedState.staticQueryComponents = mapToObject(

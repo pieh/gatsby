@@ -6,8 +6,9 @@ const report = require(`gatsby-cli/lib/reporter`)
 const websocketManager = require(`../../utils/websocket-manager`)
 
 const path = require(`path`)
-const { store } = require(`../../redux`)
+const { store, emitter } = require(`../../redux`)
 const { generatePathChunkName } = require(`../../utils/js-chunk-names`)
+const apiRunnerNode = require(`../../utils/api-runner-node`)
 const { formatErrorDetails } = require(`./utils`)
 const mod = require(`hash-mod`)(999)
 
@@ -23,12 +24,75 @@ type QueryJob = {
   isPage: Boolean,
 }
 
+// hacks on hacks
+emitter.on(`DELETE_COMPONENTS_DEPENDENCIES`, action => {
+  const { pages, sideEffects, staticQueryComponents } = store.getState()
+
+  console.log(`cleaning deps`, action)
+
+  const invalidatedQueryIds = action.payload.paths
+    .map(path => {
+      const page = pages.get(path)
+      if (page) {
+        return page.jsonName
+      }
+      const staticQuery = staticQueryComponents.get(path)
+      if (staticQuery) {
+        return staticQuery.hash
+      }
+
+      // if (!page) {
+      console.log(`cant find page or static query for `, {
+        path,
+        pages,
+        staticQueryComponents,
+      })
+
+      return null
+      // }
+      // return page.jsonName
+    })
+    .filter(Boolean)
+
+  invalidatedQueryIds.forEach(queryID => {
+    const sideEffectsForQuery = sideEffects[queryID]
+    if (sideEffectsForQuery) {
+      sideEffectsForQuery.forEach(({ plugin, pluginSpecificID }) => {
+        apiRunnerNode(
+          `invalidateSideEffect`,
+          {
+            id: pluginSpecificID,
+          },
+          ``,
+          {
+            runOnlyFor: plugin,
+          }
+        )
+      })
+    }
+  })
+})
+
 // Run query
 module.exports = async (queryJob: QueryJob, component: Any) => {
   const { schema, program } = store.getState()
 
+  const contextWithSecretSauce = {
+    ...queryJob.context,
+    registerSideEffect: ({ plugin, id: pluginSpecificID }) => {
+      store.dispatch({
+        type: `SET_SIDE_EFFECT`,
+        payload: {
+          queryID: queryJob.id,
+          plugin,
+          pluginSpecificID,
+        },
+      })
+    },
+  }
+
   const graphql = (query, context) =>
-    graphqlFunction(schema, query, context, context, context)
+    graphqlFunction(schema, query, context, contextWithSecretSauce, context)
 
   // Run query
   let result

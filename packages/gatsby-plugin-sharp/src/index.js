@@ -115,7 +115,7 @@ const healOptions = (args, fileExtension, defaultArgs = {}) => {
   return options
 }
 
-function queueImageResizing({ file, args = {}, reporter }) {
+function queueImageResizing({ file, args = {}, reporter, context }) {
   const options = healOptions(args, file.extension)
   // Filter out false args, and args not for this extension and put width at
   // end (for the file path)
@@ -193,6 +193,14 @@ function queueImageResizing({ file, args = {}, reporter }) {
     args: options,
     inputPath: file.absolutePath,
     outputPath: filePath,
+  }
+
+  if (context && context.registerSideEffect) {
+    context.registerSideEffect({
+      // :(
+      plugin: `gatsby-plugin-sharp`,
+      id: filePath,
+    })
   }
 
   queue.set(prefixedSrc, job)
@@ -296,7 +304,7 @@ async function base64(arg) {
   return await memoizedBase64(arg)
 }
 
-async function fluid({ file, args = {}, reporter, cache }) {
+async function fluid({ file, args = {}, reporter, cache, context }) {
   const options = healOptions(args, file.extension)
   // Account for images with a high pixel density. We assume that these types of
   // images are intended to be displayed at their native resolution.
@@ -408,6 +416,7 @@ async function fluid({ file, args = {}, reporter, cache }) {
       file,
       args: arrrgs, // matey
       reporter,
+      context,
     })
   })
 

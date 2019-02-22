@@ -44,4 +44,5 @@ module.exports = {
   jsonDataPaths: require(`./json-data-paths`),
   thirdPartySchemas: require(`./third-party-schemas`),
   themes: require(`./themes`),
+  sideEffects: require(`./side-effects`),
 }
