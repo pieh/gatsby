@@ -355,16 +355,16 @@ exports.createPages = ({ graphql, actions, reporter }) => {
       Array.from({
         length: numPages,
       }).forEach((_, i) => {
-        createPage({
-          path: i === 0 ? `/blog` : `/blog/page/${i + 1}`,
-          component: slash(blogListTemplate),
-          context: {
-            limit: postsPerPage,
-            skip: i * postsPerPage,
-            numPages,
-            currentPage: i + 1,
-          },
-        })
+        // createPage({
+        //   path: i === 0 ? `/blog` : `/blog/page/${i + 1}`,
+        //   component: slash(blogListTemplate),
+        //   context: {
+        //     limit: postsPerPage,
+        //     skip: i * postsPerPage,
+        //     numPages,
+        //     currentPage: i + 1,
+        //   },
+        // })
       })
 
       // Create blog-post pages.
