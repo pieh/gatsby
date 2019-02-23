@@ -1,5 +1,6 @@
 #!/bin/sh
-yarn bootstrap
+yarn
+yarn lerna run build --scope=gatsby-transformer-documentationjs
 npm install -g gatsby-dev-cli
 gatsby-dev --set-path-to-repo .
 
