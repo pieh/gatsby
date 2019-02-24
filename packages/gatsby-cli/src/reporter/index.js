@@ -5,7 +5,7 @@ const { stripIndent } = require(`common-tags`)
 const convertHrtime = require(`convert-hrtime`)
 const tracer = require(`opentracing`).globalTracer()
 const { getErrorFormatter } = require(`./errors`)
-
+const { initInk } = require(`./ink`)
 const VERBOSE = process.env.gatsby_log_level === `verbose`
 
 const errorFormatter = getErrorFormatter()
@@ -25,6 +25,9 @@ module.exports = Object.assign(reporter, {
    * Strip initial indentation template function.
    */
   stripIndent,
+  switchToInk() {
+    initInk(this)
+  },
   /**
    * Toggle verbosity.
    * @param {boolean} [isVerbose=true]

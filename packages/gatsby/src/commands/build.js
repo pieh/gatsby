@@ -24,6 +24,7 @@ type BuildArgs = {
 }
 
 module.exports = async function build(program: BuildArgs) {
+  report.switchToInk()
   initTracer(program.openTracingConfigFile)
 
   const buildSpan = tracer.startSpan(`build`)
