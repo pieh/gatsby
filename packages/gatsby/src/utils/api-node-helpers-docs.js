@@ -227,8 +227,13 @@ const GatsbyNodeHelpers = {
   getNodesByType: true,
 
   /**
-   * Stub descriptiona
-   * (should we remove it? it isn't used anywhere really)
+   * Compares `contentDigest` of cached node with passed value
+   * to determine if node has changed.
+   * if node changed.
+   * @param {string} id of node
+   * @param {string} contentDigest of node
+   * @returns {boolean}
+   * @deprecated This check is done internally in Gatsby and it's not necessary to use it in plugins. Will be removed in gatsby 3.0.
    */
   hasNodeChanged: true,
 
@@ -276,7 +281,10 @@ const GatsbyNodeHelpers = {
   tracing: true,
 
   /**
-   * Stub description
+   * Use to prefix resources URLs. `pathPrefix` will be either empty string or
+   * path that starts with slash and doesn't end with slash. Check
+   * [Adding a Path Prefix](https://www.gatsbyjs.org/docs/path-prefix/)
+   * page for details about path prefixing.
    * @type {string}
    */
   pathPrefix: true,
