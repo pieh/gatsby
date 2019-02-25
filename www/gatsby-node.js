@@ -213,24 +213,24 @@ exports.createPages = ({ graphql, actions, reporter }) => {
 
   return new Promise((resolve, reject) => {
     const docsTemplate = path.resolve(`src/templates/template-docs-markdown.js`)
-    const blogPostTemplate = path.resolve(`src/templates/template-blog-post.js`)
-    const blogListTemplate = path.resolve(`src/templates/template-blog-list.js`)
-    const tagTemplate = path.resolve(`src/templates/tags.js`)
-    const contributorPageTemplate = path.resolve(
-      `src/templates/template-contributor-page.js`
-    )
+    // const blogPostTemplate = path.resolve(`src/templates/template-blog-post.js`)
+    // const blogListTemplate = path.resolve(`src/templates/template-blog-list.js`)
+    // const tagTemplate = path.resolve(`src/templates/tags.js`)
+    // const contributorPageTemplate = path.resolve(
+    //   `src/templates/template-contributor-page.js`
+    // )
     const localPackageTemplate = path.resolve(
       `src/templates/template-docs-local-packages.js`
     )
-    const remotePackageTemplate = path.resolve(
-      `src/templates/template-docs-remote-packages.js`
-    )
-    const showcaseTemplate = path.resolve(
-      `src/templates/template-showcase-details.js`
-    )
-    const creatorPageTemplate = path.resolve(
-      `src/templates/template-creator-details.js`
-    )
+    // const remotePackageTemplate = path.resolve(
+    //   `src/templates/template-docs-remote-packages.js`
+    // )
+    // const showcaseTemplate = path.resolve(
+    //   `src/templates/template-showcase-details.js`
+    // )
+    // const creatorPageTemplate = path.resolve(
+    //   `src/templates/template-creator-details.js`
+    // )
 
     // Query for markdown nodes to use in creating pages.
     graphql(`
@@ -372,8 +372,8 @@ exports.createPages = ({ graphql, actions, reporter }) => {
         let next = index === 0 ? null : blogPosts[index - 1].node
         if (next && !_.get(next, `fields.released`)) next = null
 
-        const prev =
-          index === blogPosts.length - 1 ? null : blogPosts[index + 1].node
+        // const prev =
+        //   index === blogPosts.length - 1 ? null : blogPosts[index + 1].node
 
         // createPage({
         //   path: `${edge.node.fields.slug}`, // required
@@ -410,9 +410,9 @@ exports.createPages = ({ graphql, actions, reporter }) => {
         }
       })
 
-      const starterTemplate = path.resolve(
-        `src/templates/template-starter-page.js`
-      )
+      // const starterTemplate = path.resolve(
+      //   `src/templates/template-starter-page.js`
+      // )
 
       starters.forEach((edge, index) => {
         // createPage({
