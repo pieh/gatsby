@@ -3,7 +3,7 @@ import { graphql } from "gatsby"
 import { Helmet } from "react-helmet"
 import sortBy from "lodash/sortBy"
 
-import Functions from "../../components/function-list"
+import APIReference from "../../components/api-reference"
 import { rhythm, scale } from "../../utils/typography"
 import Layout from "../../components/layout"
 import Container from "../../components/container"
@@ -61,7 +61,7 @@ class ActionCreatorsDocs extends React.Component {
           </ul>
           <hr />
           <h2>Reference</h2>
-          <Functions functions={funcs} />
+          <APIReference docs={funcs} />
         </Container>
       </Layout>
     )
@@ -75,7 +75,7 @@ export const pageQuery = graphql`
     file(relativePath: { eq: "gatsby/src/redux/actions.js" }) {
       childrenDocumentationJs {
         name
-        ...FunctionList
+        ...DocumentationFragment
       }
     }
   }

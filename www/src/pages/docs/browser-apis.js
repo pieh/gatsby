@@ -3,7 +3,7 @@ import { graphql } from "gatsby"
 import { Helmet } from "react-helmet"
 import sortBy from "lodash/sortBy"
 
-import Functions from "../../components/function-list"
+import APIReference from "../../components/api-reference"
 import { rhythm, scale } from "../../utils/typography"
 import Layout from "../../components/layout"
 import Container from "../../components/container"
@@ -43,7 +43,7 @@ class BrowserAPIDocs extends React.Component {
           <br />
           <hr />
           <h2>Reference</h2>
-          <Functions functions={funcs} />
+          <APIReference docs={funcs} />
         </Container>
       </Layout>
     )
@@ -57,7 +57,7 @@ export const pageQuery = graphql`
     file(relativePath: { regex: "/src.*api-browser-docs.js/" }) {
       childrenDocumentationJs {
         name
-        ...FunctionList
+        ...DocumentationFragment
       }
     }
   }

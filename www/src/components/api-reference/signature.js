@@ -54,6 +54,10 @@ const ReactJoin = (arrayOfElements, joiner) =>
 const TypeExpression = ({ type }) => {
   if (type.type === `NameExpression`) {
     return <TypeComponent>{type.name}</TypeComponent>
+  } else if (type.type === `NullLiteral`) {
+    return <TypeComponent>null</TypeComponent>
+  } else if (type.type === `UndefinedLiteral`) {
+    return <TypeComponent>undefined</TypeComponent>
   } else if (type.type === `UnionType`) {
     return (
       <React.Fragment>

@@ -73,7 +73,10 @@ const DocBlock = ({
 }) => {
   let titleElement = title || definition.name
 
-  if (titleElement) {
+  if (titleElement === `$0`) {
+    titleElement = `destructured object`
+    showSignature = false
+  } else if (titleElement) {
     titleElement = <code>{titleElement}</code>
   }
 
