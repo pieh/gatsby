@@ -44,7 +44,11 @@ const Operator = ({ children }) => (
 const ReactJoin = (arrayOfElements, joiner) =>
   arrayOfElements.reduce((acc, current, index) => {
     if (index > 0) {
-      acc.push(joiner)
+      acc.push(
+        React.cloneElement(joiner, {
+          key: `joiner ${index}`,
+        })
+      )
     }
     acc.push(current)
 
