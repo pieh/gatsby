@@ -25,8 +25,8 @@ class NodeAPIHelperDocs extends React.Component {
             Gatsby Node APIs helpers
           </h1>
           <p>
-            First argument passed to{" "}
-            <Link to="/docs/node-apis/">Gatsby Node API hooks</Link> is object
+            First argument passed to{` `}
+            <Link to="/docs/node-apis/">Gatsby Node APIs</Link> is object
             containing set of utilities.
           </p>
           <h2 css={{ marginBottom: rhythm(1 / 2) }}>Helpers</h2>
