@@ -99,6 +99,7 @@ const DocBlock = ({
     <div
       css={{
         ...scale(-(level || 0) / 5),
+        position: `relative`,
       }}
     >
       <Header level={level}>

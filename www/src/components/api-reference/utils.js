@@ -13,7 +13,21 @@ export const Header = ({ children, level }) => {
           ? {
               marginTop: rhythm(0.35),
             }
-          : {}),
+          : {
+              position: `sticky`,
+
+              top: 125,
+              background: `white`,
+              marginTop: `calc(-1.05rem + 1px)`,
+              paddingTop: `calc(1.05rem - 1px)`,
+              marginBottom: `calc(-1.05rem + 1px)`,
+              paddingBottom: `calc(1.05rem - 1px)`,
+              marginLeft: `-1.575rem`,
+              marginRight: `-1.575rem`,
+              paddingLeft: `1.575rem`,
+              paddingRight: `1.575rem`,
+              zIndex: 1,
+            }),
       }}
     >
       {children}
