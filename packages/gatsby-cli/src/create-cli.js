@@ -4,6 +4,7 @@ const yargs = require(`yargs`)
 const report = require(`./reporter`)
 const envinfo = require(`envinfo`)
 const existsSync = require(`fs-exists-cached`).sync
+const levenshtein = require(`fast-levenshtein`)
 
 const handlerP = fn => (...args) => {
   Promise.resolve(fn(...args)).then(
@@ -301,21 +302,48 @@ module.exports = argv => {
 
   buildLocalCommands(cli, isLocalSite)
 
-  return cli
-    .command({
-      command: `new [rootPath] [starter]`,
-      desc: `Create new Gatsby project.`,
-      handler: handlerP(
-        ({ rootPath, starter = `gatsbyjs/gatsby-starter-default` }) => {
-          const initStarter = require(`./init-starter`)
-          return initStarter(starter, { rootPath })
-        }
-      ),
-    })
-    .wrap(cli.terminalWidth())
-    .demandCommand(1, `Pass --help to see all available commands and options.`)
-    .strict()
-    .showHelpOnFail(true)
-    .recommendCommands()
-    .parse(argv.slice(2))
+  return (
+    cli
+      .command({
+        command: `new [rootPath] [starter]`,
+        desc: `Create new Gatsby project.`,
+        handler: handlerP(
+          ({ rootPath, starter = `gatsbyjs/gatsby-starter-default` }) => {
+            const initStarter = require(`./init-starter`)
+            return initStarter(starter, { rootPath })
+          }
+        ),
+      })
+      .wrap(cli.terminalWidth())
+      .demandCommand(
+        1,
+        `Pass --help to see all available commands and options.`
+      )
+      .strict()
+      .fail((msg, err, yargs) => {
+        // const test = yargs._parseArgs(process.argv)
+        const availableCommands = yargs.getCommands()
+        const args = process.argv.slice(2)
+
+        args.forEach((arg, index) => {
+          availableCommands.forEach(commandInformation => {
+            const command = commandInformation[0].split(` `)[0]
+            const distance = levenshtein.get(arg, command)
+            console.log(`Distance between, ${arg} and ${command} = ${distance}`)
+          })
+        })
+
+        console.error(`You broke it!`, {
+          args: process.argv.slice(2),
+          availableCommands,
+          // test,
+          msg,
+          //yargs,
+          err,
+        })
+      })
+      //.showHelpOnFail(true)
+      //.recommendCommands()
+      .parse(argv.slice(2))
+  )
 }
