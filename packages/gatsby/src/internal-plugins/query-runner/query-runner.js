@@ -30,6 +30,7 @@ module.exports = async (queryJob: QueryJob, component: Any) => {
   const graphql = (query, context) =>
     graphqlFunction(schema, query, context, context, context)
 
+  console.log(`run query`, queryJob.id)
   // Run query
   let result
   // Nothing to do if the query doesn't exist.
