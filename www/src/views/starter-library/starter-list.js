@@ -5,6 +5,7 @@ import GithubIcon from "react-icons/lib/go/mark-github"
 import MdStar from "react-icons/lib/md/star"
 import { rhythm } from "../../utils/typography"
 import presets, { colors, space } from "../../utils/presets"
+import Button from "../../components/button"
 import styles from "../shared/styles"
 import ThumbnailLink from "../shared/thumbnail"
 import EmptyGridItems from "../shared/empty-grid-items"
@@ -165,6 +166,16 @@ const StartersList = ({ urlState, starters, count, sortRecent }) => {
                       </a>
                     </span>
                   </div>
+                  {/* this button would need to conditionally be rendered if `cli` query param is used.
+                  Also probably better ux - instead of navigating, fetch it and change button state/text
+                 */}
+                  <Button
+                    css={{ marginTop: rhythm(space[2]), marginLeft: `auto` }}
+                    tag="href"
+                    href={`http://localhost:7999/pick-starter?starter=${githubFullName}`}
+                  >
+                    Install
+                  </Button>
                 </div>
               </div>
             )

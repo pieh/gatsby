@@ -5,6 +5,7 @@ const report = require(`./reporter`)
 const didYouMean = require(`./did-you-mean`)
 const envinfo = require(`envinfo`)
 const existsSync = require(`fs-exists-cached`).sync
+const { pickStarter } = require(`./starter-picker`)
 
 const handlerP = fn => (...args) => {
   Promise.resolve(fn(...args)).then(
@@ -315,12 +316,14 @@ module.exports = argv => {
     .command({
       command: `new [rootPath] [starter]`,
       desc: `Create new Gatsby project.`,
-      handler: handlerP(
-        ({ rootPath, starter = `gatsbyjs/gatsby-starter-default` }) => {
-          const initStarter = require(`./init-starter`)
-          return initStarter(starter, { rootPath })
+      handler: handlerP(async ({ rootPath, starter }) => {
+        if (!starter) {
+          starter = await pickStarter()
         }
-      ),
+
+        const initStarter = require(`./init-starter`)
+        return initStarter(starter, { rootPath })
+      }),
     })
     .wrap(cli.terminalWidth())
     .demandCommand(1, `Pass --help to see all available commands and options.`)
