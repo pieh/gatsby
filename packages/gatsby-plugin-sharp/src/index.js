@@ -704,20 +704,26 @@ async function notMemoizedtraceSVG({ file, args, fileArgs, reporter }) {
 
   await new Promise(resolve =>
     pipeline.toFile(tmpFilePath, (err, info) => {
+      if (err) {
+        console.log(`THERE IS ERROR HERE!!!!`, err)
+      }
+      // console.log(`i`, { info, fileArgs, args })
       resolve()
     })
   )
 
   return trace(tmpFilePath, optionsSVG)
-    .then(svg => optimize(svg))
-    .then(svg => svgToMiniDataURI(svg))
+  // .then(svg => optimize(svg))
+  // .then(svg => svgToMiniDataURI(svg))
 }
 
-const memoizedTraceSVG = _.memoize(
+const memoizedTraceSVG = notMemoizedtraceSVG
+/*
+_.memoize(
   notMemoizedtraceSVG,
   ({ file, args }) => `${file.absolutePath}${JSON.stringify(args)}`
 )
-
+*/
 async function traceSVG(args) {
   return await memoizedTraceSVG(args)
 }
