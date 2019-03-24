@@ -4947,3 +4947,12 @@
   built_by: Hetzner Online GmbH
   built_by_url: https://www.hetzner.com/
   featured: false
+- title: Example
+  main_url: https://www.example.com/
+  url: https://www.example.com/
+  description: >
+    Example description
+  categories:
+    - eCommerce
+    - Example
+  featured: false
