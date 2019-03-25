@@ -1,8 +1,6 @@
 const b = `d`
 
-
-
-const notUsed =   `def not used`
+const notUsed = `def not used`
 
 const secondNotUsed = 5
 

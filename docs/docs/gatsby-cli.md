@@ -9,8 +9,6 @@ Gatsby command line tool. This doc exists in [READme form in GitHub here](https:
 Let's you create new Gatsby sites using
 [Gatsby starters](https://www.gatsbyjs.org/docs/gatsby-starters/).
 
-
-
     It also let's you run commands on sites. The tool runs code from the `gatsby`
 
 package installed locally.
