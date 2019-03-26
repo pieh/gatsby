@@ -4964,3 +4964,16 @@
   built_by: Torsten Uhlmann
   built_by_url: https://www.agynamix.de/
   featured: false
+- title: Example (merge conflict)
+  main_url: https://example.com
+  url: https://example.com
+  description: >
+    Lorem Ipsum
+  categories:
+    - Foo
+    - Bar
+    - Programming
+    - Open Source
+    - Community
+    - Tutorials
+  featured: false

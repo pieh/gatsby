@@ -2082,3 +2082,11 @@
   features:
     - Showcase of portfolio items
     - About me page
+- url: https://example.com
+  repo: https://github.com/example/gatsby-starter-example
+  description: Lorem Ipsum
+  tags:
+    - Foo
+    - Bar
+  features:
+    - Baz
