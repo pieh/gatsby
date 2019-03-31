@@ -98,6 +98,9 @@ module.exports = Object.assign(reporter, {
     return {
       start: () => {
         spinner.tick(name)
+        if (process.env.RECORD_SAMPLING) {
+          require(`../sampling`).startActivity(name)
+        }
       },
       setStatus: s => {
         status = s
@@ -105,6 +108,9 @@ module.exports = Object.assign(reporter, {
       },
       end: () => {
         span.finish()
+        if (process.env.RECORD_SAMPLING) {
+          require(`../sampling`).endActivity(name)
+        }
         const str = status
           ? `${name} — ${elapsedTime()} — ${status}`
           : `${name} — ${elapsedTime()}`

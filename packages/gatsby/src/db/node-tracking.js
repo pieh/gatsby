@@ -16,10 +16,26 @@ const getRootNodeId = node => rootNodeMap.get(node)
  * @param {(Object|Array)} data Inline object or array
  * @param {string} nodeId Id of node that contains data passed in first parameter
  */
-const addRootNodeToInlineObject = (data, nodeId, sanitize, parent, key) => {
+const old_addRootNodeToInlineObject = (
+  data,
+  nodeId,
+  sanitize,
+  parent,
+  key,
+  unsupportedKeys
+) => {
   if (_.isPlainObject(data) || _.isArray(data)) {
+    const unsupportedKeys = new Set()
     _.each(data, (o, key) => {
-      addRootNodeToInlineObject(o, nodeId, sanitize, key, data)
+      addRootNodeToInlineObject(
+        o,
+        nodeId,
+        sanitize,
+        data,
+        key,
+        unsupportedKeys,
+        unsupportedKeys
+      )
     })
     rootNodeMap.set(data, nodeId)
 
@@ -27,18 +43,65 @@ const addRootNodeToInlineObject = (data, nodeId, sanitize, parent, key) => {
     return
   }
 
-  if (sanitize) {
+  if (sanitize && data !== null) {
     const type = typeof data
     // supported types
     const isSupported =
       type === `number` ||
       type === `string` ||
       type === `boolean` ||
+      type === `undefined` ||
       data instanceof Date
     if (!isSupported) {
-      delete parent[key]
+      unsupportedKeys.add(key)
+      console.log(`gotta remove stuff:`, data, type)
+      // debugger
+      // delete parent[key]
     }
   }
+}
+
+const addRootNodeToInlineObject = (
+  data,
+  nodeId,
+  sanitize,
+  ignore = null
+  // key,
+  // unsupportedKeys
+) => {
+  const isPlainObject = _.isPlainObject(data)
+
+  if (isPlainObject || _.isArray(data)) {
+    if (sanitize) {
+      data = isPlainObject ? { ...data } : [...data]
+    }
+    _.each(data, (o, key) => {
+      if (ignore == key) {
+        return
+      }
+      data[key] = addRootNodeToInlineObject(o, nodeId, sanitize, null)
+    })
+    rootNodeMap.set(data, nodeId)
+
+    // arrays and plain objects are supported - no need to to sanitize
+    return data
+  }
+
+  if (sanitize && data !== null) {
+    const type = typeof data
+    const isSupported =
+      type === `number` ||
+      type === `string` ||
+      type === `boolean` ||
+      type === `undefined` ||
+      data instanceof Date
+
+    if (!isSupported) {
+      return undefined
+    }
+  }
+  // either supported or not sanitizing
+  return data
 }
 
 /**
@@ -47,6 +110,8 @@ const addRootNodeToInlineObject = (data, nodeId, sanitize, parent, key) => {
  * @param {Node} node Root Node
  */
 const trackInlineObjectsInRootNode = (node, sanitize = false) => {
+  return addRootNodeToInlineObject(node, node.id, sanitize, `internal`)
+
   _.each(node, (v, k) => {
     // Ignore the node internal object.
     if (k === `internal`) {
