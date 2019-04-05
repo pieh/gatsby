@@ -176,5 +176,34 @@ describe(`track root nodes`, () => {
       expect(testNode.inlineObject.re).toBeDefined()
       expect(testNode.inlineArray[3]).toBeDefined()
     })
+
+    it(`Create copy of node if it has to remove anything`, () => {
+      const result = trackInlineObjectsInRootNode(testNode, true)
+      expect(result).not.toBe(testNode)
+    })
+
+    it(`Doesn't create clones if it doesn't have to`, () => {
+      const testNodeWithoutUnserializableData = {
+        id: `id1`,
+        parent: null,
+        children: [],
+        inlineObject: {
+          field: `fieldOfFirstNode`,
+        },
+        inlineArray: [1, 2, 3],
+        internal: {
+          type: `Test`,
+          contentDigest: `digest1`,
+          owner: `test`,
+        },
+      }
+
+      const result = trackInlineObjectsInRootNode(
+        testNodeWithoutUnserializableData,
+        true
+      )
+      // should be same instance
+      expect(result).toBe(testNodeWithoutUnserializableData)
+    })
   })
 })

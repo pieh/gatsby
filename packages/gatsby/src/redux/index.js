@@ -4,7 +4,7 @@ const fs = require(`fs-extra`)
 const mitt = require(`mitt`)
 const v8 = require(`v8`)
 const stringify = require(`json-stringify-safe`)
-
+const debug = require(`debug`)(`gatsby:redux`)
 // Create event emitter for actions
 const emitter = mitt()
 
@@ -42,7 +42,7 @@ const jsonParse = buffer => {
   return parsed
 }
 
-const useV8 = Boolean(v8.serialize)
+const useV8 = Boolean(v8.serialize) && false
 const [serialize, deserialize, file] = useV8
   ? [v8.serialize, v8.deserialize, `${process.cwd()}/.cache/redux.state`]
   : [jsonStringify, jsonParse, `${process.cwd()}/.cache/redux-state.json`]
@@ -95,7 +95,15 @@ function saveState() {
     `staticQueryComponents`,
   ])
 
+  const MemoryUsage = () =>
+    `
+  RSS: ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB}
+  heapTotal: ${Math.round(process.memoryUsage().heapTotal / 1024 / 1024)} MB}
+  heapUsed: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)} MB}`
+
+  debug(`Start persisting ${MemoryUsage()}`)
   writeFileSync(file, pickedState)
+  debug(`Finished persisting ${MemoryUsage()}`)
 }
 
 exports.saveState = saveState

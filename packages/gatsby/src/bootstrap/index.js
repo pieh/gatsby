@@ -439,12 +439,13 @@ module.exports = async (args: BootstrapArgs) => {
   activity.end()
 
   // Update Schema for SitePage.
-  activity = report.activityTimer(`update schema`, {
-    parentSpan: bootstrapSpan,
-  })
-  activity.start()
-  await require(`../schema`).rebuildWithSitePage({ parentSpan: activity.span })
-  activity.end()
+  // temporarily disable rebuilding schema to speed up testing
+  // activity = report.activityTimer(`update schema`, {
+  //   parentSpan: bootstrapSpan,
+  // })
+  // activity.start()
+  // await require(`../schema`).rebuildWithSitePage({ parentSpan: activity.span })
+  // activity.end()
 
   // Extract queries
   activity = report.activityTimer(`extract queries from components`, {
