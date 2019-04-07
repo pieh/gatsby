@@ -1,8 +1,9 @@
 const Redux = require(`redux`)
 const _ = require(`lodash`)
+const report = require(`gatsby-cli/lib/reporter`)
 
 const mitt = require(`mitt`)
-
+const debug = require(`debug`)(`gatsby:redux`)
 // Create event emitter for actions
 const emitter = mitt()
 
@@ -62,7 +63,21 @@ function saveState() {
     `staticQueryComponents`,
   ])
 
-  return writeToCache(pickedState)
+  const MemoryUsage = () =>
+    `
+  RSS: ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB}
+  heapTotal: ${Math.round(process.memoryUsage().heapTotal / 1024 / 1024)} MB}
+  heapUsed: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)} MB}`
+
+  debug(`Start persisting ${MemoryUsage()}`)
+  const activity = report.activityTimer(`persist state`, {
+    hideSpinner: true,
+  })
+  activity.start()
+  writeToCache(pickedState)
+  activity.end()
+  debug(`Finished persisting ${MemoryUsage()}`)
+  return Promise.resolve()
 }
 
 exports.saveState = saveState

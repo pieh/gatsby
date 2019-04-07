@@ -1,5 +1,6 @@
 const Queue = require(`better-queue`)
 
+const report = require(`gatsby-cli/lib/reporter`)
 const queryRunner = require(`./query-runner`)
 const { store, emitter } = require(`../redux`)
 const { boundActionCreators } = require(`../redux/actions`)
@@ -8,6 +9,8 @@ const FastMemoryStore = require(`./better-queue-custom-store`)
 
 const processing = new Set()
 const waiting = new Map()
+
+let activity = null
 
 const queueOptions = {
   concurrent: 4,
@@ -46,6 +49,13 @@ if (process.env.gatsby_executing_command === `build`) {
 }
 
 const queue = new Queue((plObj, callback) => {
+  if (!activity) {
+    activity = report.activityTimer(`running queries`, {
+      hideSpinner: true,
+    })
+    activity.start()
+  }
+
   const state = store.getState()
   processing.add(plObj.id)
 
@@ -97,6 +107,10 @@ emitter.on(`API_RUNNING_QUEUE_EMPTY`, () => {
 
 queue.on(`drain`, () => {
   emitter.emit(`QUERY_QUEUE_DRAINED`)
+  if (activity) {
+    activity.end()
+    activity = null
+  }
 })
 
 queue.on(`task_queued`, () => {

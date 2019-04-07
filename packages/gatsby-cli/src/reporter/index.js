@@ -82,7 +82,11 @@ module.exports = Object.assign(reporter, {
    * @returns {string} The elapsed time of activity.
    */
   activityTimer(name, activityArgs: ActivityArgs = {}) {
-    const spinner = reporter.activity()
+    let spinner = null
+    if (!activityArgs.hideSpinner) {
+      spinner = reporter.activity()
+    }
+    // const spinner =
     const start = process.hrtime()
     let status
 
@@ -97,19 +101,31 @@ module.exports = Object.assign(reporter, {
 
     return {
       start: () => {
-        spinner.tick(name)
+        if (spinner) {
+          spinner.tick(name)
+        }
+        if (process.env.RECORD_SAMPLING) {
+          require(`../sampling`).startActivity(name)
+        }
       },
       setStatus: s => {
         status = s
-        spinner.tick(`${name} — ${status}`)
+        if (spinner) {
+          spinner.tick(`${name} — ${status}`)
+        }
       },
       end: () => {
         span.finish()
+        if (process.env.RECORD_SAMPLING) {
+          require(`../sampling`).endActivity(name)
+        }
         const str = status
           ? `${name} — ${elapsedTime()} — ${status}`
           : `${name} — ${elapsedTime()}`
-        reporter.success(str)
-        spinner.end()
+        if (spinner) {
+          reporter.success(str)
+          spinner.end()
+        }
       },
       span: span,
     }

@@ -33,7 +33,8 @@ const jsonParse = buffer => {
   return parsed
 }
 
-const useV8 = Boolean(v8.serialize)
+const useV8 = Boolean(v8.serialize) && !process.env.GATSBY_MEMORY_SADIST
+console.log({ useV8 })
 const [serialize, deserialize, file] = useV8
   ? [v8.serialize, v8.deserialize, `${process.cwd()}/.cache/redux.state`]
   : [jsonStringify, jsonParse, `${process.cwd()}/.cache/redux-state.json`]

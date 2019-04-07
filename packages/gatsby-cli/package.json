@@ -26,6 +26,7 @@
     "meant": "^1.0.1",
     "node-fetch": "2.3.0",
     "opentracing": "^0.14.3",
+    "pidusage": "^2.0.17",
     "pretty-error": "^2.1.1",
     "resolve-cwd": "^2.0.0",
     "source-map": "^0.5.7",

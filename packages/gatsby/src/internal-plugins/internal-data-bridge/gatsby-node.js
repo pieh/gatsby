@@ -132,7 +132,7 @@ exports.sourceNodes = ({ createContentDigest, actions, store }) => {
 exports.onCreatePage = ({ createContentDigest, page, actions }) => {
   const { createNode } = actions
   // eslint-disable-next-line
-  const { updatedAt, ...pageWithoutUpdated } = page
+  const { updatedAt, context, ...pageWithoutUpdated } = page
 
   // Add page.
   createNode({

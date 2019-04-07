@@ -112,6 +112,11 @@ function buildLocalCommands(cli, isLocalSite) {
       let args = { ...argv, ...siteInfo, report, useYarn }
 
       report.verbose(`running command: ${command}`)
+
+      if (process.env.RECORD_SAMPLING) {
+        require(`./sampling`).start()
+      }
+
       return handler ? handler(args, localCmd) : localCmd(args)
     }
   }

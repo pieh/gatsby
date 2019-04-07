@@ -91,7 +91,10 @@ async function startServer(program) {
 
   queryWatcher.startWatchDeletePage()
 
+  const activity = report.activityTimer(`create index page`)
+  activity.start()
   await createIndexHtml()
+  activity.end()
 
   const devConfig = await webpackConfig(
     program,
@@ -166,8 +169,11 @@ async function startServer(program) {
       !refreshToken || req.headers.authorization === refreshToken
 
     if (enableRefresh && authorizedRefresh) {
-      console.log(`Refreshing source data`)
-      sourceNodes()
+      const activity = report.activityTimer(`refresh source data`)
+      activity.start()
+      sourceNodes().then(() => {
+        activity.end()
+      })
     }
     res.end()
   })

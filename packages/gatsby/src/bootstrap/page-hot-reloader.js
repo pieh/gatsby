@@ -2,6 +2,7 @@ const { emitter, store } = require(`../redux`)
 const apiRunnerNode = require(`../utils/api-runner-node`)
 const { boundActionCreators } = require(`../redux/actions`)
 const { deletePage, deleteComponentsDependencies } = boundActionCreators
+const report = require(`gatsby-cli/lib/reporter`)
 
 let pagesDirty = false
 let graphql
@@ -33,11 +34,17 @@ const runCreatePages = async () => {
 
   const timestamp = Date.now()
 
+  const activity = report.activityTimer(`create pages (after node creation)`, {
+    hideSpinner: true,
+  })
+  activity.start()
+
   await apiRunnerNode(`createPages`, {
     graphql,
     traceId: `createPages`,
     waitForCascadingActions: true,
   })
+  activity.end()
 
   // Delete pages that weren't updated when running createPages.
   Array.from(store.getState().pages.values()).forEach(page => {
