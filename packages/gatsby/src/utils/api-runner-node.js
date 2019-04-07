@@ -1,6 +1,8 @@
 const Promise = require(`bluebird`)
 const _ = require(`lodash`)
 const chalk = require(`chalk`)
+const objectSizeOf = require(`object-sizeof`)
+const prettyBytes = require(`pretty-bytes`)
 
 const tracer = require(`opentracing`).globalTracer()
 const reporter = require(`gatsby-cli/lib/reporter`)
@@ -107,17 +109,73 @@ const runAPI = (plugin, api, args) => {
     // this can be potentially breaking so targeting `createPages` API and `createPage` action
     let actions = doubleBoundActionCreators
     let apiFinished = false
+    let onApiFinished = () => {}
+
     if (api === `createPages`) {
       let alreadyDisplayed = false
+      const threshold = 9000
+      let contextSizeWarnings = {}
       const createPageAction = actions.createPage
+
+      if (args.traceId === `initial-createPages`) {
+        onApiFinished = () => {
+          const warning = []
+
+          warning.push(
+            `Some pages have excessively sized context (over 9000 bytes).\nPlease don't do that because stuff explodes.`
+          )
+
+          warning.push(
+            Object.keys(contextSizeWarnings)
+              .map(codeFrame => {
+                const perCallWarning = []
+
+                const pathAndContextSize = contextSizeWarnings[codeFrame]
+
+                perCallWarning.push(codeFrame)
+
+                Object.keys(pathAndContextSize).map(path => {
+                  const size = pathAndContextSize[path]
+
+                  perCallWarning.push(
+                    ` - ${path} : ${chalk.red(prettyBytes(size))}`
+                  )
+                })
+
+                return perCallWarning.join(`\n`)
+              })
+              .join(`\n\n`)
+          )
+
+          reporter.warn(warning.join(`\n\n`))
+        }
+      }
       // create new actions object with wrapped createPage action
       // doubleBoundActionCreators is memoized, so we can't just
       // reassign createPage field as this would cause this extra logic
       // to be used in subsequent APIs and we only want to target this `createPages` call.
       actions = {
         ...actions,
-        createPage: (...args) => {
-          createPageAction(...args)
+        createPage: (...actionArgs) => {
+          createPageAction(...actionArgs)
+
+          if (args.traceId === `initial-createPages`) {
+            if (actionArgs[0].context) {
+              // this is probably to expensive to use always
+              const size = objectSizeOf(actionArgs[0].context)
+              if (size > threshold) {
+                const possiblyCodeFrame = getNonGatsbyCodeFrame() || ``
+                if (!contextSizeWarnings[possiblyCodeFrame]) {
+                  contextSizeWarnings[possiblyCodeFrame] = {}
+                }
+
+                contextSizeWarnings[possiblyCodeFrame][
+                  actionArgs[0].path
+                ] = size
+              }
+            }
+          }
+
           if (apiFinished && !alreadyDisplayed) {
             const warning = [
               reporter.stripIndent(`
@@ -187,6 +245,7 @@ const runAPI = (plugin, api, args) => {
           pluginSpan.finish()
           callback(err, val)
           apiFinished = true
+          onApiFinished()
         }
 
         try {
@@ -204,6 +263,7 @@ const runAPI = (plugin, api, args) => {
       pluginSpan.finish()
       return Promise.resolve(result).then(res => {
         apiFinished = true
+        onApiFinished()
         return res
       })
     }

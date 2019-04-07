@@ -89,12 +89,6 @@ const hasWarnedForPageComponentInvalidCasing = new Set()
 const pageComponentCache = {}
 const fileOkCache = {}
 
-const SomeDataFile = path.join(process.cwd(), `pages-context.csv`)
-
-try {
-  fs.unlinkSync(SomeDataFile)
-} catch {}
-
 /**
  * Create a page. See [the guide on creating and modifying pages](/docs/creating-and-modifying-pages/)
  * for detailed documentation about creating pages.
@@ -356,12 +350,6 @@ ${reservedFields.map(f => `  * "${f}"`).join(`\n`)}
   const oldPage: Page = store.getState().pages.get(internalPage.path)
   const contextModified =
     !!oldPage && !_.isEqual(oldPage.context, internalPage.context)
-
-  // fs.unlinkSync(SomeDataFile)
-  const Obj = JSON.stringify(page.context) || ``
-  const meta = [page.path, page.component, Obj.length]
-
-  fs.appendFileSync(SomeDataFile, meta.join(`,`) + `\n`)
 
   return {
     ...actionOptions,
