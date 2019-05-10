@@ -10,6 +10,7 @@ let lastHash = null
 
 // Write out pages information.
 const writePages = async () => {
+  console.log(`wwww`)
   bootstrapFinished = true
   let { program, jsonDataPaths, pages } = store.getState()
   pages = [...pages.values()]
@@ -22,6 +23,7 @@ const writePages = async () => {
   pages.forEach(({ path, matchPath, componentChunkName, jsonName }) => {
     const pageComponentsChunkNames = {
       componentChunkName,
+      aa: jsonDataPaths[jsonName],
     }
 
     if (program._[0] === `develop`) {
@@ -39,6 +41,8 @@ const writePages = async () => {
       matchPaths[matchPath] = path
     }
   })
+
+  console.log({ pagesComponentDependencies })
 
   pagesData = _(pagesData)
     // Ensure pages keep the same sorting through builds.
@@ -120,6 +124,7 @@ const preferDefault = m => m && m.default || m
       .then(() => fs.move(tmp, destination, { overwrite: true }))
   }
 
+  console.log(`writing pages data`)
   const result = await Promise.all([
     writeAndMove(`pages.json`, JSON.stringify(pagesData, null, 4)),
     writeAndMove(`sync-requires.js`, syncRequires),
@@ -139,7 +144,7 @@ const preferDefault = m => m && m.default || m
       })
     ),
   ])
-
+  console.log(`writing pages data finish`)
   return result
 }
 

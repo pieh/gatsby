@@ -1,5 +1,7 @@
 /* @flow */
-
+const buildHTML = require(`./build-html`)
+const { writePages } = require(`../query/pages-writer`)
+const buildProductionBundle = require(`./build-javascript`)
 const url = require(`url`)
 const glob = require(`glob`)
 const fs = require(`fs`)
@@ -17,7 +19,7 @@ const webpackConfig = require(`../utils/webpack.config`)
 const bootstrap = require(`../bootstrap`)
 const { store } = require(`../redux`)
 const { syncStaticDir } = require(`../utils/get-static-dir`)
-const buildHTML = require(`./build-html`)
+// const buildHTML = require(`./build-html`)
 const { withBasePath } = require(`../utils/path`)
 const report = require(`gatsby-cli/lib/reporter`)
 const launchEditor = require(`react-dev-utils/launchEditor`)
@@ -66,6 +68,7 @@ async function startServer(program) {
   const directory = program.directory
   const directoryPath = withBasePath(directory)
   const createIndexHtml = async () => {
+    return
     try {
       await buildHTML.buildPages({
         program,
@@ -89,7 +92,7 @@ async function startServer(program) {
   }
 
   // Start bootstrap process.
-  await bootstrap(program)
+  const { graphqlRunner } = await bootstrap(program)
 
   db.startAutosave()
   queryUtil.startListening(queryQueue.createDevelopQueue())
@@ -103,6 +106,11 @@ async function startServer(program) {
     `develop`,
     program.port
   )
+
+  // const compiler = webpack(devConfig, () => {
+  //   console.log(`hook 2`)
+  //   console.log(`hook 2`)
+  // })
 
   const compiler = webpack(devConfig)
 
@@ -445,67 +453,107 @@ module.exports = async (program: any) => {
   let isFirstCompile = true
   // "done" event fires when Webpack has finished recompiling the bundle.
   // Whether or not you have warnings or errors, you will get this event.
-  compiler.hooks.done.tapAsync(`print getsby instructions`, (stats, done) => {
-    // We have switched off the default Webpack output in WebpackDevServer
-    // options so we are going to "massage" the warnings and errors and present
-    // them in a readable focused way.
-    const messages = formatWebpackMessages(stats.toJson({}, true))
-    const urls = prepareUrls(
-      program.ssl ? `https` : `http`,
-      program.host,
-      program.port
-    )
-    const isSuccessful = !messages.errors.length
-    // if (isSuccessful) {
-    // console.log(chalk.green(`Compiled successfully!`))
-    // }
-    // if (isSuccessful && (isInteractive || isFirstCompile)) {
-    if (isSuccessful && isFirstCompile) {
-      printInstructions(program.sitePackageJson.name, urls, program.useYarn)
-      printDeprecationWarnings()
-      if (program.open) {
-        Promise.resolve(openurl(urls.localUrlForBrowser)).catch(err =>
-          console.log(
-            `${chalk.yellow(
-              `warn`
-            )} Browser not opened because no browser was found`
-          )
+  compiler.hooks.done.tapAsync(
+    `print getsby instructions`,
+    async (stats, done) => {
+      // console.log(`dddonnnnee 22`)
+      // We have switched off the default Webpack output in WebpackDevServer
+      // options so we are going to "massage" the warnings and errors and present
+      // them in a readable focused way.
+      const messages = formatWebpackMessages(stats.toJson({}, true))
+      const urls = prepareUrls(
+        program.ssl ? `https` : `http`,
+        program.host,
+        program.port
+      )
+      const isSuccessful = !messages.errors.length
+
+      if (isSuccessful) {
+        // const buildSpan = tracer.startSpan(`build`)
+        // console.log(`messy styff - outputting html`)
+        process.env.NODE_ENV = `production`
+        await writePages()
+
+        let activity = report.activityTimer(
+          `Building production JavaScript and CSS bundles`
+          // { parentSpan: buildSpan }
         )
+        activity.start()
+        await buildProductionBundle(program).catch(err => {
+          // reportFailure(`Generating JavaScript bundles failed`, err)
+        })
+        activity.end()
+
+        activity = report.activityTimer(`Building static HTML for pages`, {
+          // parentSpan: buildSpan,
+        })
+        activity.start()
+        try {
+          await buildHTML.buildPages({
+            program,
+            stage: `build-html`,
+            pagePaths: [...store.getState().pages.keys()],
+            activity,
+          })
+        } catch (err) {}
+        activity.end()
+        process.env.NODE_ENV = `develop`
+        // await apiRunnerNode(`onPostBuild`, {
+        //   graphql: graphqlRunner,
+        //   parentSpan: buildSpan,
+        // })
       }
+      // if (isSuccessful) {
+      // console.log(chalk.green(`Compiled successfully!`))
+      // }
+      // if (isSuccessful && (isInteractive || isFirstCompile)) {
+      if (isSuccessful && isFirstCompile) {
+        printInstructions(program.sitePackageJson.name, urls, program.useYarn)
+        printDeprecationWarnings()
+        if (program.open) {
+          Promise.resolve(openurl(urls.localUrlForBrowser)).catch(err =>
+            console.log(
+              `${chalk.yellow(
+                `warn`
+              )} Browser not opened because no browser was found`
+            )
+          )
+        }
+      }
+
+      isFirstCompile = false
+
+      // If errors exist, only show errors.
+      // if (messages.errors.length) {
+      // // Only keep the first error. Others are often indicative
+      // // of the same problem, but confuse the reader with noise.
+      // if (messages.errors.length > 1) {
+      // messages.errors.length = 1
+      // }
+      // console.log(chalk.red("Failed to compile.\n"))
+      // console.log(messages.errors.join("\n\n"))
+      // return
+      // }
+
+      // Show warnings if no errors were found.
+      // if (messages.warnings.length) {
+      // console.log(chalk.yellow("Compiled with warnings.\n"))
+      // console.log(messages.warnings.join("\n\n"))
+
+      // // Teach some ESLint tricks.
+      // console.log(
+      // "\nSearch for the " +
+      // chalk.underline(chalk.yellow("keywords")) +
+      // " to learn more about each warning."
+      // )
+      // console.log(
+      // "To ignore, add " +
+      // chalk.cyan("// eslint-disable-next-line") +
+      // " to the line before.\n"
+      // )
+      // }
+
+      done()
     }
-
-    isFirstCompile = false
-
-    // If errors exist, only show errors.
-    // if (messages.errors.length) {
-    // // Only keep the first error. Others are often indicative
-    // // of the same problem, but confuse the reader with noise.
-    // if (messages.errors.length > 1) {
-    // messages.errors.length = 1
-    // }
-    // console.log(chalk.red("Failed to compile.\n"))
-    // console.log(messages.errors.join("\n\n"))
-    // return
-    // }
-
-    // Show warnings if no errors were found.
-    // if (messages.warnings.length) {
-    // console.log(chalk.yellow("Compiled with warnings.\n"))
-    // console.log(messages.warnings.join("\n\n"))
-
-    // // Teach some ESLint tricks.
-    // console.log(
-    // "\nSearch for the " +
-    // chalk.underline(chalk.yellow("keywords")) +
-    // " to learn more about each warning."
-    // )
-    // console.log(
-    // "To ignore, add " +
-    // chalk.cyan("// eslint-disable-next-line") +
-    // " to the line before.\n"
-    // )
-    // }
-
-    done()
-  })
+  )
 }
