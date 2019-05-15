@@ -10,6 +10,7 @@ import Link, {
   parsePath,
 } from "gatsby-link"
 import PageRenderer from "./public-page-renderer"
+import Hydrator from "./hydrator"
 
 const StaticQueryContext = React.createContext({})
 
@@ -81,5 +82,6 @@ export {
   StaticQueryContext,
   StaticQuery,
   PageRenderer,
+  Hydrator,
   useStaticQuery,
 }
