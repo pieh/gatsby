@@ -201,8 +201,18 @@ let prefetchTriggered = {}
 let prefetchCompleted = {}
 let disableCorePrefetching = false
 
+emitter.on(`dev-pages-manifest-update`, () => {
+  console.log(`update page manifest`)
+})
+
+let pages = null
+
 const queue = {
   addPagesArray: newPages => {
+    if (pages) {
+      pathScriptsCache = {}
+    }
+    pages = newPages
     findPage = pageFinderFactory(newPages, __BASE_PATH__)
   },
   addDevRequires: devRequires => {

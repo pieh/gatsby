@@ -6,7 +6,7 @@ import socketIo from "./socketIo"
 import emitter from "./emitter"
 import { apiRunner, apiRunnerAsync } from "./api-runner-browser"
 import loader, { setApiRunnerForLoader, postInitialRenderWork } from "./loader"
-import syncRequires from "./sync-requires"
+import syncRequires from "./sync-requires.js"
 import pages from "./pages.json"
 
 window.___emitter = emitter
@@ -51,6 +51,36 @@ apiRunnerAsync(`onClientEntry`).then(() => {
 
   loader.addPagesArray(pages)
   loader.addDevRequires(syncRequires)
+
+  console.log(`cdm`)
+  if (module.hot) {
+    if (module.hot) {
+      module.hot.addStatusHandler(status => {
+        console.log({ status })
+      })
+    }
+
+    // module.hot.accept(`./pages.json`, () => {
+    //   emitter.emit(`dev-pages-manifest-update`)
+    //   // debugger
+    //   // loader.addDevRequires(syncRequires)
+    //   // loader.addPagesArray(pages)
+    //   // console.log(`a`, args)
+    //   // if (args.includes(`./.cache/pages.json`)) {
+    //   //   console.log(`accepting`)
+    //   // }
+    // })
+    // module.hot.accept(`./sync-requires`, () => {
+    //   console.log(`sync requires accept`)
+    //   loader.addDevRequires(require(`./sync-requires`))
+    // })
+  }
+  // if (module.hot) {
+  //   module.hot.accept(`./sync-requires`, () => {
+  //     console.log(`more accepting module changes`)
+  //   })
+  // }
+
   Promise.all([
     loader.getResourcesForPathname(`/dev-404-page/`),
     loader.getResourcesForPathname(`/404.html`),

@@ -2,9 +2,10 @@
 import { match as matchPath } from "@reach/router/lib/utils"
 import stripPrefix from "./strip-prefix"
 
-const pageCache = {}
+let pageCache = {}
 
 export default (pages, pathPrefix = ``) => rawPathname => {
+  pageCache = {}
   let pathname = decodeURIComponent(rawPathname)
 
   // Remove the pathPrefix from the pathname.
