@@ -1,7 +1,7 @@
 {
   "name": "gatsby",
   "description": "Blazing fast modern site generator for React",
-  "version": "2.5.0",
+  "version": "2.5.2",
   "author": "Kyle Mathews <mathews.kyle@gmail.com>",
   "bin": {
     "gatsby": "./dist/bin/gatsby.js"
@@ -108,7 +108,7 @@
     "raw-loader": "^0.5.1",
     "react-dev-utils": "^4.2.1",
     "react-error-overlay": "^3.0.0",
-    "react-hot-loader": "^4.6.2",
+    "react-hot-loader": "^4.8.4",
     "redux": "^4.0.0",
     "redux-thunk": "^2.3.0",
     "semver": "^5.6.0",
