@@ -4,16 +4,25 @@
 // use require() with backtick strings so use the es6 syntax
 import "@babel/polyfill"
 
+const updateNotifier = require(`@gatsbyjs/update-notifier`)
+
 const createCli = require(`./create-cli`)
 const report = require(`./reporter`)
+const pkg = require(`../package.json`)
+
+const delta =
+  parseInt(new Date().getTime()) - parseInt(process.env.EXEC_INIT_TIME)
+
+require(`fs-extra`).appendFileSync(`${process.env.GCLIMODE}.txt`, `${delta}\n`)
+
+//report.log(`aaa`, process.env.EXEC_INIT_TIME, new Date().getTime())
+//report.log(`aaa`, process.env.EXEC_INIT_TIME, new Date().getTime())
+
+// Check if update is available
+updateNotifier({ pkg }).notify()
 
 const version = process.version
 const verDigit = Number(version.match(/\d+/)[0])
-
-const pkg = require(`../package.json`)
-const updateNotifier = require(`update-notifier`)
-// Check if update is available
-updateNotifier({ pkg }).notify()
 
 if (verDigit < 6) {
   report.panic(
