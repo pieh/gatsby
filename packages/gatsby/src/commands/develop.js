@@ -41,6 +41,7 @@ const onExit = require(`signal-exit`)
 const queryUtil = require(`../query`)
 const queryQueue = require(`../query/queue`)
 const queryWatcher = require(`../query/query-watcher`)
+const { decorateWithFragments } = require(`../query/query-compiler`)
 
 // const isInteractive = process.stdout.isTTY
 
@@ -128,6 +129,19 @@ async function startServer(program) {
    * Pattern matching all endpoints with graphql or graphiql with 1 or more leading underscores
    */
   const graphqlEndpoint = `/_+graphi?ql`
+
+  // middleware that attaches fragment text to graphql requests
+  app.use(graphqlEndpoint, async (req, res, next) => {
+    const body = await graphqlHTTP.getGraphQLParams(req)
+    if (body) {
+      if (body.query) {
+        body.query = decorateWithFragments(body.query)
+      }
+
+      req.body = body
+    }
+    next()
+  })
 
   if (process.env.GATSBY_GRAPHQL_IDE === `playground`) {
     app.get(

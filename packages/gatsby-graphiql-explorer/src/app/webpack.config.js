@@ -2,7 +2,7 @@ const path = require(`path`)
 const HtmlWebpackPlugin = require(`html-webpack-plugin`)
 const webpack = require(`webpack`)
 
-const mode = `production`
+const mode = `development`
 module.exports = {
   entry: path.join(__dirname, `app.js`),
   mode,
@@ -57,6 +57,14 @@ module.exports = {
     ],
   },
   plugins: [
+    new webpack.NormalModuleReplacementPlugin(
+      /getAutocompleteSuggestion/,
+      require.resolve(`./monkey-patching/glsi-autocomplete.js`)
+    ),
+    new webpack.NormalModuleReplacementPlugin(
+      /getDiagnostics/,
+      require.resolve(`./monkey-patching/glsi-diagnostics.js`)
+    ),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, `index.ejs`),
       filename: `index.html`,

@@ -150,6 +150,19 @@ class App extends React.Component {
   }
 
   componentDidMount() {
+    // eslint-disable-next-line no-undef
+    const socket = io(`/graphiql`)
+    socket.on(`message`, msg => {
+      if (msg.type === `fragments`) {
+        window.___fragments = msg.payload
+
+        this._graphiql.queryEditorComponent.editor.setOption(`lint`, {
+          ...this._graphiql.queryEditorComponent.editor.getOption(`lint`),
+          fragments: msg.payload,
+        })
+      }
+    })
+
     graphQLFetcher({
       query: getIntrospectionQuery(),
     }).then(result => {
@@ -218,7 +231,10 @@ class App extends React.Component {
           onToggleExplorer={this._handleToggleExplorer}
         />
         <GraphiQL
-          ref={ref => (this._graphiql = ref)}
+          ref={ref => {
+            this._graphiql = ref
+            console.log(ref)
+          }}
           fetcher={graphQLFetcher}
           schema={schema}
           query={query}

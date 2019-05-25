@@ -3,7 +3,7 @@ import path from "path"
 const normalize = require(`normalize-path`)
 import glob from "glob"
 
-import { validate } from "graphql"
+import { validate, parse } from "graphql"
 import { IRTransforms } from "@gatsbyjs/relay-compiler"
 import RelayParser from "@gatsbyjs/relay-compiler/lib/RelayParser"
 import ASTConvert from "@gatsbyjs/relay-compiler/lib/ASTConvert"
@@ -62,6 +62,7 @@ const validationRules = [
 
 let lastRunHadErrors = null
 const overlayErrorID = `graphql-compiler`
+let fragmentASTs = []
 
 const resolveThemes = (themes = []) =>
   themes.reduce((merged, theme) => {
@@ -137,6 +138,7 @@ class Runner {
     const nameDefMap = new Map()
     const nameErrorMap = new Map()
     const documents = []
+    const localFragmentASTs = []
 
     for (let [filePath, doc] of nodes.entries()) {
       let errors = validate(this.schema, doc, validationRules)
@@ -154,6 +156,9 @@ class Runner {
         const name: string = def.name.value
         namePathMap.set(name, filePath)
         nameDefMap.set(name, def)
+        if (def.kind === `FragmentDefinition`) {
+          localFragmentASTs.push(def)
+        }
       })
     }
 
@@ -191,8 +196,20 @@ class Runner {
       .slice(0, -1)
       .reduce((ctx, transform) => transform(ctx, this.schema), compilerContext)
 
+    const fragmentTexts = {}
+
     compilerContext.documents().forEach((node: { name: string }) => {
-      if (node.kind !== `Root`) return
+      if (node.kind !== `Root`) {
+        if (node.kind === `Fragment`) {
+          let fragmentText = filterContextForNode(node, printContext)
+            .documents()
+            .map(GraphQLIRPrinter.print)
+            .join(`\n`)
+
+          fragmentTexts[node.name] = fragmentText
+        }
+        return
+      }
 
       const { name } = node
       let filePath = namePathMap.get(name) || ``
@@ -257,10 +274,64 @@ class Runner {
       lastRunHadErrors = false
     }
 
+    if (process.env.gatsby_executing_command === `develop`) {
+      fragmentASTs = localFragmentASTs
+      websocketManager.emitFragments(fragmentTexts)
+    }
+
     return compiledNodes
   }
 }
-export { Runner, resolveThemes }
+
+const decorateWithFragments = queryText => {
+  try {
+    const ast = parse(queryText)
+
+    ast.definitions[0].name = {
+      kind: `Name`,
+      value: `HarcodedName`,
+    }
+    // ast.name = `HardcodedName`
+
+    const { schema } = store.getState()
+    let compilerContext = new GraphQLCompilerContext(schema)
+    const documents = [
+      {
+        kind: `Document`,
+        definitions: fragmentASTs,
+      },
+      ast,
+    ]
+
+    compilerContext = compilerContext.addAll(
+      ASTConvert.convertASTDocuments(
+        schema,
+        documents,
+        validationRules,
+        RelayParser.transform.bind(RelayParser)
+      )
+    )
+
+    const printContext = printTransforms
+      .slice(0, -1)
+      .reduce((ctx, transform) => transform(ctx, schema), compilerContext)
+
+    const docs = compilerContext.documents()
+    const root = docs.find(doc => doc.kind === `Root`)
+
+    queryText = filterContextForNode(
+      printContext.getRoot(root.name),
+      printContext
+    )
+      .documents()
+      .map(GraphQLIRPrinter.print)
+      .join(`\n`)
+  } catch {}
+
+  return queryText
+}
+
+export { Runner, resolveThemes, decorateWithFragments }
 
 export default async function compile(): Promise<Map<string, RootQuery>> {
   // TODO: swap plugins to themes
