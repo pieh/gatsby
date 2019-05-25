@@ -10,6 +10,16 @@ import "whatwg-fetch"
 import "graphiql/graphiql.css"
 import "./app.css"
 
+// eslint-disable-next-line no-undef
+const socket = io(`/graphiql`)
+
+window.___fragments = ``
+socket.on(`message`, msg => {
+  if (msg.type === `fragments`) {
+    window.___fragments = msg.payload
+  }
+})
+
 const parameters = {}
 window.location.search
   .substr(1)

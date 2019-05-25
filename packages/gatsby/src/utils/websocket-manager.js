@@ -103,6 +103,7 @@ class WebsocketManager {
     this.pageResults = new Map()
     this.staticQueryResults = new Map()
     this.errors = new Map()
+    this.fragments = ``
     // this.websocket
     // this.programDir
 
@@ -191,6 +192,11 @@ class WebsocketManager {
       })
     })
 
+    this.graphiqlNamespace = this.websocket.of(`/graphiql`)
+    this.graphiqlNamespace.on(`connection`, socket => {
+      socket.send({ type: `fragments`, payload: this.fragments })
+    })
+
     this.isInitialised = true
   }
 
@@ -220,6 +226,15 @@ class WebsocketManager {
 
     if (this.isInitialised) {
       this.websocket.send({ type: `overlayError`, payload: { id, message } })
+    }
+  }
+  emitFragments(fragments: string) {
+    this.fragments = fragments
+    if (this.isInitialised) {
+      this.graphiqlNamespace.send({
+        type: `fragments`,
+        payload: this.fragments,
+      })
     }
   }
 }
