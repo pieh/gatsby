@@ -146,6 +146,7 @@ class App extends React.Component {
   state = {
     schema: null,
     query: DEFAULT_QUERY,
+    gatsbyFragments: ``,
     explorerIsOpen: storedExplorerPaneState,
   }
 
@@ -156,10 +157,22 @@ class App extends React.Component {
       if (msg.type === `fragments`) {
         window.___fragments = msg.payload
 
+        const joinedFragments = Object.values(window.___fragments).join(`\n`)
+
+        const transformQueryText = queryText =>
+          `${queryText}\n${joinedFragments}`
+
         this._graphiql.queryEditorComponent.editor.setOption(`lint`, {
           ...this._graphiql.queryEditorComponent.editor.getOption(`lint`),
-          fragments: msg.payload,
+          transformQueryText,
         })
+        this._graphiql.queryEditorComponent.editor.setOption(`hintOptions`, {
+          ...this._graphiql.queryEditorComponent.editor.getOption(
+            `hintOptions`
+          ),
+          transformQueryText,
+        })
+        this.setState({ gatsbyFragments: joinedFragments })
       }
     })
 
@@ -219,7 +232,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { query, schema } = this.state
+    const { query, schema, gatsbyFragments } = this.state
 
     return (
       <React.Fragment>
@@ -227,6 +240,7 @@ class App extends React.Component {
           schema={schema}
           query={query}
           onEdit={this._handleEditQuery}
+          gatsbyFragments={gatsbyFragments}
           explorerIsOpen={this.state.explorerIsOpen}
           onToggleExplorer={this._handleToggleExplorer}
         />

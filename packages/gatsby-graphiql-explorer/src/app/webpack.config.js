@@ -56,15 +56,21 @@ module.exports = {
       },
     ],
   },
+  resolve: {
+    alias: {
+      "codemirror-graphql": `/Users/misiek/dev/codemirror-graphql`,
+      "graphql-language-service-interface": `/Users/misiek/dev/graphql-language-service/packages/interface/`,
+      "graphql-language-service-utils": `/Users/misiek/dev/graphql-language-service/packages/utils`,
+      "graphql-language-service-parser": `/Users/misiek/dev/graphql-language-service/packages/parser`,
+      "graphql-language-service-types": `/Users/misiek/dev/graphql-language-service/packages/types`,
+      "graphiql-explorer": `/Users/misiek/dev/graphiql-explorer`,
+      graphql: path.dirname(require.resolve(`graphql/package.json`)),
+      react: path.dirname(require.resolve(`react/package.json`)),
+      "react-dom": path.dirname(require.resolve(`react-dom/package.json`)),
+      codemirror: path.dirname(require.resolve(`codemirror/package.json`)),
+    },
+  },
   plugins: [
-    new webpack.NormalModuleReplacementPlugin(
-      /getAutocompleteSuggestion/,
-      require.resolve(`./monkey-patching/glsi-autocomplete.js`)
-    ),
-    new webpack.NormalModuleReplacementPlugin(
-      /getDiagnostics/,
-      require.resolve(`./monkey-patching/glsi-diagnostics.js`)
-    ),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, `index.ejs`),
       filename: `index.html`,
