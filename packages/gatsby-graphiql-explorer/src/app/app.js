@@ -4,11 +4,15 @@ import ReactDOM from "react-dom"
 import GraphiQL from "graphiql"
 import GraphiQLExplorer from "graphiql-explorer"
 import { getIntrospectionQuery, buildClientSchema } from "graphql"
+import CodeExporter from "graphiql-code-exporter"
+
+import snippets from "./snippets"
 
 import "whatwg-fetch"
 
 import "graphiql/graphiql.css"
 import "./app.css"
+import "graphiql-code-exporter/CodeExporter.css"
 
 const parameters = {}
 window.location.search
@@ -148,6 +152,7 @@ class App extends React.Component {
     query: DEFAULT_QUERY,
     gatsbyFragments: ``,
     explorerIsOpen: storedExplorerPaneState,
+    codeExporterIsOpen: false,
   }
 
   componentDidMount() {
@@ -231,8 +236,31 @@ class App extends React.Component {
     this.setState({ explorerIsOpen: newExplorerIsOpen })
   }
 
+  _handleToggleExporter = () => {
+    this.setState({ codeExporterIsOpen: !this.state.codeExporterIsOpen })
+  }
+
   render() {
-    const { query, schema, gatsbyFragments } = this.state
+    const { query, schema, gatsbyFragments, codeExporterIsOpen } = this.state
+    console.log({ codeExporterIsOpen })
+    const codeExporter = codeExporterIsOpen ? (
+      <CodeExporter
+        hideCodeExporter={this.toggleCodeExporter}
+        snippets={snippets}
+        // test="yup"
+        // snippets={snippets}
+        // serverUrl={serverUrl}
+        context={{
+          schema,
+        }}
+        // headers={{
+        //   Authorization: 'Bearer ' + /* AUTH_TOKEN */
+        // }}
+        query={query}
+        // Optional if you want to use a custom theme
+        codeMirrorTheme="neo"
+      />
+    ) : null
 
     return (
       <React.Fragment>
@@ -272,8 +300,14 @@ class App extends React.Component {
               label="Explorer"
               title="Toggle Explorer"
             />
+            <GraphiQL.Button
+              onClick={this._handleToggleExporter}
+              label="Code Exporter"
+              title="Toggle Code Exporter"
+            />
           </GraphiQL.Toolbar>
         </GraphiQL>
+        {codeExporter}
       </React.Fragment>
     )
   }
