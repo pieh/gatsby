@@ -212,7 +212,7 @@ jobs:
 
 workflows:
   version: 2
-  build-test:
+  CircleCI:
     jobs:
       - bootstrap
       - lint
