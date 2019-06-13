@@ -54,6 +54,12 @@ const runCreatePages = async () => {
   emitter.emit(`CREATE_PAGE_END`)
 }
 
-module.exports = graphqlRunner => {
+exports.setGraphqlRunner = graphqlRunner => {
   graphql = graphqlRunner
 }
+
+exports.runCreatePages = runCreatePages
+
+// module.exports = graphqlRunner => {
+//   graphql = graphqlRunner
+// }

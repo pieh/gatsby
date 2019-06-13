@@ -2,7 +2,7 @@
 
 const path = require(`path`)
 const { store } = require(`../redux`)
-const fs = require(`fs`)
+const fs = require(`fs-extra`)
 const pageDataUtil = require(`../utils/page-data`)
 
 type QueryResult = {
@@ -183,6 +183,32 @@ class WebsocketManager {
     this.graphiqlNamespace = this.websocket.of(`/graphiql`)
     this.graphiqlNamespace.on(`connection`, socket => {
       socket.send({ type: `fragments`, payload: this.fragments })
+      socket.on(`injectSnippets`, payload => {
+        console.log(`inject`, payload)
+        fs.appendFileSync(
+          path.join(process.cwd(), `gatsby-node.js`),
+
+          `
+        // automated-start
+        addCreatePage.push(async ({ actions, graphql}) => {
+          ${payload.gatsbyNode}
+        })
+        // automated-end
+        `
+        )
+
+        fs.outputFileSync(
+          path.join(process.cwd(), payload.listingFile),
+          payload.listing
+        )
+
+        fs.outputFileSync(
+          path.join(process.cwd(), payload.templateFile),
+          payload.template
+        )
+
+        require(`../bootstrap/page-hot-reloader`).runCreatePages()
+      })
     })
 
     this.isInitialised = true

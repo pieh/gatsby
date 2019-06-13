@@ -68,7 +68,16 @@ const initAPICallTracing = parentSpan => {
 }
 
 const runAPI = (plugin, api, args) => {
-  const gatsbyNode = require(`${plugin.resolve}/gatsby-node`)
+  const gatsbyNodePath = `${plugin.resolve}/gatsby-node`
+  try {
+    // const oldCache = require.cache[require.resolve(pathToGatsbyConfig)]
+    delete require.cache[require.resolve(gatsbyNodePath)]
+    delete require.cache[gatsbyNodePath]
+    console.log(`success deleting cache`)
+  } catch {
+    console.log(`failed deleting cache`)
+  }
+  const gatsbyNode = require(gatsbyNodePath)
   if (gatsbyNode[api]) {
     const parentSpan = args && args.parentSpan
     const spanOptions = parentSpan ? { childOf: parentSpan } : {}

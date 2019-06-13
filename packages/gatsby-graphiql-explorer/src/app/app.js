@@ -152,7 +152,8 @@ class App extends React.Component {
     query: DEFAULT_QUERY,
     gatsbyFragments: ``,
     explorerIsOpen: storedExplorerPaneState,
-    codeExporterIsOpen: false,
+    codeExporterIsOpen: true,
+    socket: null,
   }
 
   componentDidMount() {
@@ -221,6 +222,8 @@ class App extends React.Component {
       ...(editor.options.extraKeys || {}),
       "Shift-Alt-LeftClick": this._handleInspectOperation,
     })
+
+    this.setState({ socket })
   }
 
   _handleInspectOperation = (cm, mousePos) => {
@@ -305,21 +308,22 @@ class App extends React.Component {
   }
 
   render() {
-    const { query, schema, gatsbyFragments, codeExporterIsOpen } = this.state
-    console.log({ codeExporterIsOpen })
+    const {
+      query,
+      schema,
+      gatsbyFragments,
+      codeExporterIsOpen,
+      socket,
+    } = this.state
     const codeExporter = codeExporterIsOpen ? (
       <CodeExporter
         hideCodeExporter={this.toggleCodeExporter}
         snippets={snippets}
-        // test="yup"
-        // snippets={snippets}
-        // serverUrl={serverUrl}
         context={{
           schema,
+          socket,
+          graphQLFetcher,
         }}
-        // headers={{
-        //   Authorization: 'Bearer ' + /* AUTH_TOKEN */
-        // }}
         query={query}
         // Optional if you want to use a custom theme
         codeMirrorTheme="neo"
@@ -342,7 +346,6 @@ class App extends React.Component {
         <GraphiQL
           ref={ref => {
             this._graphiql = ref
-            console.log(ref)
           }}
           fetcher={graphQLFetcher}
           schema={schema}

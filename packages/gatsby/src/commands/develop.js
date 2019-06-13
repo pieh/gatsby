@@ -357,7 +357,7 @@ module.exports = async (program: any) => {
   const { graphqlRunner } = await bootstrap(program)
 
   // Start the createPages hot reloader.
-  require(`../bootstrap/page-hot-reloader`)(graphqlRunner)
+  require(`../bootstrap/page-hot-reloader`).setGraphqlRunner(graphqlRunner)
 
   const queryIds = queryUtil.calcInitialDirtyQueryIds(store.getState())
   const { staticQueryIds, pageQueryIds } = queryUtil.groupQueryIds(queryIds)
