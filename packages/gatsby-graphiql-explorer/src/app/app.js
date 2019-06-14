@@ -152,7 +152,7 @@ class App extends React.Component {
     query: DEFAULT_QUERY,
     gatsbyFragments: ``,
     explorerIsOpen: storedExplorerPaneState,
-    codeExporterIsOpen: true,
+    codeExporterIsOpen: false,
     socket: null,
   }
 
@@ -370,11 +370,11 @@ class App extends React.Component {
               label="Explorer"
               title="Toggle Explorer"
             />
-            <GraphiQL.Button
+            {/* <GraphiQL.Button
               onClick={this._handleToggleExporter}
               label="Code Exporter"
               title="Toggle Code Exporter"
-            />
+            /> */}
           </GraphiQL.Toolbar>
         </GraphiQL>
         {codeExporter}

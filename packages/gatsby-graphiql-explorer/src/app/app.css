@@ -25,3 +25,15 @@ code {
 .graphiql-container .historyPaneWrap {
   min-width: 500px !important;
 }
+
+.group {
+  content: "Rule just to make it easier to play with adjusting styles in dev tools - all groups";
+}
+
+.group--args {
+  content: "Rule just to make it easier to play with adjusting styles in dev tools - just args group";
+}
+
+.group--fields {
+  content: "Rule just to make it easier to play with adjusting styles in dev tools - just fields group";
+}
