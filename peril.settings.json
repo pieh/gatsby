@@ -13,17 +13,25 @@
     ]
   },
   "repos": {
-    "gatsbyjs/gatsby": {
-      "pull_request": ["gatsbyjs/gatsby@peril/rules/validate-yaml.ts"],
-      "check_run": ["gatsbyjs/gatsby@peril/rules/validate-yaml.ts"],
-      "pull_request.labeled": ["gatsbyjs/gatsby@peril/rules/merge-on-green.ts"],
+    "pieh/gatsby": {
+      "pull_request": [
+        "gatsbyjs/gatsby@peril/rules/validate-yaml.ts#peril-inside-you"
+      ],
+      "check_run": [
+        "gatsbyjs/gatsby@peril/rules/validate-yaml.ts#peril-inside-you"
+      ],
+      "pull_request.labeled": [
+        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts#peril-inside-you"
+      ],
       "pull_request_review.submitted": [
-        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts"
+        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts#peril-inside-you"
       ],
       "check_suite.completed": [
-        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts"
+        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts#peril-inside-you"
       ],
-      "status.success": ["gatsbyjs/gatsby@peril/rules/merge-on-green.ts"]
+      "status.success": [
+        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts#peril-inside-you"
+      ]
     },
     "gatsbyjs/gatsby-starter-default": {
       "pull_request.opened": [
