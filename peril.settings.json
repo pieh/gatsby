@@ -15,22 +15,22 @@
   "repos": {
     "pieh/gatsby": {
       "pull_request": [
-        "gatsbyjs/gatsby@peril/rules/validate-yaml.ts#forbid-new-showcase-categories"
+        "gatsbyjs/gatsby@peril/rules/validate-yaml.ts#peril-inside-you"
       ],
       "check_run": [
-        "gatsbyjs/gatsby@peril/rules/validate-yaml.ts#forbid-new-showcase-categories"
+        "gatsbyjs/gatsby@peril/rules/validate-yaml.ts#peril-inside-you"
       ],
       "pull_request.labeled": [
-        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts#forbid-new-showcase-categories"
+        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts#peril-inside-you"
       ],
       "pull_request_review.submitted": [
-        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts#forbid-new-showcase-categories"
+        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts#peril-inside-you"
       ],
       "check_suite.completed": [
-        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts#forbid-new-showcase-categories"
+        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts#peril-inside-you"
       ],
       "status.success": [
-        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts#forbid-new-showcase-categories"
+        "gatsbyjs/gatsby@peril/rules/merge-on-green.ts#peril-inside-you"
       ]
     },
     "gatsbyjs/gatsby-starter-default": {
