@@ -310,7 +310,17 @@ module.exports = async ({
           return true
         },
         type: `javascript/auto`,
-        use: [loaders.js(options)],
+        use: [
+          stage === `build-javascript`
+            ? {
+                loader: require.resolve("./webpack-debug-loader"),
+                options: {
+                  tag: `rules.js()`,
+                },
+              }
+            : null,
+          loaders.js(options),
+        ].filter(Boolean),
       }
     }
 
@@ -365,7 +375,17 @@ module.exports = async ({
           return true
         },
         type: `javascript/auto`,
-        use: [loaders.js(jsOptions)],
+        use: [
+          stage === `build-javascript`
+            ? {
+                loader: require.resolve("./webpack-debug-loader"),
+                options: {
+                  tag: `rules.dependencies()`,
+                },
+              }
+            : null,
+          loaders.js(jsOptions),
+        ].filter(Boolean),
       }
     }
 
