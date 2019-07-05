@@ -259,6 +259,13 @@ module.exports = async (program, directory, suppliedStage) => {
       rules.images(),
       rules.media(),
       rules.miscAssets(),
+      {
+        test: /reach\/router\/es\/index/,
+        type: `javascript/auto`,
+        use: [{
+          loader: require.resolve(`./reach-router-monkey-patch-loader`),
+        }],
+      }
     ]
 
     // Speedup 🏎️💨 the build! We only include transpilation of node_modules on javascript production builds

@@ -1,6 +1,6 @@
 import React from "react"
 import { Router } from "@reach/router"
-import { Link } from "gatsby"
+import { Link, graphql } from "gatsby"
 
 import Layout from "../components/layout"
 import InstrumentPage from "../utils/instrument-page"
@@ -9,19 +9,39 @@ const Page = props => (
   <pre data-testid="dom-marker">[client-only-path] {props.page}</pre>
 )
 
-const routes = [`/`, `/profile`, `/dashboard`]
+const NestedRouterRoute = props => <pre>{JSON.stringify(props, null, 2)}</pre>
+
+const PageWithNestedRouter = props => {
+  console.log(`nested`, props)
+  return (
+    <React.Fragment>
+      <pre data-testid="dom-marker">[client-only-path] nested</pre>
+      <Router>
+        <NestedRouterRoute path="/" />
+        <NestedRouterRoute path="/foo" />
+        <NestedRouterRoute path="/bar" />
+      </Router>
+    </React.Fragment>
+  )
+}
+
+const routes = [
+  `/`,
+  `/profile`,
+  `/dashboard`,
+  `/nested`,
+  `/nested/foo`,
+  `/nested/bar`,
+]
 
 const basePath = `/client-only-paths`
 
-const ClientOnlyPathPage = props => (
+const ClientOnlyPathPage = () => (
   <Layout>
-    <Router
-      location={props.location}
-      basepath={basePath}
-      id="client-only-paths-sub-router"
-    >
-      <Page path="/" page="index" />
-      <Page path="/:page" />
+    <Router id="client-only-paths-sub-router">
+      <Page path="/client-only-paths/" page="index" />
+      <PageWithNestedRouter path="/client-only-paths/nested/*" />
+      <Page path="/client-only-paths/:page" />
     </Router>
     <ul>
       {routes.map(route => (

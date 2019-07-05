@@ -1,5 +1,5 @@
 import React from "react"
-import { Router, Location } from "@reach/router"
+import { Router, Location, BaseContext } from "@reach/router"
 import { ScrollContext } from "gatsby-react-router-scroll"
 
 import {
@@ -36,7 +36,16 @@ navigationInit()
 class LocationHandler extends React.Component {
   render() {
     let { location } = this.props
-
+    const Wat = ({ jsonStoreProps }) => (
+      <BaseContext.Provider
+        value={{
+          baseuri: `/`,
+          basepath: `/`,
+        }}
+      >
+        <JSONStore {...jsonStoreProps} />
+      </BaseContext.Provider>
+    )
     if (!loader.isPageNotFound(location.pathname)) {
       return (
         <EnsureResources location={location}>
@@ -51,13 +60,15 @@ class LocationHandler extends React.Component {
                   location={location}
                   id="gatsby-focus-wrapper"
                 >
-                  <JSONStore
+                  <Wat
                     path={
                       locationAndPageResources.pageResources.page.matchPath ||
                       locationAndPageResources.pageResources.page.path
                     }
-                    {...this.props}
-                    {...locationAndPageResources}
+                    jsonStoreProps={{
+                      ...this.props,
+                      ...locationAndPageResources,
+                    }}
                   />
                 </Router>
               </ScrollContext>
