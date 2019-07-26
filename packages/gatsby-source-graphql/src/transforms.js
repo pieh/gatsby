@@ -2,11 +2,11 @@ const { GraphQLObjectType, GraphQLSchema } = require(`gatsby/graphql`)
 const {
   visitSchema,
   VisitSchemaKind,
-} = require(`graphql-tools/dist/transforms/visitSchema`)
+} = require(`graphql-tools-fork/dist/transforms/visitSchema`)
 const {
   createResolveType,
   fieldMapToFieldConfigMap,
-} = require(`graphql-tools/dist/stitching/schemaRecreation`)
+} = require(`graphql-tools-fork/dist/stitching/schemaRecreation`)
 
 class NamespaceUnderFieldTransform {
   constructor({ typeName, fieldName, resolver }) {
