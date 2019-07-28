@@ -47,6 +47,9 @@ const fieldTypeToGraphQLTypeLookup = {
       interfaces: [`Node`],
       extensions: {
         infer: false,
+        mimeTypes: {
+          types: [`text/markdown`],
+        },
       },
     })
 
