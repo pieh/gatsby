@@ -112,7 +112,9 @@ const processBatch = async (queue, jobs, activity) => {
   const runningJobs = jobs.map(job =>
     pushJob(queue, job).then(v => {
       // console.log(`tick`)
-      activity.tick()
+      if (activity.tick) {
+        activity.tick()
+      }
       return v
     })
   )
