@@ -81,11 +81,7 @@ const popNodeQueries = state => {
     if (state.componentDataDependencies.connections.has(node.internal.type)) {
       state.componentDataDependencies.connections
         .get(node.internal.type)
-        .forEach(n => {
-          if (n) {
-            dirtyIds.add(n)
-          }
-        })
+        .forEach(n => dirtyIds.add(n))
     }
 
     return dirtyIds
