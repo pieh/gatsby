@@ -1,27 +1,11 @@
 const _ = require(`lodash`)
 const { existsSync } = require(`fs`)
 const uuidv4 = require(`uuid/v4`)
-const queue = require(`async/queue`)
-const { processFile } = require(`./process-file`)
-const { createProgress } = require(`./utils`)
 
-const toProcess = {}
+const { startActivity } = require(`./local`)
+
 let totalJobs = 0
-const q = queue(
-  (task, callback) => {
-    task(callback)
-  },
-  process.env.GATSBY_CLOUD_IMAGE_SERVICE_URL ? Number.MAX_SAFE_INTEGER : 1
-)
-
-let bar
-// when the queue is empty we stop the progressbar
-q.drain = () => {
-  if (bar) {
-    bar.done()
-  }
-  totalJobs = 0
-}
+const toProcess = {}
 
 exports.scheduleJob = async (
   job,
@@ -56,9 +40,9 @@ exports.scheduleJob = async (
     deferred.resolve = resolve
     deferred.reject = reject
   })
+
   if (totalJobs === 0) {
-    bar = createProgress(`Generating image thumbnails`, reporter)
-    bar.start()
+    startActivity(reporter)
   }
 
   totalJobs += 1
@@ -160,7 +144,7 @@ function runJobs(
     )
 
     Promise.all(promises).then(() => {
-      console.log(`[gatsby-plugin-sharp] finishing job ${job.inputPath}`)
+      console.log(`[core] [gatsby-plugin-sharp] finishing job ${job.inputPath}`)
       boundActionCreators.endJob({ id: jobId }, { name: `gatsby-plugin-sharp` })
       cb()
     })

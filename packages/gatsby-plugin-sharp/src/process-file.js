@@ -92,6 +92,9 @@ exports.processFile = (file, contentDigest, transforms, options = {}) => {
 
       return transforms.map(transform => {
         if (!cloudPromise) {
+          console.log(
+            `[core] [gatsby-plugin-sharp] Sending request ${cloudJobID} / ${file}`
+          )
           cloudPromise = got
             .post(process.env.GATSBY_CLOUD_IMAGE_SERVICE_URL, {
               body: {
@@ -106,15 +109,16 @@ exports.processFile = (file, contentDigest, transforms, options = {}) => {
             .then(
               () =>
                 new Promise((resolve, reject) => {
-                  console.log(`Sent request ${cloudJobID} / ${file}`)
+                  console.log(
+                    `[core] [gatsby-plugin-sharp] Sent request ${cloudJobID} / ${file}`
+                  )
                   const eventToListenFor = `GATSBY_CLOUD_IMAGE_SERVICE_${cloudJobID}`
                   const handler = msg => {
                     cloudEventsEmitter.off(eventToListenFor, handler)
-                    console.log(
-                      `Got finish event ${cloudJobID} / ${file} - ${
-                        msg.err ? `ERROR` : `SUCCESS`
-                      }`
-                    )
+                    const p = `[core] [gatsby-plugin-sharp] Received finish event ${cloudJobID} / ${file} - ${
+                      msg.err ? `ERROR` : `SUCCESS`
+                    }`
+                    console.log(p)
                     if (msg.err) {
                       reject()
                     } else {
