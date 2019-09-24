@@ -53,6 +53,7 @@ async function fetch({
   _concurrentRequests,
   _includedRoutes,
   _excludedRoutes,
+  subPluginsRunner,
   typePrefix,
   refactoredEntityTypes,
 }) {
@@ -146,6 +147,7 @@ Mama Route URL: ${url}
       _acfOptionPageIds,
       _includedRoutes,
       _excludedRoutes,
+      subPluginsRunner,
       typePrefix,
       refactoredEntityTypes,
     })
@@ -396,6 +398,7 @@ async function getPages(
         url: `${url}?${querystring.stringify({
           per_page: _perPage,
           page: page,
+          status: `any`,
         })}`,
       }
 
@@ -485,7 +488,7 @@ function checkRouteList(routePath, routeList) {
  * @param {any} url
  * @returns
  */
-function getValidRoutes({
+async function getValidRoutes({
   allRoutes,
   url,
   _verbose,
@@ -494,6 +497,7 @@ function getValidRoutes({
   _hostingWPCOM,
   _includedRoutes,
   _excludedRoutes,
+  subPluginsRunner,
   typePrefix,
   refactoredEntityTypes,
 }) {
@@ -554,7 +558,18 @@ function getValidRoutes({
     }
   }
 
-  for (let key of Object.keys(allRoutes.data.routes)) {
+  const routes = await subPluginsRunner(
+    `filterRoutes`,
+    {
+      routes: allRoutes.data.routes,
+    },
+    (ret, args) => {
+      return { ...args, routes: ret }
+    },
+    allRoutes.data.routes
+  )
+
+  for (let key of Object.keys(routes)) {
     if (_verbose) console.log(`Route discovered :`, key)
     let route = allRoutes.data.routes[key]
 
@@ -575,6 +590,8 @@ function getValidRoutes({
       ]
 
       const routePath = getRoutePath(url, key)
+
+      // debugger
 
       const whiteList = _includedRoutes
       const blackList = [...excludedTypes, ..._excludedRoutes]

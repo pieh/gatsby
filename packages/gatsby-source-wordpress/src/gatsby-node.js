@@ -1,7 +1,7 @@
 const fetch = require(`./fetch`)
 const normalize = require(`./normalize`)
 const normalizeBaseUrl = require(`./normalize-base-url`)
-
+const subPluginsRunnerCreator = require(`./sub-plugin-runner`)
 const typePrefix = `wordpress__`
 const refactoredEntityTypes = {
   post: `${typePrefix}POST`,
@@ -49,6 +49,7 @@ exports.sourceNodes = async (
     concurrentRequests = 10,
     includedRoutes = [`**`],
     excludedRoutes = [],
+    plugins = [],
     normalizer,
     keepMediaSizes = false,
   }
@@ -70,6 +71,8 @@ exports.sourceNodes = async (
   _keepMediaSizes = keepMediaSizes
   _normalizer = normalizer
 
+  const subPluginsRunner = subPluginsRunnerCreator(plugins)
+
   let entities = await fetch({
     baseUrl,
     _verbose,
@@ -84,6 +87,7 @@ exports.sourceNodes = async (
     _includedRoutes,
     _excludedRoutes,
     _keepMediaSizes,
+    subPluginsRunner,
     typePrefix,
     refactoredEntityTypes,
   })
