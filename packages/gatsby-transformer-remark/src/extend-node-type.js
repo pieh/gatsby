@@ -32,8 +32,10 @@ const htmlCacheKey = node =>
   `transformer-remark-markdown-html-${node.internal.contentDigest}-${pluginsCacheStr}-${pathPrefixCacheStr}`
 const htmlAstCacheKey = node =>
   `transformer-remark-markdown-html-ast-${node.internal.contentDigest}-${pluginsCacheStr}-${pathPrefixCacheStr}`
-const headingsCacheKey = node =>
-  `transformer-remark-markdown-headings-${node.internal.contentDigest}-${pluginsCacheStr}-${pathPrefixCacheStr}`
+const headingsCacheKey = (node, headingsOptions) =>
+  `transformer-remark-markdown-headings-${
+    node.internal.contentDigest
+  }-${pluginsCacheStr}-${JSON.stringify(headingsOptions)}-${pathPrefixCacheStr}`
 const tableOfContentsCacheKey = (node, appliedTocOptions) =>
   `transformer-remark-markdown-toc-${
     node.internal.contentDigest
@@ -241,8 +243,10 @@ module.exports = (
       return markdownAST
     }
 
-    async function getHeadings(markdownNode) {
-      const cachedHeadings = await cache.get(headingsCacheKey(markdownNode))
+    async function getHeadings(markdownNode, args) {
+      const cachedHeadings = await cache.get(
+        headingsCacheKey(markdownNode, args)
+      )
       if (cachedHeadings) {
         return cachedHeadings
       } else {
@@ -251,10 +255,12 @@ module.exports = (
           return {
             value: mdastToString(heading),
             depth: heading.depth,
+            markdownNode,
+            heading,
           }
         })
 
-        cache.set(headingsCacheKey(markdownNode), headings)
+        cache.set(headingsCacheKey(markdownNode, args), headings)
         return headings
       }
     }
@@ -567,9 +573,9 @@ module.exports = (
         args: {
           depth: `MarkdownHeadingLevels`,
         },
-        resolve(markdownNode, { depth }) {
-          return getHeadings(markdownNode).then(headings => {
-            const level = depth && headingLevels[depth]
+        resolve(markdownNode, args) {
+          return getHeadings(markdownNode, args).then(headings => {
+            const level = args.depth && headingLevels[args.depth]
             if (typeof level === `number`) {
               headings = headings.filter(heading => heading.depth === level)
             }

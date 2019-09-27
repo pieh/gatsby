@@ -2,6 +2,7 @@ const toString = require(`mdast-util-to-string`)
 const visit = require(`unist-util-visit`)
 const slugs = require(`github-slugger`)()
 const deburr = require(`lodash/deburr`)
+const _ = require(`lodash`)
 
 function patch(context, key, value) {
   if (!context[key]) {
@@ -79,4 +80,62 @@ module.exports = (
   })
 
   return markdownAST
+}
+
+module.exports.createSchemaCustomization = ({
+  actions: { createTypes },
+  schema,
+}) => {
+  console.log(`[autolink-headers] schema customization`)
+  createTypes(
+    schema.buildObjectType({
+      name: `MarkdownHeading`,
+
+      fields: {
+        url: {
+          type: `String`,
+          args: {
+            pathToSlugField: {
+              type: `String`,
+              // most common, use in our starters and tutorials
+              defaultValue: `fields.slug`,
+            },
+            slugPrefix: {
+              type: `String`,
+              defaultValue: ``,
+            },
+          },
+          resolve: (source, { slugPrefix, pathToSlugField }) => {
+            if (!source.heading || !source.markdownNode) {
+              // gatsby-transformer-remark doesn't pass it
+              // might need newer version
+              return null
+            }
+
+            let slug = _.get(source.markdownNode, pathToSlugField)
+            if (slug === undefined) {
+              console.warn(
+                `Skipping heading. Field '${pathToSlugField}' (passed by pathToSlugField) missing from markdown node`
+              )
+              return null
+            }
+
+            const headingID =
+              source.heading && source.heading.data && source.heading.data.id
+
+            const url = [
+              `/`,
+              slugPrefix,
+              headingID ? `${slug}#${headingID}` : slug,
+            ]
+              .filter(Boolean)
+              .join(`/`)
+              .replace(/\/+/g, `/`)
+
+            return url
+          },
+        },
+      },
+    })
+  )
 }
