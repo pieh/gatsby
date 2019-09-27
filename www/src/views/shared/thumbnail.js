@@ -32,10 +32,8 @@ const ThumbnailLink = ({ slug, image, title, children, state }) => {
         fontFamily: fonts.header,
         "&&": {
           borderBottom: `none`,
-          color: colors.gray.dark,
-          transition: `all ${transition.speed.default} ${
-            transition.curve.default
-          }`,
+          color: colors.text.header,
+          transition: `all ${transition.speed.default} ${transition.curve.default}`,
           "&:hover": { ...styles.screenshotHover },
           "&:hover ~ .meta > .featured-site": {
             transform: `translateY(-${space[1]})`,

@@ -21,6 +21,10 @@ class NodeModelDocs extends React.Component {
         <Container>
           <Helmet>
             <title>Node Model</title>
+            <meta
+              name="description"
+              content="Documentation explaining the model of nodes in Gatsby's GraphQL data layer"
+            />
           </Helmet>
           <h1 id="node-model" css={{ marginTop: 0 }}>
             Node Model
@@ -29,7 +33,8 @@ class NodeModelDocs extends React.Component {
             Gatsby exposes its internal data store and query capabilities to
             GraphQL field resolvers on <code>context.nodeModel</code>.
           </p>
-          <div className="gatsby-code-title">Example usage</div>
+          <h3>Example usage</h3>
+          <div className="gatsby-code-title">gatsby-node.js</div>
           <div className="gatsby-highlight">
             <pre
               className="language-javascript"

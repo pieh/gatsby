@@ -10,6 +10,7 @@ import {
   space,
   mediaQueries,
   sizes,
+  zIndices,
 } from "../../utils/presets"
 import { rhythm } from "../../utils/typography"
 import ScrollPositionProvider, {
@@ -86,9 +87,7 @@ class StickyResponsiveSidebar extends Component {
               size={15}
               cssProps={{
                 transform: `translate(${iconOffset}px, 5px) rotate(90deg)`,
-                transition: `transform ${transition.speed.fast} ${
-                  transition.curve.default
-                }`,
+                transition: `transform ${transition.speed.fast} ${transition.curve.default}`,
               }}
             />
             <ChevronSvg
@@ -96,9 +95,7 @@ class StickyResponsiveSidebar extends Component {
               cssProps={{
                 transform: `translate(${5 -
                   iconOffset}px, -5px) rotate(270deg)`,
-                transition: `transform ${transition.speed.fast} ${
-                  transition.curve.default
-                }`,
+                transition: `transform ${transition.speed.fast} ${transition.curve.default}`,
               }}
             />
           </div>
@@ -120,7 +117,7 @@ const styles = {
     top: 0,
     transition: `opacity ${transition.speed.slow} ${transition.curve.default}`,
     width: 320,
-    zIndex: 10,
+    zIndex: zIndices.sidebar,
     [mediaQueries.md]: {
       height: `calc(100vh - ${sizes.headerHeight} - ${sizes.bannerHeight})`,
       maxWidth: `none`,
@@ -135,9 +132,7 @@ const styles = {
   },
   sidebar: {
     height: `100%`,
-    transition: `transform ${transition.speed.slow} ${
-      transition.curve.default
-    }`,
+    transition: `transform ${transition.speed.slow} ${transition.curve.default}`,
     boxShadow: shadows.dialog,
     [mediaQueries.md]: {
       transform: `none !important`,
@@ -157,7 +152,7 @@ const styles = {
     right: space[6],
     visibility: `visible`,
     width: space[10],
-    zIndex: 20,
+    zIndex: zIndices.floatingActionButton,
     [mediaQueries.md]: { display: `none` },
   },
   sidebarToggleButtonInner: {

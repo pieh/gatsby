@@ -2,7 +2,7 @@
 title: "Turning the Static Dynamic: Gatsby + Netlify Functions + Netlify Identity"
 date: 2018-12-26
 author: swyx
-tags: ["apps"]
+tags: ["gatsby-for-apps"]
 excerpt: Gatsby is great for not only static sites but also traditional web applications. You can add authentication and serverless functionality and get up and running incredibly quickly with Netlify - here's how.
 ---
 
@@ -51,11 +51,13 @@ Let's walk through the steps:
     "start": "run-p start:**",
     "start:app": "npm run develop",
     "start:lambda": "netlify-lambda serve src/lambda",
-    "build": "run-p build:**",
+    "build": "gatsby build && netlify-lambda build src/lambda",
     "build:app": "gatsby build",
     "build:lambda": "netlify-lambda build src/lambda",
   },
 ```
+
+When deploying to Netlify, `gatsby build` must be run before `netlify-lambda build src/lambda` or else your Netlify function builds will fail. To avoid this, do not set your build script command to `"build": "run-p build:**"` when you replace `scripts` in `package.json`. Doing so will run all build scripts in parallel. This will make it possible for `netlify-lambda build src/lambda` to run before `gatsby build`.
 
 3. **Configure your Netlify build**: When serving your site on Netlify, `netlify-lambda` will now build each JavaScript/TypeScript file in your `src/lambda` folder as a standalone Netlify function (with a path corresponding to the filename). Make sure you have a Functions path in a `netlify.toml` file at root of your repository:
 
@@ -67,6 +69,8 @@ Let's walk through the steps:
 ```
 
 For more info or configuration options (e.g. in different branches and build environments), check [the Netlify.toml reference](https://www.netlify.com/docs/netlify-toml-reference/).
+
+**NOTE:** the `Command` specified in `netlify.toml` overrides the build command specified in your site's Netlify UI Build settings.
 
 4. **Proxy the emulated functions for local development**: Head to `gatsby-config.js` and add this to your `module.exports`:
 
@@ -366,15 +370,15 @@ export function handler(event, context, callback) {
     })
   } else {
     console.log(`
-    Note that netlify-lambda only locally emulates Netlify Functions, 
-    while netlify-identity-widget interacts with a real Netlify Identity instance. 
+    Note that netlify-lambda only locally emulates Netlify Functions,
+    while netlify-identity-widget interacts with a real Netlify Identity instance.
     This means that netlify-lambda doesn't support Netlify Functions + Netlify Identity integration.
     `)
     callback(null, {
       statusCode: 200,
       body: JSON.stringify({
         msg:
-          "auth-hello - no authentication detected. Note that netlify-lambda doesnt locally emulate Netlify Identity.",
+          "auth-hello - no authentication detected. Note that netlify-lambda doesn't locally emulate Netlify Identity.",
       }),
     })
   }

@@ -96,9 +96,7 @@ class Accordion extends React.Component {
               ? presets.activeSectionBackground
               : false,
           position: `relative`,
-          transition: `all ${transition.speed.fast} ${
-            transition.curve.default
-          }`,
+          transition: `all ${transition.speed.fast} ${transition.curve.default}`,
           marginTop:
             item.level === 0 && disableAccordions && !isSingle
               ? `${space[4]} !important`
@@ -110,8 +108,8 @@ class Accordion extends React.Component {
                 position: `absolute`,
                 borderTop:
                   !isExpanded && !isSingle && !isActive
-                    ? `1px solid ${colors.gray.border}`
-                    : `1px solid ${colors.ui.light}`,
+                    ? `1px solid ${colors.ui.border.subtle}`
+                    : `1px solid ${colors.purple[10]}`,
                 left:
                   (isParentOfActiveItem && isExpanded) ||
                   (isActive && isExpanded)
@@ -150,7 +148,7 @@ class Accordion extends React.Component {
             display: isExpanded ? `block` : `none`,
             ...(item.ui === `steps` && {
               "&:after": {
-                background: colors.gray.border,
+                background: colors.ui.border.subtle,
                 bottom: 0,
                 content: `''`,
                 left: 27,

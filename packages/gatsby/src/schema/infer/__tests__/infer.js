@@ -2,19 +2,40 @@
 
 const { graphql } = require(`graphql`)
 const nodeStore = require(`../../../db/nodes`)
-const { LocalNodeModel } = require(`../../node-model`)
 const path = require(`path`)
 const slash = require(`slash`)
 const { store } = require(`../../../redux`)
-const createPageDependency = require(`../../../redux/actions/add-page-dependency`)
+const { actions } = require(`../../../redux/actions`)
 const { buildSchema } = require(`../../schema`)
 const { createSchemaComposer } = require(`../../schema-composer`)
+const { buildObjectType } = require(`../../types/type-builders`)
 const { TypeConflictReporter } = require(`../type-conflict-reporter`)
+const withResolverContext = require(`../../context`)
 require(`../../../db/__tests__/fixtures/ensure-loki`)()
+
+jest.mock(`gatsby-cli/lib/reporter`, () => {
+  return {
+    log: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    activityTimer: () => {
+      return {
+        start: jest.fn(),
+        setStatus: jest.fn(),
+        end: jest.fn(),
+      }
+    },
+  }
+})
+const report = require(`gatsby-cli/lib/reporter`)
+afterEach(() => {
+  report.error.mockClear()
+})
 
 const makeNodes = () => [
   {
-    id: `foo`,
+    id: `1`,
     internal: { type: `Test` },
     name: `The Mad Max`,
     type: `Test`,
@@ -55,7 +76,7 @@ const makeNodes = () => [
     },
   },
   {
-    id: `boo`,
+    id: `2`,
     internal: { type: `Test` },
     name: `The Mad Wax`,
     type: `Test`,
@@ -79,27 +100,50 @@ const makeNodes = () => [
 describe(`GraphQL type inference`, () => {
   const typeConflictReporter = new TypeConflictReporter()
 
-  const buildTestSchema = async (nodes, buildSchemaArgs) => {
+  const buildTestSchema = async (nodes, buildSchemaArgs, typeDefs) => {
     store.dispatch({ type: `DELETE_CACHE` })
-    nodes.forEach(node =>
-      store.dispatch({ type: `CREATE_NODE`, payload: node })
-    )
+    nodes.forEach(node => {
+      if (!node.internal.contentDigest) {
+        node.internal.contentDigest = `0`
+      }
+      actions.createNode(node, { name: `test` })(store.dispatch)
+    })
 
-    const schemaComposer = createSchemaComposer()
+    const { builtInFieldExtensions } = require(`../../extensions`)
+    Object.keys(builtInFieldExtensions).forEach(name => {
+      const extension = builtInFieldExtensions[name]
+      store.dispatch({
+        type: `CREATE_FIELD_EXTENSION`,
+        payload: { name, extension },
+      })
+    })
+    const { fieldExtensions } = store.getState().schemaCustomization
+    const schemaComposer = createSchemaComposer({ fieldExtensions })
     const schema = await buildSchema({
       schemaComposer,
       nodeStore,
-      types: [],
+      types: typeDefs || [],
+      fieldExtensions,
       thirdPartySchemas: [],
       typeMapping: [],
       typeConflictReporter,
       ...(buildSchemaArgs || {}),
     })
-    return schema
+    return { schema, schemaComposer }
   }
 
-  const getQueryResult = async (nodes, fragment, buildSchemaArgs) => {
-    const schema = await buildTestSchema(nodes, buildSchemaArgs)
+  const getQueryResult = async (
+    nodes,
+    fragment,
+    buildSchemaArgs,
+    extraquery = ``,
+    typeDefs
+  ) => {
+    const { schema, schemaComposer } = await buildTestSchema(
+      nodes,
+      buildSchemaArgs,
+      typeDefs
+    )
     store.dispatch({ type: `SET_SCHEMA`, payload: schema })
     return graphql(
       schema,
@@ -111,22 +155,16 @@ describe(`GraphQL type inference`, () => {
             }
           }
         }
+        ${extraquery}
       }
       `,
       undefined,
-      {
-        path: `/`,
-        nodeModel: new LocalNodeModel({
-          schema,
-          nodeStore,
-          createPageDependency,
-        }),
-      }
+      withResolverContext({ schema, schemaComposer, context: { path: `/` } })
     )
   }
 
   const getInferredFields = async (nodes, buildSchemaArgs) => {
-    const schema = await buildTestSchema(nodes, buildSchemaArgs)
+    const { schema } = await buildTestSchema(nodes, buildSchemaArgs)
     return schema.getType(`Test`).getFields()
   }
 
@@ -320,7 +358,7 @@ describe(`GraphQL type inference`, () => {
       `
         with_space
         with_hyphen
-        with_resolver(formatString:"DD.MM.YYYY")
+        with_resolver(formatString: "DD.MM.YYYY")
         _123
         _456 {
           testingTypeNameCreation
@@ -340,6 +378,60 @@ describe(`GraphQL type inference`, () => {
     expect(result.data.allTest.edges[0].node._123).toEqual(42)
     expect(result.data.allTest.edges[1].node._123).toEqual(24)
     expect(result.data.allTest.edges[0].node._456).toEqual(nodes[0][`456`])
+  })
+
+  it(`handles invalid graphql field names on explicitly defined fields`, async () => {
+    const nodes = [
+      { id: `test`, internal: { type: `Test` } },
+      {
+        id: `foo`,
+        [`field_that_needs_to_be_sanitized?`]: `foo`,
+        [`(another)_field_that_needs_to_be_sanitized`]: `bar`,
+        [`!third_field_that_needs_to_be_sanitized`]: `baz`,
+        internal: {
+          type: `Repro`,
+          contentDigest: `foo`,
+        },
+      },
+    ]
+    const typeDefs = [
+      {
+        typeOrTypeDef: buildObjectType({
+          name: `Repro`,
+          interfaces: [`Node`],
+          fields: {
+            field_that_needs_to_be_sanitized_: `String`,
+            _another__field_that_needs_to_be_sanitized: {
+              type: `String`,
+              resolve: source =>
+                source[`(another)_field_that_needs_to_be_sanitized`],
+            },
+          },
+        }),
+      },
+    ]
+
+    const result = await getQueryResult(
+      nodes,
+      `id`,
+      undefined,
+      `
+        repro {
+          field_that_needs_to_be_sanitized_
+          _another__field_that_needs_to_be_sanitized
+          _third_field_that_needs_to_be_sanitized
+        }
+      `,
+      typeDefs
+    )
+    expect(result.errors).not.toBeDefined()
+    expect(result.data.repro[`field_that_needs_to_be_sanitized_`]).toBe(`foo`)
+    expect(
+      result.data.repro[`_another__field_that_needs_to_be_sanitized`]
+    ).toBe(`bar`)
+    expect(result.data.repro[`_third_field_that_needs_to_be_sanitized`]).toBe(
+      `baz`
+    )
   })
 
   it(`Handles priority for conflicting fields`, async () => {
@@ -418,7 +510,7 @@ describe(`GraphQL type inference`, () => {
         },
       },
     ]
-    const schema = await buildTestSchema(nodes)
+    const { schema, schemaComposer } = await buildTestSchema(nodes)
     store.dispatch({ type: `SET_SCHEMA`, payload: schema })
     const result = await graphql(
       schema,
@@ -439,14 +531,7 @@ describe(`GraphQL type inference`, () => {
         }
       `,
       undefined,
-      {
-        path: `/`,
-        nodeModel: new LocalNodeModel({
-          schema,
-          nodeStore,
-          createPageDependency,
-        }),
-      }
+      withResolverContext({ schema, schemaComposer, context: { path: `/` } })
     )
 
     expect(result).toMatchSnapshot()
@@ -721,7 +806,7 @@ describe(`GraphQL type inference`, () => {
       const nodes = [
         {
           id: `1`,
-          linkedOnCustomField: [`test1`, `test3`],
+          linkedOnCustomField: [`test3`, `test1`],
           internal: { type: `Test` },
         },
       ].concat(getMappingNodes())
@@ -740,20 +825,28 @@ describe(`GraphQL type inference`, () => {
         }
       )
 
-      expect(result.errors).not.toBeDefined()
-      expect(result.data.allTest.edges.length).toEqual(1)
-      expect(
-        result.data.allTest.edges[0].node.linkedOnCustomField
-      ).toBeDefined()
-      expect(
-        result.data.allTest.edges[0].node.linkedOnCustomField.length
-      ).toEqual(2)
-      expect(
-        result.data.allTest.edges[0].node.linkedOnCustomField[0].label
-      ).toEqual(`First node`)
-      expect(
-        result.data.allTest.edges[0].node.linkedOnCustomField[1].label
-      ).toEqual(`Third node`)
+      expect(result).toMatchInlineSnapshot(`
+Object {
+  "data": Object {
+    "allTest": Object {
+      "edges": Array [
+        Object {
+          "node": Object {
+            "linkedOnCustomField": Array [
+              Object {
+                "label": "Third node",
+              },
+              Object {
+                "label": "First node",
+              },
+            ],
+          },
+        },
+      ],
+    },
+  },
+}
+`)
     })
   })
 
@@ -996,7 +1089,7 @@ describe(`GraphQL type inference`, () => {
             id: `2`,
           },
         ].concat(getLinkedNodes())
-        const schema = await buildTestSchema(nodes)
+        const { schema } = await buildTestSchema(nodes)
         const fields = schema.getType(`Test`).getFields()
         const otherFields = schema.getType(`OtherType`).getFields()
 
@@ -1027,7 +1120,7 @@ describe(`GraphQL type inference`, () => {
             id: `2`,
           },
         ].concat(getLinkedNodes())
-        const schema = await buildTestSchema(nodes)
+        const { schema } = await buildTestSchema(nodes)
         const fields = schema.getType(`Test`).getFields()
         const otherFields = schema.getType(`OtherType`).getFields()
 

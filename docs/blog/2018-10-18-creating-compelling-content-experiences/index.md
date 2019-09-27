@@ -36,7 +36,7 @@ This allows content teams to replace their heavyweight CMS monolith with their c
 
 ### Second, pick a UI development library
 
-[React and Angular are both excellent, ubiquitious, modern choices](/blog/2018-10-11-rise-of-modern-web-development), with rich community ecosystems to address website-specific concerns like:
+[React and Angular are both excellent, ubiquitous, modern choices](/blog/2018-10-11-rise-of-modern-web-development), with rich community ecosystems to address website-specific concerns like:
 
 - SEO
 - Routing
@@ -63,7 +63,7 @@ The challenge for website teams is: how to achieve this without a lot of costly,
 
 The answer: choose a content mesh. A content mesh:
 
-- pulls in data from your headless CMS systems
+- pulls in data from your [headless CMS](/docs/headless-cms/) systems
 
 - enables you to develop in your preferred UI library while providing website tooling
 

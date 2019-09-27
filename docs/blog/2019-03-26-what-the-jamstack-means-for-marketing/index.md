@@ -6,7 +6,7 @@ excerpt: "Learn what JAMstack is and the pros and cons JAMstack websites have fr
 tags:
   - jamstack
   - marketing
-  - headless cms
+  - headless-cms
 canonicalLink: https://kymellis.co/jamstack-marketing-headless-cms/
 ---
 
@@ -33,9 +33,9 @@ Building your marketing site on the JAMstack is an efficient and reliable way to
 **The past vs the future**
 Using a traditional CMS is more restrictive and opinionated than this. You're constrained to the platform you choose from the get-go and forced to accept additional "features" that you might not even need. While these platforms have provided us with an excellent way to publish websites in the past, it's changing for the future.
 
-<pullquote>
+<Pullquote>
 Thanks to progression with modern browsers, static site generators, APIs and content delivery networks, websites can be built as modular stacks that aren't tied to specific technologies.
-</pullquote>
+</Pullquote>
 
 **Going back to the benefits:** better performance, higher security, cheaper to scale & a better experience. These aren't just developer benefits, they apply directly to the marketing team too. Better performance means better site engagement and improved SEO. Higher security means less chance of not hitting your stretch goal next June because the site got hacked. Cheaper to scale means there will be less roadblocks in your way when you want to add that Shopify store or when a big campaign sends 1M visitors to the site. Better experience — who wouldn't want that?
 
@@ -130,7 +130,7 @@ I've already covered some of the benefits of opting to use JAMstack instead of a
 
 **The "downsides":**
 
-- Even if using a headless CMS, there may still be parts of the site that exist entirely in code. So you'll need to get comfortable with editing content and meta data in more than one place.
+- Even if using a [headless CMS](/docs/headless-cms/), there may still be parts of the site that exist entirely in code. So you'll need to get comfortable with editing content and meta data in more than one place.
 - Shipping new marketing material might take a little longer compared to relying on well known methods (depends on your stack and your team, though).
 - New tech means you might stumble upon some exciting new bugs or issues that can take a while to resolve.
 

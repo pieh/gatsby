@@ -1,8 +1,10 @@
 import React, { Component } from "react"
+import { Helmet } from "react-helmet"
+
 import Container from "../components/container"
 import Rotator from "../components/rotator"
 import { Link } from "gatsby"
-import logo from "../monogram.svg"
+import logo from "../assets/monogram.svg"
 import { rhythm } from "../utils/typography"
 import { colors, space, sizes, fontSizes } from "../utils/presets"
 import FooterLinks from "../components/shared/footer-links"
@@ -11,14 +13,19 @@ class Plugins extends Component {
   render() {
     return (
       <>
+        <Helmet>
+          <title>Plugins</title>
+          <meta
+            name="description"
+            content="The library for searching and exploring Gatsby's vast plugin ecosystem to implement Node.js packages using Gatsby APIs"
+          />
+        </Helmet>
         <Container
           overrideCSS={{
             alignItems: `center`,
             display: `flex`,
             flexDirection: `column`,
-            minHeight: `calc(100vh - (${sizes.headerHeight} + ${
-              sizes.bannerHeight
-            }))`,
+            minHeight: `calc(100vh - (${sizes.headerHeight} + ${sizes.bannerHeight}))`,
           }}
         >
           <div
@@ -41,6 +48,7 @@ class Plugins extends Component {
             <h1
               css={{
                 fontSize: fontSizes[6],
+                fontWeight: `700`,
                 marginLeft: space[5],
                 marginRight: space[5],
                 marginBottom: 0,
@@ -100,7 +108,7 @@ class Plugins extends Component {
 
             <p
               css={{
-                color: colors.gray.lightCopy,
+                color: colors.text.secondary,
                 fontSize: fontSizes[2],
                 textAlign: `center`,
               }}

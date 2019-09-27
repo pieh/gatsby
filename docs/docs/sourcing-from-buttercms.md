@@ -1,3 +1,7 @@
+---
+title: Sourcing from ButterCMS
+---
+
 ## Overview
 
 In this guide we'll be setting up a CMS powered Gatsby site that uses [ButterCMS](https://buttercms.com/) as its content management system.
@@ -75,9 +79,9 @@ To see a fully complete Gatsby+ButterCMS project check out this [Gatsby ButterCM
 ## Webhooks
 
 Webhooks are a powerful feature that allow you to notify your internal systems whenever content in ButterCMS has changed.
-Your host platform need to be notified so that gatsby can create fresh pages from the new data. You can learn more about Webhooks in this [blog post](https://buttercms.com/blog/webhook-vs-api-whats-the-difference). Checkout your host platform form incoming webhooks so we can hit it anytime your content changes. Netlify lets you generate a build hook that will be triggered by butter on certain event e.g when we create or update a blog post more details here [here](https://buttercms.com/docs/api/#webhooks)
+Your host platform need to be notified so that gatsby can create fresh pages from the new data. You can learn more about Webhooks in this [blog post](https://buttercms.com/blog/webhook-vs-api-whats-the-difference). Checkout your host platform form incoming webhooks so we can hit it anytime your content changes. Netlify lets you generate a build hook that will be triggered by butter on certain event e.g when we create or update a blog post more details [here](https://buttercms.com/docs/api/#webhooks)
 
-![Webhook](https://buttercms.com/static/images/docs/guides/OverviewWebhooks.caade716f770.png "Webhook")
+![Webhook](https://buttercms.com/static/images/docs/guides/OverviewWebhooks.png "Webhook")
 
 ## Image Transformation
 
@@ -95,7 +99,7 @@ Resizing is just one of the many different transformations you can do to your im
 
 ButterCMS has full support for localization of your content. Locale names and keys are completely customizable and there's no limit to the number of locales you can have. View their [API Reference](https://buttercms.com/docs/api/) to learn how to query by locale.
 
-![locales](https://buttercms.com/static/images/docs/guides/Localization.54a005530001.png)
+![locales](https://buttercms.com/static/images/docs/guides/Localization.png)
 
 # Creating pages
 
@@ -123,13 +127,13 @@ If you need help after reading this, contact us via email or livechat.
 
 Create a new Page and define it's structure using our Page Builder. Let's create an example homepage.
 
-![image](https://buttercms.com/static/images/docs/guides/PagesNewSinglePage.d6038e2b75a0.png)
+![image](https://buttercms.com/static/images/docs/guides/PagesNewSinglePage.png)
 
 #### Populate the Content
 
 Then populate our new page with content. In the next step, we'll call the ButterCMS API to retrieve this content from our app.
 
-![image](https://buttercms.com/static/images/docs/guides/PagesNewSinglePageContent.c582e2451f7f.png)
+![image](https://buttercms.com/static/images/docs/guides/PagesNewSinglePageContent.png)
 
 ### Integrate into your application
 
@@ -276,20 +280,20 @@ If you need help after reading this, contact us via email or livechat.
 ## Create the Page Type structure
 
 Create a Page Type to represent your Customer Case Study pages:
-![page structure](https://buttercms.com/static/images/docs/guides/PagesNewPageType1.18834db5cf0b.png)
+![page structure](https://buttercms.com/static/images/docs/guides/PagesNewPageType1.png)
 
 After saving, return to the configuration page by clicking the gear icon:
-![image](https://buttercms.com/static/images/docs/guides/PagesNewPageType2.6fa0dea4872c.png)
+![image](https://buttercms.com/static/images/docs/guides/PagesNewPageType2.png)
 
 Then click on Create Page Type and name it "Customer Case Study". This will allow us to reuse this field configuration across multiple customer case study pages:
 
-![saving](https://buttercms.com/static/images/docs/guides/PagesNewPageType3.70f0c287ae91.png)
+![saving](https://buttercms.com/static/images/docs/guides/PagesNewPageType3.png)
 
 ## Populate the Content
 
 Then populate our new page with content. In the next step, we'll call the ButterCMS API to retrieve this content from our app.
 
-![](https://buttercms.com/static/images/docs/guides/PagesNewPageTypeCreateContent.6164c9b9cf19.png)
+![](https://buttercms.com/static/images/docs/guides/PagesNewPageTypeCreateContent.png)
 
 To Pull down content into gatsby run:
 
@@ -441,7 +445,7 @@ export const query = graphql`
 export default IndexPage
 ```
 
-Next we'll refactor `gatsby-node-js` to programatically create customer case study pages with gatsby create pages API. First we need to define a customer case study template
+Next we'll refactor `gatsby-node-js` to programmatically create customer case study pages with gatsby create pages API. First we need to define a customer case study template
 
 ```jsx:title=src/templates/customer-case-study.js
 import React from "react"
@@ -486,7 +490,7 @@ export const pageQuery = graphql`
 export default CustomerCaseStudy
 ```
 
-Now Let's programatically Create customer case study pages based on the template we defined in `src/template/customer-case-study.js`
+Now Let's programmatically Create customer case study pages based on the template we defined in `src/template/customer-case-study.js`
 
 ```javascript:title=gatsby-node.js
 const path = require(`path`)
