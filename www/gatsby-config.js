@@ -1,3 +1,6 @@
+//var nodereport = require(`node-report`)
+debugger
+
 const path = require(`path`)
 const git = require(`git-rev-sync`)
 require(`dotenv`).config({
@@ -53,6 +56,15 @@ if (process.env.AIRTABLE_API_KEY) {
   })
 }
 
+if (!process.env.SKIP_NPM) {
+  dynamicPlugins.push({
+    resolve: `gatsby-source-npm-package-search`,
+    options: {
+      keywords: [`gatsby-plugin`, `gatsby-component`],
+    },
+  })
+}
+
 module.exports = {
   siteMetadata: {
     title: `GatsbyJS`,
@@ -65,12 +77,6 @@ module.exports = {
     "Mdx.frontmatter.author": `AuthorYaml`,
   },
   plugins: [
-    {
-      resolve: `gatsby-source-npm-package-search`,
-      options: {
-        keywords: [`gatsby-plugin`, `gatsby-component`],
-      },
-    },
     {
       resolve: `gatsby-source-filesystem`,
       options: {
@@ -327,6 +333,16 @@ module.exports = {
         environment: process.env.NODE_ENV,
         enabled: (() =>
           [`production`, `stage`].indexOf(process.env.NODE_ENV) !== -1)(),
+      },
+    },
+    {
+      resolve: `gatsby-plugin-schema-snapshot`,
+      options: {
+        path: `schema.gql`,
+        exclude: {
+          plugins: [`gatsby-plugin-mdx`],
+        },
+        update: process.env.GATSBY_UPDATE_SCHEMA_SNAPSHOT,
       },
     },
     // `gatsby-plugin-subfont`,

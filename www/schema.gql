@@ -1,0 +1,2467 @@
+### Type definitions saved at 2019-10-01T10:06:02.411Z ###
+
+type File implements Node @dontInfer {
+  birthtime: Date @deprecated(reason: "Use `birthTime` instead")
+  birthtimeMs: Float @deprecated(reason: "Use `birthTime` instead")
+  sourceInstanceName: String
+  absolutePath: String
+  relativePath: String
+  extension: String
+  size: Int
+  prettySize: String
+  modifiedTime: Date @dateformat
+  accessTime: Date @dateformat
+  changeTime: Date @dateformat
+  birthTime: Date @dateformat
+  root: String
+  dir: String
+  base: String
+  ext: String
+  name: String
+  relativeDirectory: String
+  dev: Int
+  mode: Int
+  nlink: Int
+  uid: Int
+  gid: Int
+  rdev: Int
+  blksize: Int
+  ino: Int
+  blocks: Int
+  atimeMs: Float
+  mtimeMs: Float
+  ctimeMs: Float
+  atime: Date @dateformat
+  mtime: Date @dateformat
+  ctime: Date @dateformat
+  fields: FileFields
+}
+
+type FileFields {
+  slug: String
+}
+
+type DocumentationJs implements Node @dontInfer {
+  name: String
+  kind: String
+  memberof: String
+  scope: String
+  access: String
+  readonly: Boolean
+  abstract: Boolean
+  generator: Boolean
+  async: Boolean
+  override: Boolean
+  hideconstructor: Boolean
+  alias: String
+  copyright: String
+  author: String
+  license: String
+  since: String
+  lends: String
+  type: DoctrineType
+  default: JSON
+  augments: [DocumentationJs] @link(by: "id", from: "augments___NODE")
+  examples: [DocumentationJsExample]
+  implements: [DocumentationJs] @link(by: "id", from: "implements___NODE")
+  params: [DocumentationJs] @link(by: "id", from: "params___NODE")
+  properties: [DocumentationJs] @link(by: "id", from: "properties___NODE")
+  returns: [DocumentationJs] @link(by: "id", from: "returns___NODE")
+  throws: [DocumentationJs] @link(by: "id", from: "throws___NODE")
+  todos: [DocumentationJs] @link(by: "id", from: "todos___NODE")
+  yields: [DocumentationJs] @link(by: "id", from: "yields___NODE")
+  members: DocumentationJsMembers
+  codeLocation: DocumenationJSLocationRange
+  docsLocation: DocumenationJSLocationRange
+  commentNumber: Int
+  level: Int
+  tags: [DocumentationJsTags]
+  optional: Boolean
+  description: DocumentationJSComponentDescription @link(by: "id", from: "description___NODE")
+  deprecated: DocumentationJSComponentDescription @link(by: "id", from: "deprecated___NODE")
+}
+
+type DoctrineType {
+  type: String
+  name: String
+  elements: [JSON]
+  expression: JSON
+  applications: [JSON]
+  params: [JSON]
+  fields: [JSON]
+  result: JSON
+  typeDef: DocumentationJs @link(by: "id", from: "typeDef___NODE")
+  prefix: Boolean
+}
+
+type DocumentationJsExample {
+  caption: String
+  description: String
+  highlighted: String
+  raw: String
+}
+
+type DocumentationJsMembers {
+  static: [DocumentationJs] @link(by: "id", from: "static___NODE")
+  instance: [DocumentationJs] @link(by: "id", from: "instance___NODE")
+  events: [DocumentationJs] @link(by: "id", from: "events___NODE")
+  global: [DocumentationJs] @link(by: "id", from: "global___NODE")
+  inner: [DocumentationJs] @link(by: "id", from: "inner___NODE")
+}
+
+type DocumenationJSLocationRange {
+  start: DocumentationJSLocation
+  end: DocumentationJSLocation
+  identifierName: String
+}
+
+type DocumentationJSLocation {
+  line: Int
+  column: Int
+}
+
+type DocumentationJsTags {
+  title: String
+  description: String
+  lineNumber: Int
+  type: DocumentationJsTagsType
+  name: String
+  errors: [String]
+  default: String
+}
+
+type DocumentationJsTagsType {
+  type: String
+  name: String
+  typeDef: DocumentationJs @link(by: "id", from: "typeDef___NODE")
+  expression: DocumentationJsTagsTypeExpression
+  applications: [DocumentationJsTagsTypeApplications]
+  elements: [DocumentationJsTagsTypeElements]
+  fields: [DocumentationJsTagsTypeFields]
+  prefix: Boolean
+}
+
+type DocumentationJsTagsTypeExpression {
+  type: String
+  name: String
+  typeDef: DocumentationJs @link(by: "id", from: "typeDef___NODE")
+  expression: DocumentationJsTagsTypeExpressionExpression
+  applications: [DocumentationJsTagsTypeExpressionApplications]
+  elements: [DocumentationJsTagsTypeExpressionElements]
+}
+
+type DocumentationJsTagsTypeExpressionExpression {
+  type: String
+  name: String
+}
+
+type DocumentationJsTagsTypeExpressionApplications {
+  type: String
+  name: String
+}
+
+type DocumentationJsTagsTypeExpressionElements {
+  type: String
+  name: String
+}
+
+type DocumentationJsTagsTypeApplications {
+  type: String
+  name: String
+  typeDef: DocumentationJs @link(by: "id", from: "typeDef___NODE")
+  fields: [DocumentationJsTagsTypeApplicationsFields]
+  expression: DocumentationJsTagsTypeApplicationsExpression
+  applications: [DocumentationJsTagsTypeApplicationsApplications]
+}
+
+type DocumentationJsTagsTypeApplicationsFields {
+  type: String
+  key: String
+  value: DocumentationJsTagsTypeApplicationsFieldsValue
+}
+
+type DocumentationJsTagsTypeApplicationsFieldsValue {
+  type: String
+  name: String
+}
+
+type DocumentationJsTagsTypeApplicationsExpression {
+  type: String
+  name: String
+}
+
+type DocumentationJsTagsTypeApplicationsApplications {
+  type: String
+  name: String
+}
+
+type DocumentationJsTagsTypeElements {
+  type: String
+  name: String
+  typeDef: DocumentationJs @link(by: "id", from: "typeDef___NODE")
+  expression: DocumentationJsTagsTypeElementsExpression
+  prefix: Boolean
+  applications: [DocumentationJsTagsTypeElementsApplications]
+}
+
+type DocumentationJsTagsTypeElementsExpression {
+  type: String
+  name: String
+}
+
+type DocumentationJsTagsTypeElementsApplications {
+  type: String
+  name: String
+}
+
+type DocumentationJsTagsTypeFields {
+  type: String
+  key: String
+  value: DocumentationJsTagsTypeFieldsValue
+}
+
+type DocumentationJsTagsTypeFieldsValue {
+  type: String
+  expression: DocumentationJsTagsTypeFieldsValueExpression
+  applications: [DocumentationJsTagsTypeFieldsValueApplications]
+}
+
+type DocumentationJsTagsTypeFieldsValueExpression {
+  type: String
+  name: String
+}
+
+type DocumentationJsTagsTypeFieldsValueApplications {
+  type: String
+  fields: [DocumentationJsTagsTypeFieldsValueApplicationsFields]
+}
+
+type DocumentationJsTagsTypeFieldsValueApplicationsFields {
+  type: String
+  key: String
+  value: DocumentationJsTagsTypeFieldsValueApplicationsFieldsValue
+}
+
+type DocumentationJsTagsTypeFieldsValueApplicationsFieldsValue {
+  type: String
+  name: String
+}
+
+type DocumentationJSComponentDescription implements Node @dontInfer
+
+type ImageSharp implements Node @childOf(mimeTypes: [], types: ["File"], many: false) @dontInfer
+
+type MarkdownHeading {
+  value: String
+  depth: Int
+}
+
+enum MarkdownHeadingLevels {
+  h1
+  h2
+  h3
+  h4
+  h5
+  h6
+}
+
+enum MarkdownExcerptFormats {
+  PLAIN
+  HTML
+  MARKDOWN
+}
+
+type MarkdownWordCount {
+  paragraphs: Int
+  sentences: Int
+  words: Int
+}
+
+type MarkdownRemark implements Node @childOf(mimeTypes: ["text/markdown", "text/x-markdown"], types: [], many: false) @dontInfer {
+  frontmatter: MarkdownRemarkFrontmatter
+  excerpt: String
+  rawMarkdownBody: String
+  fileAbsolutePath: String
+  fields: MarkdownRemarkFields
+}
+
+type MarkdownRemarkFrontmatter {
+  title: String
+  disableTableOfContents: Boolean
+  overview: Boolean
+  issue: String
+  author: AuthorYaml @link(by: "id")
+  date: Date @dateformat
+  tags: [String]
+  image: File @fileByRelativePath
+  showImageInArticle: Boolean
+  imageAuthor: String
+  imageAuthorLink: String
+  imageTitle: String
+  excerpt: String
+  canonicalLink: String
+  publishedAt: String
+  typora_copy_images_to: String @proxy(from: "typora-copy-images-to")
+  tableOfContentsDepth: Int
+  draft: Boolean
+  cover: File @fileByRelativePath
+}
+
+type AuthorYaml implements Node @dontInfer {
+  bio: String
+  avatar: File @fileByRelativePath
+  twitter: String
+  fields: AuthorYamlFields
+}
+
+type AuthorYamlFields {
+  slug: String
+}
+
+type MarkdownRemarkFields {
+  anchor: String
+  slug: String
+  released: Boolean
+  publishedAt: String
+  title: String
+  package: Boolean
+}
+
+type Airtable implements Node @dontInfer {
+  data: AirtableData
+}
+
+type AirtableData {
+  name: String @proxy(from: "Name_of_Event", fromNode: false)
+  organizerFirstName: String @proxy(from: "Organizer_Name", fromNode: false)
+  organizerLastName: String @proxy(from: "Organizer's_Last_Name", fromNode: false)
+  date: Date @dateformat @proxy(from: "Date_of_Event", fromNode: false)
+  location: String @proxy(from: "Location_of_Event", fromNode: false)
+  url: String @proxy(from: "Event_URL_(if_applicable)", fromNode: false)
+  type: String @proxy(from: "What_type_of_event_is_this?", fromNode: false)
+  hasGatsbyTeamSpeaker: Boolean @proxy(from: "Gatsby_Speaker_Approved", fromNode: false)
+  approved: Boolean @proxy(from: "Approved_for_posting_on_event_page", fromNode: false)
+}
+
+type SitesYaml implements Node @dontInfer {
+  title: String!
+  main_url: String!
+  url: String!
+  source_url: String
+  featured: Boolean
+  categories: [String]!
+  built_by: String
+  built_by_url: String
+  description: String
+  screenshotFile: Screenshot
+  fields: SitesYamlFields
+}
+
+type Screenshot implements Node @dontInfer {
+  url: String
+  expires: Float
+  screenshotFile: File @link(by: "id", from: "screenshotFile___NODE")
+  usingPlaceholder: String
+}
+
+type SitesYamlFields {
+  slug: String
+  hasScreenshot: Boolean
+}
+
+type StartersYaml implements Node @dontInfer {
+  url: String!
+  repo: String!
+  description: String
+  tags: [String!]
+  features: [String!]
+  screenshotFile: Screenshot
+  fields: StartersYamlFields
+}
+
+type StartersYamlFields {
+  hasScreenshot: Boolean
+  starterShowcase: StartersYamlFieldsStarterShowcase
+}
+
+type StartersYamlFieldsStarterShowcase {
+  slug: String
+  stub: String
+  name: String
+  description: String
+  stars: Int
+  lastUpdated: String
+  owner: String
+  githubFullName: String
+  gatsbyMajorVersion: [[String]]
+  allDependencies: [[String]]
+  gatsbyDependencies: [[String]]
+  miscDependencies: [[String]]
+}
+
+type Directory implements Node @dontInfer {
+  sourceInstanceName: String
+  absolutePath: String
+  relativePath: String
+  extension: String
+  size: Int
+  prettySize: String
+  modifiedTime: Date @dateformat
+  accessTime: Date @dateformat
+  changeTime: Date @dateformat
+  birthTime: Date @dateformat
+  root: String
+  dir: String
+  base: String
+  ext: String
+  name: String
+  relativeDirectory: String
+  dev: Int
+  mode: Int
+  nlink: Int
+  uid: Int
+  gid: Int
+  rdev: Int
+  blksize: Int
+  ino: Int
+  blocks: Int
+  atimeMs: Float
+  mtimeMs: Float
+  ctimeMs: Float
+  birthtimeMs: Float
+  atime: Date @dateformat
+  mtime: Date @dateformat
+  ctime: Date @dateformat
+  birthtime: Date @dateformat
+}
+
+type DocsYaml implements Node @dontInfer {
+  starter: [String]
+  site: [String]
+}
+
+type CreatorsYaml implements Node @dontInfer {
+  name: String
+  type: String
+  description: String
+  location: String
+  website: String
+  github: String
+  image: File @fileByRelativePath
+  for_hire: Boolean
+  portfolio: Boolean
+  fields: CreatorsYamlFields
+  hiring: Boolean
+}
+
+type CreatorsYamlFields {
+  slug: String
+}
+
+type GatsbyFeaturesSpecsCsv implements Node @dontInfer {
+  Category: String
+  Gatsby: String
+  Jamstack: String
+  Cms: String
+  Description: String
+}
+
+type GatsbyCmsSpecsCsv implements Node @dontInfer {
+  Category: String
+  Subcategory: String
+  Feature: String
+  Gatsby: String
+  WordPress: String
+  Drupal: String
+  Description: String
+}
+
+type GatsbyJamstackSpecsCsv implements Node @dontInfer {
+  Category: String
+  Subcategory: String
+  Feature: String
+  Gatsby: String
+  Nextjs: String
+  Jekyll: String
+  Hugo: String
+  Nuxtjs: String
+  Description: String
+}
+
+type GatsbyAPICall implements Node @dontInfer {
+  file: String
+  codeLocation: GatsbyAPICallCodeLocation
+  name: String
+  group: String
+}
+
+type GatsbyAPICallCodeLocation {
+  start: GatsbyAPICallCodeLocationStart
+  end: GatsbyAPICallCodeLocationEnd
+  filename: Boolean
+}
+
+type GatsbyAPICallCodeLocationStart {
+  line: Int
+  column: Int
+}
+
+type GatsbyAPICallCodeLocationEnd {
+  line: Int
+  column: Int
+}
+
+type GatsbyReactRouterScrollYaml implements Node @dontInfer {
+  env: GatsbyReactRouterScrollYamlEnv
+}
+
+type GatsbyReactRouterScrollYamlEnv {
+  browser: Boolean
+}
+
+type GatsbyPluginStyletronYaml implements Node @dontInfer {
+  rules: GatsbyPluginStyletronYamlRules
+}
+
+type GatsbyPluginStyletronYamlRules {
+  react_display_name: [Int] @proxy(from: "react/display-name")
+}
+
+type GatsbyPluginCatchLinksYaml implements Node @dontInfer {
+  env: GatsbyPluginCatchLinksYamlEnv
+}
+
+type GatsbyPluginCatchLinksYamlEnv {
+  browser: Boolean
+}
+
+type GatsbyLinkYaml implements Node @dontInfer {
+  env: GatsbyLinkYamlEnv
+  globals: GatsbyLinkYamlGlobals
+}
+
+type GatsbyLinkYamlEnv {
+  browser: Boolean
+}
+
+type GatsbyLinkYamlGlobals {
+  _xxloader: Boolean @proxy(from: "___loader")
+}
+
+type GatsbyImageYaml implements Node @dontInfer {
+  env: GatsbyImageYamlEnv
+}
+
+type GatsbyImageYamlEnv {
+  browser: Boolean
+}
+
+type HighlightYamlYaml implements Node @dontInfer {
+  title: String
+}
+
+type EcosystemYaml implements Node @dontInfer {
+  starters: [String]
+  plugins: [String]
+}
+
+type GuidanceYaml implements Node @dontInfer {
+  description: String
+  image: File @fileByRelativePath
+}
+
+type FootnotesYaml implements Node @dontInfer {
+  description: String
+  href: String
+}
+
+type StaticHostsYaml implements Node @dontInfer {
+  title: String
+  url: String
+}
+
+type NPMPackageReadme implements Node @dontInfer {
+  slug: String
+}
+
+type NPMPackage implements Node @dontInfer {
+  name: String
+  downloadsLast30Days: Int
+  downloadsRatio: Float
+  humanDownloadsLast30Days: String
+  popular: Boolean
+  version: String
+  tags: NPMPackageTags
+  description: String
+  dependencies: NPMPackageDependencies
+  devDependencies: NPMPackageDevDependencies
+  repository: NPMPackageRepository
+  githubRepo: NPMPackageGithubRepo
+  gitHead: String
+  owner: NPMPackageOwner
+  deprecated: String
+  homepage: String
+  license: String
+  keywords: [String]
+  computedKeywords: [String]
+  created: Date @dateformat
+  modified: Date @dateformat
+  lastPublisher: NPMPackageLastPublisher
+  owners: [NPMPackageOwners]
+  moduleTypes: [String]
+  lastCrawl: Date @dateformat
+  _searchInternal: NPMPackage_searchInternal
+  dependents: Int
+  humanDependents: String
+  changelogFilename: String
+  jsDelivrHits: Int
+  objectID: String
+  slug: String
+  readme: NPMPackageReadme @link(by: "id", from: "readme___NODE")
+  title: String
+  bin: NPMPackageBin
+}
+
+type NPMPackageTags {
+  latest: String
+  reporter_npm: String @proxy(from: "reporter-npm")
+  otp_test: String @proxy(from: "otp-test")
+  cloud_image_sharp: String @proxy(from: "cloud-image-sharp")
+  sharp_content_hash: String @proxy(from: "sharp-content-hash")
+  loading_attribute: String @proxy(from: "loading-attribute")
+  asset_prefix: String @proxy(from: "asset-prefix")
+  per_page_manifest: String @proxy(from: "per-page-manifest")
+  schema_types: String @proxy(from: "schema-types")
+  rich_text_resolve: String @proxy(from: "rich-text-resolve")
+  link_resolution_fix: String @proxy(from: "link-resolution-fix")
+  latest_v1: String @proxy(from: "latest-v1")
+  rc: String
+  graphql_tools_fork: String @proxy(from: "graphql-tools-fork")
+  next: String
+  alpha: String
+  beta: String
+  typed: String
+  gatsby1: String
+  canary: String
+  release_ref: String @proxy(from: "release-ref")
+  engines: String
+  meta_fix: String @proxy(from: "meta-fix")
+  gatsby_preview: String @proxy(from: "gatsby-preview")
+  language_fallback: String @proxy(from: "language-fallback")
+  preview: String
+  gatsby_v1: String @proxy(from: "gatsby-v1")
+  previews: String
+  ci: String
+}
+
+type NPMPackageDependencies {
+  _babel_runtime: String @proxy(from: "@babel/runtime")
+  better_queue: String @proxy(from: "better-queue")
+  bluebird: String
+  chokidar: String
+  file_type: String @proxy(from: "file-type")
+  fs_extra: String @proxy(from: "fs-extra")
+  gatsby_core_utils: String @proxy(from: "gatsby-core-utils")
+  got: String
+  md5_file: String @proxy(from: "md5-file")
+  mime: String
+  pretty_bytes: String @proxy(from: "pretty-bytes")
+  progress: String
+  read_chunk: String @proxy(from: "read-chunk")
+  valid_url: String @proxy(from: "valid-url")
+  xstate: String
+  async: String
+  imagemin: String
+  imagemin_mozjpeg: String @proxy(from: "imagemin-mozjpeg")
+  imagemin_pngquant: String @proxy(from: "imagemin-pngquant")
+  imagemin_webp: String @proxy(from: "imagemin-webp")
+  lodash: String
+  mini_svg_data_uri: String @proxy(from: "mini-svg-data-uri")
+  potrace: String
+  probe_image_size: String @proxy(from: "probe-image-size")
+  semver: String
+  sharp: String
+  svgo: String
+  uuid: String
+  object_fit_images: String @proxy(from: "object-fit-images")
+  prop_types: String @proxy(from: "prop-types")
+  cheerio: String
+  glob: String
+  idb_keyval: String @proxy(from: "idb-keyval")
+  slash: String
+  workbox_build: String @proxy(from: "workbox-build")
+  fs_exists_cached: String @proxy(from: "fs-exists-cached")
+  gatsby_page_utils: String @proxy(from: "gatsby-page-utils")
+  micromatch: String
+  gray_matter: String @proxy(from: "gray-matter")
+  hast_util_raw: String @proxy(from: "hast-util-raw")
+  hast_util_to_html: String @proxy(from: "hast-util-to-html")
+  mdast_util_to_hast: String @proxy(from: "mdast-util-to-hast")
+  mdast_util_to_string: String @proxy(from: "mdast-util-to-string")
+  mdast_util_toc: String @proxy(from: "mdast-util-toc")
+  remark: String
+  remark_parse: String @proxy(from: "remark-parse")
+  remark_retext: String @proxy(from: "remark-retext")
+  remark_stringify: String @proxy(from: "remark-stringify")
+  retext_english: String @proxy(from: "retext-english")
+  sanitize_html: String @proxy(from: "sanitize-html")
+  underscore_string: String @proxy(from: "underscore.string")
+  unified: String
+  unist_util_remove_position: String @proxy(from: "unist-util-remove-position")
+  unist_util_select: String @proxy(from: "unist-util-select")
+  unist_util_visit: String @proxy(from: "unist-util-visit")
+  sass_loader: String @proxy(from: "sass-loader")
+  minimatch: String
+  pify: String
+  sitemap: String
+  _babel_preset_typescript: String @proxy(from: "@babel/preset-typescript")
+  babel_plugin_remove_graphql_queries: String @proxy(from: "babel-plugin-remove-graphql-queries")
+  chalk: String
+  is_relative_url: String @proxy(from: "is-relative-url")
+  mdast_util_definitions: String @proxy(from: "mdast-util-definitions")
+  query_string: String @proxy(from: "query-string")
+  unist_util_visit_parents: String @proxy(from: "unist-util-visit-parents")
+  kebab_hash: String @proxy(from: "kebab-hash")
+  webpack_assets_manifest: String @proxy(from: "webpack-assets-manifest")
+  path_is_inside: String @proxy(from: "path-is-inside")
+  _hapi_joi: String @proxy(from: "@hapi/joi")
+  axios: String
+  base64_img: String @proxy(from: "base64-img")
+  contentful: String
+  deep_map: String @proxy(from: "deep-map")
+  gatsby_plugin_sharp: String @proxy(from: "gatsby-plugin-sharp")
+  gatsby_source_filesystem: String @proxy(from: "gatsby-source-filesystem")
+  is_online: String @proxy(from: "is-online")
+  json_stringify_safe: String @proxy(from: "json-stringify-safe")
+  qs: String
+  _emotion_babel_preset_css_prop: String @proxy(from: "@emotion/babel-preset-css-prop")
+  p_is_promise: String @proxy(from: "p-is-promise")
+  parse_numeric_range: String @proxy(from: "parse-numeric-range")
+  escape_string_regexp: String @proxy(from: "escape-string-regexp")
+  lodash_merge: String @proxy(from: "lodash.merge")
+  rss: String
+  generate_robotstxt: String @proxy(from: "generate-robotstxt")
+  retext: String
+  retext_smartypants: String @proxy(from: "retext-smartypants")
+  _babel_core: String @proxy(from: "@babel/core")
+  _babel_generator: String @proxy(from: "@babel/generator")
+  _babel_helper_plugin_utils: String @proxy(from: "@babel/helper-plugin-utils")
+  _babel_plugin_proposal_object_rest_spread: String @proxy(from: "@babel/plugin-proposal-object-rest-spread")
+  _babel_preset_env: String @proxy(from: "@babel/preset-env")
+  _babel_preset_react: String @proxy(from: "@babel/preset-react")
+  _babel_types: String @proxy(from: "@babel/types")
+  camelcase_css: String @proxy(from: "camelcase-css")
+  change_case: String @proxy(from: "change-case")
+  core_js: String @proxy(from: "core-js")
+  dataloader: String
+  debug: String
+  eval: String
+  json5: String
+  loader_utils: String @proxy(from: "loader-utils")
+  p_queue: String @proxy(from: "p-queue")
+  static_site_generator_webpack_plugin: String @proxy(from: "static-site-generator-webpack-plugin")
+  style_to_object: String @proxy(from: "style-to-object")
+  unist_util_map: String @proxy(from: "unist-util-map")
+  unist_util_remove: String @proxy(from: "unist-util-remove")
+  apollo_link: String @proxy(from: "apollo-link")
+  apollo_link_http: String @proxy(from: "apollo-link-http")
+  graphql_tools: String @proxy(from: "graphql-tools")
+  invariant: String
+  node_fetch: String @proxy(from: "node-fetch")
+  postcss_loader: String @proxy(from: "postcss-loader")
+  svg_react_loader: String @proxy(from: "svg-react-loader")
+  _pieh_friendly_errors_webpack_plugin: String @proxy(from: "@pieh/friendly-errors-webpack-plugin")
+  html_webpack_exclude_assets_plugin: String @proxy(from: "html-webpack-exclude-assets-plugin")
+  html_webpack_plugin: String @proxy(from: "html-webpack-plugin")
+  mini_css_extract_plugin: String @proxy(from: "mini-css-extract-plugin")
+  netlify_identity_widget: String @proxy(from: "netlify-identity-widget")
+  webpack: String
+  github_slugger: String @proxy(from: "github-slugger")
+  favicons_webpack_plugin: String @proxy(from: "favicons-webpack-plugin")
+  html_react_parser: String @proxy(from: "html-react-parser")
+  filter_invalid_dom_props: String @proxy(from: "filter-invalid-dom-props")
+  global: String
+  short_uuid: String @proxy(from: "short-uuid")
+  nprogress: String
+  babel_polyfill: String @proxy(from: "babel-polyfill")
+  purgecss: String
+  js_yaml: String @proxy(from: "js-yaml")
+  regex_escape: String @proxy(from: "regex-escape")
+  babel_runtime: String @proxy(from: "babel-runtime")
+  webfontloader: String
+  deep_map_keys: String @proxy(from: "deep-map-keys")
+  babel_plugin_lodash: String @proxy(from: "babel-plugin-lodash")
+  lodash_webpack_plugin: String @proxy(from: "lodash-webpack-plugin")
+  unist_util_find: String @proxy(from: "unist-util-find")
+  webpack_bundle_analyzer: String @proxy(from: "webpack-bundle-analyzer")
+  _sentry_browser: String @proxy(from: "@sentry/browser")
+  clean_css: String @proxy(from: "clean-css")
+  download: String
+  get_urls: String @proxy(from: "get-urls")
+  globby: String
+  google_fonts_plugin: String @proxy(from: "google-fonts-plugin")
+  object_hash: String @proxy(from: "object-hash")
+  autoprefixer: String
+  postcss: String
+  _babel_preset_flow: String @proxy(from: "@babel/preset-flow")
+  algoliasearch: String
+  gatsby_cli: String @proxy(from: "gatsby-cli")
+  lodash_chunk: String @proxy(from: "lodash.chunk")
+  _types_async: String @proxy(from: "@types/async")
+  _types_jest: String @proxy(from: "@types/jest")
+  _types_node: String @proxy(from: "@types/node")
+  aws_sdk: String @proxy(from: "aws-sdk")
+  fs_posix: String @proxy(from: "fs-posix")
+  inquirer: String
+  is_ci: String @proxy(from: "is-ci")
+  jest: String
+  klaw: String
+  ora: String
+  pretty_error: String @proxy(from: "pretty-error")
+  stream_progressbar: String @proxy(from: "stream-progressbar")
+  stream_to_promise: String @proxy(from: "stream-to-promise")
+  yargs: String
+  snyk: String
+  gatsby_node_helpers: String @proxy(from: "gatsby-node-helpers")
+  pluralize: String
+  less_loader: String @proxy(from: "less-loader")
+  _sanity_client: String @proxy(from: "@sanity/client")
+  _sanity_image_url: String @proxy(from: "@sanity/image-url")
+  _sanity_mutator: String @proxy(from: "@sanity/mutator")
+  _types_url_parse: String @proxy(from: "@types/url-parse")
+  oneline: String
+  pump: String
+  rxjs: String
+  split2: String
+  through2: String
+  url_parse: String @proxy(from: "url-parse")
+  path: String
+  email_validator: String @proxy(from: "email-validator")
+  jsonp: String
+  datocms_client: String @proxy(from: "datocms-client")
+  humps: String
+  imgix_url_params: String @proxy(from: "imgix-url-params")
+  md5: String
+  object_assign: String @proxy(from: "object-assign")
+  object_entries: String @proxy(from: "object.entries")
+  promise_queue: String @proxy(from: "promise-queue")
+  request_promise_native: String @proxy(from: "request-promise-native")
+  get_video_id: String @proxy(from: "get-video-id")
+  remark_burger: String @proxy(from: "remark-burger")
+  elasticlunr: String
+  babel_preset_gatsby_package: String @proxy(from: "babel-preset-gatsby-package")
+  color_convert: String @proxy(from: "color-convert")
+  cross_env: String @proxy(from: "cross-env")
+  json_bump: String @proxy(from: "json-bump")
+  polyfill_array_includes: String @proxy(from: "polyfill-array-includes")
+  react_transition_group: String @proxy(from: "react-transition-group")
+  requestanimationframe_timer: String @proxy(from: "requestanimationframe-timer")
+  folktale: String
+  graphql: String
+  ptz_i18n: String @proxy(from: "ptz-i18n")
+  _babel_code_frame: String @proxy(from: "@babel/code-frame")
+  ast_types: String @proxy(from: "ast-types")
+  common_tags: String @proxy(from: "common-tags")
+  react_docgen: String @proxy(from: "react-docgen")
+  graphql_request: String @proxy(from: "graphql-request")
+  p_iteration: String @proxy(from: "p-iteration")
+  prettyjson: String
+  remark_math: String @proxy(from: "remark-math")
+  _types_graphql: String @proxy(from: "@types/graphql")
+  apollo_boost: String @proxy(from: "apollo-boost")
+  gatsby_source_graphql: String @proxy(from: "gatsby-source-graphql")
+  graphql_tag: String @proxy(from: "graphql-tag")
+  lodash_clonedeep: String @proxy(from: "lodash.clonedeep")
+  lodash_get: String @proxy(from: "lodash.get")
+  traverse: String
+  airtable: String
+  babel_cli: String @proxy(from: "babel-cli")
+  crypto: String
+  nanoid: String
+  moment: String
+  xml: String
+  size_plugin: String @proxy(from: "size-plugin")
+  fork_ts_checker_webpack_plugin: String @proxy(from: "fork-ts-checker-webpack-plugin")
+  csvtojson: String
+  _tryghost_content_api: String @proxy(from: "@tryghost/content-api")
+  body_parser: String @proxy(from: "body-parser")
+  tiny_async_pool: String @proxy(from: "tiny-async-pool")
+  _babel_parser: String @proxy(from: "@babel/parser")
+  _babel_traverse: String @proxy(from: "@babel/traverse")
+  accessibilityjs: String
+  _wapps_langtag_utils: String @proxy(from: "@wapps/langtag-utils")
+  react_helmet: String @proxy(from: "react-helmet")
+  _gfx_zopfli: String @proxy(from: "@gfx/zopfli")
+  mkdirp: String
+  worker_farm: String @proxy(from: "worker-farm")
+  write: String
+  browser_lang: String @proxy(from: "browser-lang")
+  intl: String
+  react_intl: String @proxy(from: "react-intl")
+  _berlitz_max_utils: String @proxy(from: "@berlitz/max-utils")
+  contentstack: String
+  antd: String
+  babel_plugin_import: String @proxy(from: "babel-plugin-import")
+  normalize_path: String @proxy(from: "normalize-path")
+  gatsby_i18n: String @proxy(from: "gatsby-i18n")
+  i18next: String
+  i18next_xhr_backend: String @proxy(from: "i18next-xhr-backend")
+  react_i18next: String @proxy(from: "react-i18next")
+  decompress: String
+  lodash_escape: String @proxy(from: "lodash.escape")
+  lodash_uniq: String @proxy(from: "lodash.uniq")
+  loglevel: String
+  oniguruma: String
+  plist: String
+  rimraf: String
+  vscode_textmate: String @proxy(from: "vscode-textmate")
+  stylus: String
+  stylus_loader: String @proxy(from: "stylus-loader")
+  remark_numbered_footnotes: String @proxy(from: "remark-numbered-footnotes")
+  sqip: String
+  documentation: String
+  prismjs: String
+  lodash_flatten: String @proxy(from: "lodash.flatten")
+  guess_webpack: String @proxy(from: "guess-webpack")
+  remark_custom_blocks: String @proxy(from: "remark-custom-blocks")
+  async_unist_util_visit: String @proxy(from: "async-unist-util-visit")
+  request: String
+  request_promise: String @proxy(from: "request-promise")
+  babel_plugin_react_css_modules: String @proxy(from: "babel-plugin-react-css-modules")
+  lodash_camelcase: String @proxy(from: "lodash.camelcase")
+  lodash_isstring: String @proxy(from: "lodash.isstring")
+  mongodb: String
+  viz_js: String @proxy(from: "viz.js")
+  react: String
+  react_dom: String @proxy(from: "react-dom")
+  react_modal: String @proxy(from: "react-modal")
+  history: String
+  svg_sprite_loader: String @proxy(from: "svg-sprite-loader")
+  lunr: String
+  lunr_languages: String @proxy(from: "lunr-languages")
+  brotli: String
+  each_props: String @proxy(from: "each-props")
+  is_valid_path: String @proxy(from: "is-valid-path")
+  read_yaml_promise: String @proxy(from: "read-yaml-promise")
+  gatsby_plugin_compile_es6_packages: String @proxy(from: "gatsby-plugin-compile-es6-packages")
+  gatsby_plugin_material_ui: String @proxy(from: "gatsby-plugin-material-ui")
+  gatsby_plugin_webfonts: String @proxy(from: "gatsby-plugin-webfonts")
+  gatsby_theme_material_ui_top_layout: String @proxy(from: "gatsby-theme-material-ui-top-layout")
+  _emotion_core: String @proxy(from: "@emotion/core")
+  _mdx_js_react: String @proxy(from: "@mdx-js/react")
+  _theme_ui_prism: String @proxy(from: "@theme-ui/prism")
+  _theme_ui_typography: String @proxy(from: "@theme-ui/typography")
+  deepmerge: String
+  gatsby_image: String @proxy(from: "gatsby-image")
+  gatsby_plugin_emotion: String @proxy(from: "gatsby-plugin-emotion")
+  gatsby_plugin_feed: String @proxy(from: "gatsby-plugin-feed")
+  gatsby_plugin_react_helmet: String @proxy(from: "gatsby-plugin-react-helmet")
+  gatsby_plugin_theme_ui: String @proxy(from: "gatsby-plugin-theme-ui")
+  gatsby_plugin_twitter: String @proxy(from: "gatsby-plugin-twitter")
+  gatsby_theme_blog_core: String @proxy(from: "gatsby-theme-blog-core")
+  mdx_utils: String @proxy(from: "mdx-utils")
+  react_switch: String @proxy(from: "react-switch")
+  theme_ui: String @proxy(from: "theme-ui")
+  typeface_merriweather: String @proxy(from: "typeface-merriweather")
+  typeface_montserrat: String @proxy(from: "typeface-montserrat")
+  typography_theme_wordpress_2016: String @proxy(from: "typography-theme-wordpress-2016")
+  _mdx_js_mdx: String @proxy(from: "@mdx-js/mdx")
+  gatsby_plugin_google_analytics: String @proxy(from: "gatsby-plugin-google-analytics")
+  gatsby_plugin_mdx: String @proxy(from: "gatsby-plugin-mdx")
+  gatsby_remark_autolink_headers: String @proxy(from: "gatsby-remark-autolink-headers")
+  gatsby_remark_check_links: String @proxy(from: "gatsby-remark-check-links")
+  gatsby_remark_copy_linked_files: String @proxy(from: "gatsby-remark-copy-linked-files")
+  gatsby_remark_prismjs: String @proxy(from: "gatsby-remark-prismjs")
+  gatsby_remark_prismjs_title: String @proxy(from: "gatsby-remark-prismjs-title")
+  gatsby_remark_rewrite_relative_links: String @proxy(from: "gatsby-remark-rewrite-relative-links")
+  gatsby_remark_typescript: String @proxy(from: "gatsby-remark-typescript")
+  gatsby_source_git: String @proxy(from: "gatsby-source-git")
+  gatsby_theme_apollo_core: String @proxy(from: "gatsby-theme-apollo-core")
+  gatsby_transformer_remark: String @proxy(from: "gatsby-transformer-remark")
+  recompose: String
+  rehype_react: String @proxy(from: "rehype-react")
+  remark_react: String @proxy(from: "remark-react")
+  striptags: String
+  _emotion_styled: String @proxy(from: "@emotion/styled")
+  _mdx_js_tag: String @proxy(from: "@mdx-js/tag")
+  gatsby_mdx: String @proxy(from: "gatsby-mdx")
+  gatsby_plugin_netlify: String @proxy(from: "gatsby-plugin-netlify")
+  gatsby_plugin_netlify_cms: String @proxy(from: "gatsby-plugin-netlify-cms")
+  gatsby_plugin_offline: String @proxy(from: "gatsby-plugin-offline")
+  gatsby_plugin_page_creator: String @proxy(from: "gatsby-plugin-page-creator")
+  gatsby_plugin_redirects: String @proxy(from: "gatsby-plugin-redirects")
+  gatsby_remark_images: String @proxy(from: "gatsby-remark-images")
+  gatsby_remark_relative_images: String @proxy(from: "gatsby-remark-relative-images")
+  gatsby_transformer_sharp: String @proxy(from: "gatsby-transformer-sharp")
+  netlify_cms_app: String @proxy(from: "netlify-cms-app")
+  rehype_autolink_headings: String @proxy(from: "rehype-autolink-headings")
+  rehype_highlight: String @proxy(from: "rehype-highlight")
+  rehype_slug: String @proxy(from: "rehype-slug")
+  rehype_toc: String @proxy(from: "rehype-toc")
+  styled_system: String @proxy(from: "styled-system")
+  _babel_cli: String @proxy(from: "@babel/cli")
+  base_64: String @proxy(from: "base-64")
+  lz_string: String @proxy(from: "lz-string")
+  npm_package_arg: String @proxy(from: "npm-package-arg")
+  recursive_readdir: String @proxy(from: "recursive-readdir")
+  urijs: String
+  rss_parser: String @proxy(from: "rss-parser")
+  _westegg_gatsby_theme_core: String @proxy(from: "@westegg/gatsby-theme-core")
+  gatsby_theme_digital_garden: String @proxy(from: "gatsby-theme-digital-garden")
+  gatsby_theme_digital_garden_blog: String @proxy(from: "gatsby-theme-digital-garden-blog")
+  gatsby_theme_digital_garden_portfolio: String @proxy(from: "gatsby-theme-digital-garden-portfolio")
+  fracty: String
+  luxon: String
+  mime_types: String @proxy(from: "mime-types")
+  ts_exif_parser: String @proxy(from: "ts-exif-parser")
+  multimatch: String
+  image_size: String @proxy(from: "image-size")
+  flow_bin: String @proxy(from: "flow-bin")
+  google_spreadsheet: String @proxy(from: "google-spreadsheet")
+  _reach_router: String @proxy(from: "@reach/router")
+  cssnano: String
+  postcss_js: String @proxy(from: "postcss-js")
+  es6_error: String @proxy(from: "es6-error")
+  styled_jsx_plugin_postcss: String @proxy(from: "styled-jsx-plugin-postcss")
+  touch: String
+  remark_attr: String @proxy(from: "remark-attr")
+  terser: String
+  emojione: String
+  replace_in_file: String @proxy(from: "replace-in-file")
+  reading_time: String @proxy(from: "reading-time")
+  _babel_plugin_proposal_decorators: String @proxy(from: "@babel/plugin-proposal-decorators")
+  classnames: String
+  classnames_loader: String @proxy(from: "classnames-loader")
+  node_sass: String @proxy(from: "node-sass")
+  himalaya: String
+  styletron_engine_atomic: String @proxy(from: "styletron-engine-atomic")
+  styletron_react: String @proxy(from: "styletron-react")
+  styletron_react_core: String @proxy(from: "styletron-react-core")
+  styletron_standard: String @proxy(from: "styletron-standard")
+  _blueprintjs_core: String @proxy(from: "@blueprintjs/core")
+  _misk_common: String @proxy(from: "@misk/common")
+  _misk_core: String @proxy(from: "@misk/core")
+  _westegg_gatsby_theme_digital_garden: String @proxy(from: "@westegg/gatsby-theme-digital-garden")
+  gatsby: String
+  feed: String
+  url_join: String @proxy(from: "url-join")
+  serialize_javascript: String @proxy(from: "serialize-javascript")
+  mixpanel_browser: String @proxy(from: "mixpanel-browser")
+  adm_zip: String @proxy(from: "adm-zip")
+  babel_plugin_emotion: String @proxy(from: "babel-plugin-emotion")
+  contentful_cli: String @proxy(from: "contentful-cli")
+  gatsby_paginate: String @proxy(from: "gatsby-paginate")
+  gatsby_plugin_mailchimp: String @proxy(from: "gatsby-plugin-mailchimp")
+  gatsby_plugin_typescript: String @proxy(from: "gatsby-plugin-typescript")
+  gatsby_remark_external_links: String @proxy(from: "gatsby-remark-external-links")
+  gatsby_remark_numbered_footnotes: String @proxy(from: "gatsby-remark-numbered-footnotes")
+  gatsby_remark_smartypants: String @proxy(from: "gatsby-remark-smartypants")
+  gatsby_transformer_yaml: String @proxy(from: "gatsby-transformer-yaml")
+  prism_react_renderer: String @proxy(from: "prism-react-renderer")
+  react_live: String @proxy(from: "react-live")
+  react_medium_image_zoom: String @proxy(from: "react-medium-image-zoom")
+  react_outside_click_handler: String @proxy(from: "react-outside-click-handler")
+  remark_slug: String @proxy(from: "remark-slug")
+  prettier: String
+  _moltin_request: String @proxy(from: "@moltin/request")
+  stripe: String
+  react_axe: String @proxy(from: "react-axe")
+  toml: String
+  joi: String
+  ramda: String
+  ramda_adjunct: String @proxy(from: "ramda-adjunct")
+  asyncro: String
+  prismic_dom: String @proxy(from: "prismic-dom")
+  prismic_javascript: String @proxy(from: "prismic-javascript")
+  date_fns: String @proxy(from: "date-fns")
+  puppeteer: String
+  jsdom: String
+  lodash_flattendeep: String @proxy(from: "lodash.flattendeep")
+  is_object: String @proxy(from: "is-object")
+  gatsby_plugin_meta_redirect: String @proxy(from: "gatsby-plugin-meta-redirect")
+  gatsby_plugin_og_image: String @proxy(from: "gatsby-plugin-og-image")
+  is_present: String @proxy(from: "is-present")
+  react_feather: String @proxy(from: "react-feather")
+  storyblok_js_client: String @proxy(from: "storyblok-js-client")
+  highlights: String
+  simple_string_to_json: String @proxy(from: "simple-string-to-json")
+  xlsx: String
+  sass_resources_loader: String @proxy(from: "sass-resources-loader")
+  _material_ui_core: String @proxy(from: "@material-ui/core")
+  _material_ui_icons: String @proxy(from: "@material-ui/icons")
+  _material_ui_styles: String @proxy(from: "@material-ui/styles")
+  disqus_react: String @proxy(from: "disqus-react")
+  gatsby_plugin_catch_links: String @proxy(from: "gatsby-plugin-catch-links")
+  gatsby_plugin_sitemap: String @proxy(from: "gatsby-plugin-sitemap")
+  gatsby_remark_katex: String @proxy(from: "gatsby-remark-katex")
+  katex: String
+  react_share: String @proxy(from: "react-share")
+  reactstrap: String
+  typeface_markazi_text: String @proxy(from: "typeface-markazi-text")
+  typeface_roboto: String @proxy(from: "typeface-roboto")
+  docker_hub_utils: String @proxy(from: "docker-hub-utils")
+  babel_plugin_tailwind_components: String @proxy(from: "babel-plugin-tailwind-components")
+  graphql_playground_middleware_express: String @proxy(from: "graphql-playground-middleware-express")
+  _theme_ui_presets: String @proxy(from: "@theme-ui/presets")
+  react_spring: String @proxy(from: "react-spring")
+  html2amp: String
+  gatsby_theme_catalyst_core: String @proxy(from: "gatsby-theme-catalyst-core")
+  react_scroll: String @proxy(from: "react-scroll")
+  dateformat: String
+  jimp: String
+  oast_to_hast: String @proxy(from: "oast-to-hast")
+  orga: String
+  rehype_stringify: String @proxy(from: "rehype-stringify")
+  unist_builder: String @proxy(from: "unist-builder")
+  bundle_stats: String @proxy(from: "bundle-stats")
+  array_prototype_flatmap: String @proxy(from: "array.prototype.flatmap")
+  _philpl_buble: String @proxy(from: "@philpl/buble")
+  gatsby_plugin_sass: String @proxy(from: "gatsby-plugin-sass")
+  parse_filepath: String @proxy(from: "parse-filepath")
+  moment_timezone: String @proxy(from: "moment-timezone")
+  hjson: String
+  ts_loader: String @proxy(from: "ts-loader")
+  tslint: String
+  tslint_loader: String @proxy(from: "tslint-loader")
+  typescript: String
+  coffee_loader: String @proxy(from: "coffee-loader")
+  coffee_react_transform: String @proxy(from: "coffee-react-transform")
+  coffeescript: String
+  xml_parser: String @proxy(from: "xml-parser")
+  firebase_admin: String @proxy(from: "firebase-admin")
+  _types_node_fetch: String @proxy(from: "@types/node-fetch")
+  remark_grid_tables: String @proxy(from: "remark-grid-tables")
+  shell_escape: String @proxy(from: "shell-escape")
+  subfont: String
+  asciidoctor: String
+  babel_plugin_styled_components: String @proxy(from: "babel-plugin-styled-components")
+  framer_motion: String @proxy(from: "framer-motion")
+  gatsby_awesome_pagination: String @proxy(from: "gatsby-awesome-pagination")
+  gatsby_plugin_manifest: String @proxy(from: "gatsby-plugin-manifest")
+  gatsby_plugin_styled_components: String @proxy(from: "gatsby-plugin-styled-components")
+  styled_components: String @proxy(from: "styled-components")
+  pg: String
+  postgraphile: String
+  twitter: String
+  gatsby_plugin_postcss: String @proxy(from: "gatsby-plugin-postcss")
+  tailwind_macro: String @proxy(from: "tailwind.macro")
+  tailwindcss: String
+  mermaid: String
+  stylelint_webpack_plugin: String @proxy(from: "stylelint-webpack-plugin")
+  flexsearch: String
+  lodash_lowerfirst: String @proxy(from: "lodash.lowerfirst")
+  fast_glob: String @proxy(from: "fast-glob")
+  git_url_parse: String @proxy(from: "git-url-parse")
+  simple_git: String @proxy(from: "simple-git")
+  faker: String
+  pdf2json: String
+  _segment_snippet: String @proxy(from: "@segment/snippet")
+  babel_preset_es2015: String @proxy(from: "babel-preset-es2015")
+  gatsby_plugin_html_attributes: String @proxy(from: "gatsby-plugin-html-attributes")
+  gatsby_plugin_remove_trailing_slashes: String @proxy(from: "gatsby-plugin-remove-trailing-slashes")
+  _directus_sdk_js: String @proxy(from: "@directus/sdk-js")
+  colors: String
+  remark_bracketed_spans: String @proxy(from: "remark-bracketed-spans")
+  promise: String
+  gatsby_plugin_robots_txt: String @proxy(from: "gatsby-plugin-robots-txt")
+  react_icons: String @proxy(from: "react-icons")
+  semantic_release: String @proxy(from: "semantic-release")
+  dayjs: String
+  html_entities: String @proxy(from: "html-entities")
+  queue: String
+  camelcase: String
+  node_sheets: String @proxy(from: "node-sheets")
+  _graphql_codegen_core: String @proxy(from: "@graphql-codegen/core")
+  _graphql_codegen_typescript: String @proxy(from: "@graphql-codegen/typescript")
+  _graphql_codegen_typescript_operations: String @proxy(from: "@graphql-codegen/typescript-operations")
+  graphql_tag_pluck: String @proxy(from: "graphql-tag-pluck")
+  graphql_toolkit: String @proxy(from: "graphql-toolkit")
+  lerna: String
+  lodash_debounce: String @proxy(from: "lodash.debounce")
+  directory_tree: String @proxy(from: "directory-tree")
+  _lekoarts_gatsby_theme_emma_core: String @proxy(from: "@lekoarts/gatsby-theme-emma-core")
+  polished: String
+  perfume_js: String @proxy(from: "perfume.js")
+  _dylanvann_gatsby_cloudinary: String @proxy(from: "@dylanvann/gatsby-cloudinary")
+  react_fast_image: String @proxy(from: "react-fast-image")
+  medium_zoom: String @proxy(from: "medium-zoom")
+  remark_generic_extensions: String @proxy(from: "remark-generic-extensions")
+  _fortawesome_fontawesome_svg_core: String @proxy(from: "@fortawesome/fontawesome-svg-core")
+  _fortawesome_free_regular_svg_icons: String @proxy(from: "@fortawesome/free-regular-svg-icons")
+  _fortawesome_free_solid_svg_icons: String @proxy(from: "@fortawesome/free-solid-svg-icons")
+  _fortawesome_react_fontawesome: String @proxy(from: "@fortawesome/react-fontawesome")
+  gatsby_link: String @proxy(from: "gatsby-link")
+  normalize_css: String @proxy(from: "normalize.css")
+  typeface_lato: String @proxy(from: "typeface-lato")
+  typeface_raleway: String @proxy(from: "typeface-raleway")
+  _babel_plugin_proposal_export_default_from: String @proxy(from: "@babel/plugin-proposal-export-default-from")
+  _mdx_js_loader: String @proxy(from: "@mdx-js/loader")
+  remark_frontmatter: String @proxy(from: "remark-frontmatter")
+  schema_utils: String @proxy(from: "schema-utils")
+  css_in_js_utils: String @proxy(from: "css-in-js-utils")
+  apollo_cache_inmemory: String @proxy(from: "apollo-cache-inmemory")
+  apollo_client: String @proxy(from: "apollo-client")
+  apollo_link_context: String @proxy(from: "apollo-link-context")
+  babel_preset_react: String @proxy(from: "babel-preset-react")
+  react_apollo: String @proxy(from: "react-apollo")
+  langtag_utils: String @proxy(from: "langtag-utils")
+  googleapis: String
+  json2md: String
+  readline_sync: String @proxy(from: "readline-sync")
+  yamljs: String
+  slug: String
+  _loadable_component: String @proxy(from: "@loadable/component")
+  gatsby_remark_code_titles: String @proxy(from: "gatsby-remark-code-titles")
+  react_responsive_embed: String @proxy(from: "react-responsive-embed")
+  react_youtube: String @proxy(from: "react-youtube")
+  typeface_oswald: String @proxy(from: "typeface-oswald")
+  typeface_pt_sans: String @proxy(from: "typeface-pt-sans")
+  typography: String
+  typography_theme_elk_glen: String @proxy(from: "typography-theme-elk-glen")
+  _amory_src_fs: String @proxy(from: "@amory/src-fs")
+  remark_html: String @proxy(from: "remark-html")
+  _fortawesome_free_brands_svg_icons: String @proxy(from: "@fortawesome/free-brands-svg-icons")
+  _rebass_grid: String @proxy(from: "@rebass/grid")
+  gatsby_plugin_layout: String @proxy(from: "gatsby-plugin-layout")
+  gatsby_source_shopify2: String @proxy(from: "gatsby-source-shopify2")
+  gatsby_transformer_json: String @proxy(from: "gatsby-transformer-json")
+  numeral: String
+  react_spinners: String @proxy(from: "react-spinners")
+  shopify_buy: String @proxy(from: "shopify-buy")
+  gatsby_source_prismic: String @proxy(from: "gatsby-source-prismic")
+  react_css_collapse: String @proxy(from: "react-css-collapse")
+  path_to_regexp: String @proxy(from: "path-to-regexp")
+  gatsby_plugin_react_helmet_canonical_urls: String @proxy(from: "gatsby-plugin-react-helmet-canonical-urls")
+  react_router_dom: String @proxy(from: "react-router-dom")
+  _types_react: String @proxy(from: "@types/react")
+  _types_react_dom: String @proxy(from: "@types/react-dom")
+  _types_react_helmet: String @proxy(from: "@types/react-helmet")
+  gatsby_plugin_dark_mode: String @proxy(from: "gatsby-plugin-dark-mode")
+  _reach_skip_nav: String @proxy(from: "@reach/skip-nav")
+  emotion_reset: String @proxy(from: "emotion-reset")
+  gatsby_background_image: String @proxy(from: "gatsby-background-image")
+  gatsby_plugin_lodash: String @proxy(from: "gatsby-plugin-lodash")
+  react_animated_burgers: String @proxy(from: "react-animated-burgers")
+  rebass: String
+  lost: String
+  postcss_cssnext: String @proxy(from: "postcss-cssnext")
+  postcss_import: String @proxy(from: "postcss-import")
+  postcss_nested: String @proxy(from: "postcss-nested")
+  styled_jsx: String @proxy(from: "styled-jsx")
+  emoji_favicon_webpack_plugin: String @proxy(from: "emoji-favicon-webpack-plugin")
+  woocommerce_api: String @proxy(from: "woocommerce-api")
+  workerize_loader: String @proxy(from: "workerize-loader")
+  babel_preset_env: String @proxy(from: "babel-preset-env")
+  fbgraph: String
+  codemirror: String
+  graphql_language_service_parser: String @proxy(from: "graphql-language-service-parser")
+  react_native_web: String @proxy(from: "react-native-web")
+  resize_observer_polyfill: String @proxy(from: "resize-observer-polyfill")
+  cloudinary: String
+  oauth_signature: String @proxy(from: "oauth-signature")
+  _wapps_gatsby_i18n: String @proxy(from: "@wapps/gatsby-i18n")
+  typings_for_css_modules_loader: String @proxy(from: "typings-for-css-modules-loader")
+  html_to_react: String @proxy(from: "html-to-react")
+  react_styling: String @proxy(from: "react-styling")
+  slugify: String
+  string_hash: String @proxy(from: "string-hash")
+  gatsby_theme_ui: String @proxy(from: "gatsby-theme-ui")
+  semantic_ui_css: String @proxy(from: "semantic-ui-css")
+  semantic_ui_react: String @proxy(from: "semantic-ui-react")
+  gatsby_code_buttons_dracula: String @proxy(from: "gatsby-code-buttons-dracula")
+  gatsby_code_titles_dracula: String @proxy(from: "gatsby-code-titles-dracula")
+  gatsby_line_highlights_dracula: String @proxy(from: "gatsby-line-highlights-dracula")
+  gatsby_line_numbers_dracula: String @proxy(from: "gatsby-line-numbers-dracula")
+  gatsby_syntax_highlights_dracula: String @proxy(from: "gatsby-syntax-highlights-dracula")
+  bootstrap: String
+  react_bootstrap: String @proxy(from: "react-bootstrap")
+  emotion_theming: String @proxy(from: "emotion-theming")
+  typeface_signika_negative: String @proxy(from: "typeface-signika-negative")
+  lodash_kebabcase: String @proxy(from: "lodash.kebabcase")
+  _sanity_block_content_to_react: String @proxy(from: "@sanity/block-content-to-react")
+  gatsby_source_sanity: String @proxy(from: "gatsby-source-sanity")
+  auth0_js: String @proxy(from: "auth0-js")
+  gatsby_remark_abbr: String @proxy(from: "gatsby-remark-abbr")
+  gatsby_transformer_excel: String @proxy(from: "gatsby-transformer-excel")
+  google_map_react: String @proxy(from: "google-map-react")
+  google_maps_react: String @proxy(from: "google-maps-react")
+  highcharts: String
+  highcharts_react_official: String @proxy(from: "highcharts-react-official")
+  react_moment: String @proxy(from: "react-moment")
+  react_swipeable_views: String @proxy(from: "react-swipeable-views")
+  react_swipeable_views_utils: String @proxy(from: "react-swipeable-views-utils")
+  _lekoarts_gatsby_theme_emilia_core: String @proxy(from: "@lekoarts/gatsby-theme-emilia-core")
+  colorthief: String
+  is_absolute_url: String @proxy(from: "is-absolute-url")
+  remark_emoji: String @proxy(from: "remark-emoji")
+  htmltojsx: String
+  eslint: String
+  eslint_config_prettier: String @proxy(from: "eslint-config-prettier")
+  eslint_plugin_prettier: String @proxy(from: "eslint-plugin-prettier")
+  eslint_plugin_react_hooks: String @proxy(from: "eslint-plugin-react-hooks")
+  gatsby_remark_embed_video: String @proxy(from: "gatsby-remark-embed-video")
+  graphql_fetch: String @proxy(from: "graphql-fetch")
+  skyrta: String
+  gatsby_source_circleci: String @proxy(from: "gatsby-source-circleci")
+  gatsby_source_netlify: String @proxy(from: "gatsby-source-netlify")
+  _styled_system_css: String @proxy(from: "@styled-system/css")
+  chroma_js: String @proxy(from: "chroma-js")
+  gatsby_source_graphql_universal: String @proxy(from: "gatsby-source-graphql-universal")
+  url_pattern: String @proxy(from: "url-pattern")
+  gatsby_theme_hbs_mdx_core: String @proxy(from: "gatsby-theme-hbs-mdx-core")
+  mysql: String
+  _contentful_rich_text_types: String @proxy(from: "@contentful/rich-text-types")
+  _contentful_gatsby_transformer_contentful_richtext: String @proxy(from: "@contentful/gatsby-transformer-contentful-richtext")
+  _contentful_rich_text_react_renderer: String @proxy(from: "@contentful/rich-text-react-renderer")
+  esm: String
+  gatsby_plugin_disqus: String @proxy(from: "gatsby-plugin-disqus")
+  gatsby_plugin_favicon: String @proxy(from: "gatsby-plugin-favicon")
+  gatsby_plugin_google_fonts: String @proxy(from: "gatsby-plugin-google-fonts")
+  gatsby_plugin_google_tagmanager: String @proxy(from: "gatsby-plugin-google-tagmanager")
+  gatsby_source_contentful: String @proxy(from: "gatsby-source-contentful")
+  react_body_classname: String @proxy(from: "react-body-classname")
+  react_burger_menu: String @proxy(from: "react-burger-menu")
+  react_load_script: String @proxy(from: "react-load-script")
+  react_popupbox: String @proxy(from: "react-popupbox")
+  react_tag_cloud: String @proxy(from: "react-tag-cloud")
+  _types_loadable__component: String @proxy(from: "@types/loadable__component")
+  resolve_url_loader: String @proxy(from: "resolve-url-loader")
+  _amory_chokidar: String @proxy(from: "@amory/chokidar")
+  _emotion_styled_base: String @proxy(from: "@emotion/styled-base")
+  strava_v3: String @proxy(from: "strava-v3")
+  system_sleep: String @proxy(from: "system-sleep")
+  micro: String
+  get_installed_path: String @proxy(from: "get-installed-path")
+  remove_comments_loader: String @proxy(from: "remove-comments-loader")
+  remark_relative_links: String @proxy(from: "remark-relative-links")
+  yarn: String
+  color: String
+  node_vibrant: String @proxy(from: "node-vibrant")
+  gatsby_source_are_na: String @proxy(from: "gatsby-source-are.na")
+  bs_loader: String @proxy(from: "bs-loader")
+  bsb_js: String @proxy(from: "bsb-js")
+  reason_react: String @proxy(from: "reason-react")
+  react_netlify_identity_widget: String @proxy(from: "react-netlify-identity-widget")
+  humans_generator: String @proxy(from: "humans-generator")
+  remark_sectionize: String @proxy(from: "remark-sectionize")
+  gatsby_plugin_ffmpeg: String @proxy(from: "gatsby-plugin-ffmpeg")
+  emotion: String
+  gatsby_theme: String @proxy(from: "gatsby-theme")
+  gatsby_theme_blog: String @proxy(from: "gatsby-theme-blog")
+  gray_percentage: String @proxy(from: "gray-percentage")
+  typeface_abril_fatface: String @proxy(from: "typeface-abril-fatface")
+  typeface_alegreya_sans: String @proxy(from: "typeface-alegreya-sans")
+  _types_rebass: String @proxy(from: "@types/rebass")
+  _types_styled_components: String @proxy(from: "@types/styled-components")
+  netlify_cms_backend_fs: String @proxy(from: "netlify-cms-backend-fs")
+  audiocard: String
+  gatsby_source_anchor: String @proxy(from: "gatsby-source-anchor")
+  husky: String
+  react_headroom: String @proxy(from: "react-headroom")
+  react_markdown: String @proxy(from: "react-markdown")
+  yaml: String
+  color_string: String @proxy(from: "color-string")
+  typeface_open_sans: String @proxy(from: "typeface-open-sans")
+  typeface_pacifico: String @proxy(from: "typeface-pacifico")
+  metascraper: String
+  metascraper_author: String @proxy(from: "metascraper-author")
+  metascraper_date: String @proxy(from: "metascraper-date")
+  metascraper_description: String @proxy(from: "metascraper-description")
+  metascraper_image: String @proxy(from: "metascraper-image")
+  metascraper_publisher: String @proxy(from: "metascraper-publisher")
+  metascraper_title: String @proxy(from: "metascraper-title")
+  metascraper_url: String @proxy(from: "metascraper-url")
+  gatsby_plugin_stripe: String @proxy(from: "gatsby-plugin-stripe")
+  gatsby_source_stripe: String @proxy(from: "gatsby-source-stripe")
+  apollo_link_http_common: String @proxy(from: "apollo-link-http-common")
+  apollo_link_ws: String @proxy(from: "apollo-link-ws")
+  apollo_utilities: String @proxy(from: "apollo-utilities")
+  subscriptions_transport_ws: String @proxy(from: "subscriptions-transport-ws")
+  _graphql_codegen_introspection: String @proxy(from: "@graphql-codegen/introspection")
+  ts_node: String @proxy(from: "ts-node")
+  gatsby_remark_responsive_iframe: String @proxy(from: "gatsby-remark-responsive-iframe")
+  awesome_typescript_loader: String @proxy(from: "awesome-typescript-loader")
+  ts_transform_paths: String @proxy(from: "ts-transform-paths")
+  react_fastclick: String @proxy(from: "react-fastclick")
+  read_pkg_up: String @proxy(from: "read-pkg-up")
+  altair_express_middleware: String @proxy(from: "altair-express-middleware")
+  elasticsearch: String
+  node_emoji: String @proxy(from: "node-emoji")
+  fs: String
+  first_input_delay: String @proxy(from: "first-input-delay")
+  react_intersection_observer: String @proxy(from: "react-intersection-observer")
+  _types_open: String @proxy(from: "@types/open")
+  commander: String
+  open: String
+  octokat: String
+  azure_storage: String @proxy(from: "azure-storage")
+  babel_plugin_transform_flow_strip_types: String @proxy(from: "babel-plugin-transform-flow-strip-types")
+  babel_preset_react_hmre: String @proxy(from: "babel-preset-react-hmre")
+  babel_preset_stage_0: String @proxy(from: "babel-preset-stage-0")
+  lodash_defaultsdeep: String @proxy(from: "lodash.defaultsdeep")
+  clipboard: String
+  tinycolor2: String
+  tslib: String
+  _reach_visually_hidden: String @proxy(from: "@reach/visually-hidden")
+  _sindresorhus_slugify: String @proxy(from: "@sindresorhus/slugify")
+  dotenv: String
+  react_onclickoutside: String @proxy(from: "react-onclickoutside")
+  gatsby_plugin_nprogress: String @proxy(from: "gatsby-plugin-nprogress")
+  gatsby_plugin_typography: String @proxy(from: "gatsby-plugin-typography")
+  react_typography: String @proxy(from: "react-typography")
+  gatsby_plugin_prefetch_google_fonts: String @proxy(from: "gatsby-plugin-prefetch-google-fonts")
+  gatsby_plugin_react_svg: String @proxy(from: "gatsby-plugin-react-svg")
+  react_particles_js: String @proxy(from: "react-particles-js")
+  limits_js: String @proxy(from: "limits.js")
+  moviedb_promise: String @proxy(from: "moviedb-promise")
+  pepjs: String
+  _octokit_graphql: String @proxy(from: "@octokit/graphql")
+  gatsby_source_airtable: String @proxy(from: "gatsby-source-airtable")
+  parse_github_repo_url: String @proxy(from: "parse-github-repo-url")
+  gatsby_source_netlify_cms: String @proxy(from: "gatsby-source-netlify-cms")
+  _weknow_gatsby_remark_twitter: String @proxy(from: "@weknow/gatsby-remark-twitter")
+  scrollprogress: String
+  node_github_graphql: String @proxy(from: "node-github-graphql")
+  json2csv: String
+  react_langapi: String @proxy(from: "react-langapi")
+  gatsby_plugin_alias_imports: String @proxy(from: "gatsby-plugin-alias-imports")
+  sass_extract: String @proxy(from: "sass-extract")
+  sass_extract_js: String @proxy(from: "sass-extract-js")
+  sass_extract_loader: String @proxy(from: "sass-extract-loader")
+  gatsby_remark_embed_soundcloud: String @proxy(from: "gatsby-remark-embed-soundcloud")
+  gatsby_remark_embed_spotify: String @proxy(from: "gatsby-remark-embed-spotify")
+  react_anchor_link_smooth_scroll: String @proxy(from: "react-anchor-link-smooth-scroll")
+  child_process: String
+  csso: String
+  cockpit_sdk: String @proxy(from: "cockpit-sdk")
+  graphql_type_json: String @proxy(from: "graphql-type-json")
+  is_text_path: String @proxy(from: "is-text-path")
+  p_map: String @proxy(from: "p-map")
+  gatsby_source_instagram: String @proxy(from: "gatsby-source-instagram")
+  _jlengstorf_react_tweet_embed: String @proxy(from: "@jlengstorf/react-tweet-embed")
+  get_youtube_id: String @proxy(from: "get-youtube-id")
+  fluent_ffmpeg: String @proxy(from: "fluent-ffmpeg")
+  use_clock: String @proxy(from: "use-clock")
+  typeface_cooper_hewitt: String @proxy(from: "typeface-cooper-hewitt")
+  _nteract_notebook_render: String @proxy(from: "@nteract/notebook-render")
+  firebase: String
+  unstated_next: String @proxy(from: "unstated-next")
+  gatsby_source_drupal: String @proxy(from: "gatsby-source-drupal")
+  parse5: String
+  _marinda_react_styled_buttons: String @proxy(from: "@marinda/react-styled-buttons")
+  eslint_plugin_emotion: String @proxy(from: "eslint-plugin-emotion")
+  gatsby_remark_figure_caption: String @proxy(from: "gatsby-remark-figure-caption")
+  typeface_work_sans: String @proxy(from: "typeface-work-sans")
+  typography_theme_fairy_gates: String @proxy(from: "typography-theme-fairy-gates")
+  mdast_util_heading_range: String @proxy(from: "mdast-util-heading-range")
+  fela: String
+  fela_dom: String @proxy(from: "fela-dom")
+  react_fela: String @proxy(from: "react-fela")
+  _crdant_cloud_config_client: String @proxy(from: "@crdant/cloud-config-client")
+  lodash_omit: String @proxy(from: "lodash.omit")
+  yup: String
+  node_getpocket: String @proxy(from: "node-getpocket")
+  stdio: String
+  twemoji: String
+  np: String
+  mailchimp_api_v3: String @proxy(from: "mailchimp-api-v3")
+  es6_promise_pool: String @proxy(from: "es6-promise-pool")
+  front_matter: String @proxy(from: "front-matter")
+  isomorphic_fetch: String @proxy(from: "isomorphic-fetch")
+  gatsby_1_config_css_modules: String @proxy(from: "gatsby-1-config-css-modules")
+  react_treebeard: String @proxy(from: "react-treebeard")
+  _wingscms_mobiledoc_cards: String @proxy(from: "@wingscms/mobiledoc-cards")
+  mobiledoc_dom_renderer: String @proxy(from: "mobiledoc-dom-renderer")
+  mobiledoc_kit: String @proxy(from: "mobiledoc-kit")
+  react_mobiledoc_editor: String @proxy(from: "react-mobiledoc-editor")
+  _lingui_babel_preset_react: String @proxy(from: "@lingui/babel-preset-react")
+  _lingui_react: String @proxy(from: "@lingui/react")
+  graphql_client: String @proxy(from: "graphql-client")
+  buttercms: String
+  ptz_math: String @proxy(from: "ptz-math")
+  _undataforum_components: String @proxy(from: "@undataforum/components")
+  gatsby_plugin_generate_typings: String @proxy(from: "gatsby-plugin-generate-typings")
+  ts_optchain: String @proxy(from: "ts-optchain")
+  _theme_ui_preset_base: String @proxy(from: "@theme-ui/preset-base")
+  _types_lodash: String @proxy(from: "@types/lodash")
+  gatsby_redirect_from: String @proxy(from: "gatsby-redirect-from")
+  normalize_url: String @proxy(from: "normalize-url")
+  react_hover_observer: String @proxy(from: "react-hover-observer")
+  remark_unwrap_images: String @proxy(from: "remark-unwrap-images")
+  netlify: String
+  better_opn: String @proxy(from: "better-opn")
+  _babel_helpers: String @proxy(from: "@babel/helpers")
+  gatsby_remark_grid_tables: String @proxy(from: "gatsby-remark-grid-tables")
+  remark_thematic_section: String @proxy(from: "remark-thematic-section")
+  _undataforum_gatsby_theme_base: String @proxy(from: "@undataforum/gatsby-theme-base")
+  strip_markdown: String @proxy(from: "strip-markdown")
+  circleci_api: String @proxy(from: "circleci-api")
+  _undataforum_gatsby_theme_profiles: String @proxy(from: "@undataforum/gatsby-theme-profiles")
+  gatsby_plugin_tailwindcss: String @proxy(from: "gatsby-plugin-tailwindcss")
+  gatsby_source_github_issue: String @proxy(from: "gatsby-source-github-issue")
+  markdown_to_jsx: String @proxy(from: "markdown-to-jsx")
+  speakingurl: String
+  babel_plugin_glsl: String @proxy(from: "babel-plugin-glsl")
+  glslify_loader: String @proxy(from: "glslify-loader")
+  remark_tree_sitter: String @proxy(from: "remark-tree-sitter")
+  node_ical: String @proxy(from: "node-ical")
+  util_promisify: String @proxy(from: "util.promisify")
+  friendly_errors_webpack_plugin: String @proxy(from: "friendly-errors-webpack-plugin")
+  commercelayer_react: String @proxy(from: "commercelayer-react")
+  _babel_polyfill: String @proxy(from: "@babel/polyfill")
+  remark_preset_lint_recommended: String @proxy(from: "remark-preset-lint-recommended")
+  compose_then: String @proxy(from: "compose-then")
+  flamelink: String
+  pascalcase: String
+  present: String
+  git_branch: String @proxy(from: "git-branch")
+  git_username: String @proxy(from: "git-username")
+  he: String
+  are_na: String @proxy(from: "are.na")
+  _types_react_image_gallery: String @proxy(from: "@types/react-image-gallery")
+  gatsby_source_mercadolibre: String @proxy(from: "gatsby-source-mercadolibre")
+  react_image_gallery: String @proxy(from: "react-image-gallery")
+  url_safe_string: String @proxy(from: "url-safe-string")
+  formik: String
+  gatsby_plugin_canonical_urls: String @proxy(from: "gatsby-plugin-canonical-urls")
+  react_flex_ready: String @proxy(from: "react-flex-ready")
+  react_google_recaptcha: String @proxy(from: "react-google-recaptcha")
+  lodash_groupby: String @proxy(from: "lodash.groupby")
+  incstr: String
+  apollo: String
+  lodash_mergewith: String @proxy(from: "lodash.mergewith")
+  xml2js: String
+  gatsby_source_chatwork_messages: String @proxy(from: "gatsby-source-chatwork-messages")
+  remark_code_extra: String @proxy(from: "remark-code-extra")
+  css_loader: String @proxy(from: "css-loader")
+  style_loader: String @proxy(from: "style-loader")
+  cockpit_api_client: String @proxy(from: "cockpit-api-client")
+  walk: String
+  react_ga: String @proxy(from: "react-ga")
+  babel_plugin_direct_import: String @proxy(from: "babel-plugin-direct-import")
+  babel_plugin_transform_object_rest_spread: String @proxy(from: "babel-plugin-transform-object-rest-spread")
+  trustpilot: String
+  _ehp_gatsby_source_filesystem: String @proxy(from: "@ehp/gatsby-source-filesystem")
+  axios_retry: String @proxy(from: "axios-retry")
+  contentful_import: String @proxy(from: "contentful-import")
+  gatsby_remark_images_contentful: String @proxy(from: "gatsby-remark-images-contentful")
+  mousetrap: String
+  _theme_ui_custom_properties: String @proxy(from: "@theme-ui/custom-properties")
+  react_html_parser: String @proxy(from: "react-html-parser")
+  react_serialize: String @proxy(from: "react-serialize")
+  gatsby_plugin_web_font_loader: String @proxy(from: "gatsby-plugin-web-font-loader")
+  gatsby_source_meetup: String @proxy(from: "gatsby-source-meetup")
+  netlify_lambda: String @proxy(from: "netlify-lambda")
+  remark_highlight_js: String @proxy(from: "remark-highlight.js")
+  recharts: String
+  _horacioh_gatsby_theme_instagram: String @proxy(from: "@horacioh/gatsby-theme-instagram")
+  _types_react_burger_menu: String @proxy(from: "@types/react-burger-menu")
+  _types_theme_ui: String @proxy(from: "@types/theme-ui")
+  feather_icons_react: String @proxy(from: "feather-icons-react")
+  emoji_regex: String @proxy(from: "emoji-regex")
+  gemoji: String
+  remark_codeset_core: String @proxy(from: "remark-codeset-core")
+  jsxstyle: String
+  jsxstyle_webpack_plugin: String @proxy(from: "jsxstyle-webpack-plugin")
+  ffmpeg_static: String @proxy(from: "ffmpeg-static")
+  ffprobe_static: String @proxy(from: "ffprobe-static")
+  gh_pages: String @proxy(from: "gh-pages")
+  twig: String
+  crypto_js: String @proxy(from: "crypto-js")
+  express: String
+  file_exists: String @proxy(from: "file-exists")
+  opn: String
+  simple_oauth2: String @proxy(from: "simple-oauth2")
+  bs_webapi: String @proxy(from: "bs-webapi")
+  sync_rpc: String @proxy(from: "sync-rpc")
+  _patternfly_react_core: String @proxy(from: "@patternfly/react-core")
+  gatsby_remark_unwrap_images: String @proxy(from: "gatsby-remark-unwrap-images")
+  vimeo: String
+  fetch_multiple: String @proxy(from: "fetch-multiple")
+  webpack_notifier: String @proxy(from: "webpack-notifier")
+  antd_mobile: String @proxy(from: "antd-mobile")
+  _essilor_ditac_gatsby_source_filesystem: String @proxy(from: "@essilor-ditac/gatsby-source-filesystem")
+  gatsby_plugin_postcss_sass: String @proxy(from: "gatsby-plugin-postcss-sass")
+  react_hot_loader: String @proxy(from: "react-hot-loader")
+  react_svg_inline: String @proxy(from: "react-svg-inline")
+  compose_tiny: String @proxy(from: "compose-tiny")
+  es_cookie: String @proxy(from: "es-cookie")
+  directus_sdk_javascript: String @proxy(from: "directus-sdk-javascript")
+  downloadjs: String
+  gatsby_remark_emoji: String @proxy(from: "gatsby-remark-emoji")
+  konva: String
+  react_confetti: String @proxy(from: "react-confetti")
+  react_swipe: String @proxy(from: "react-swipe")
+  swipe_js_iso: String @proxy(from: "swipe-js-iso")
+  video_react: String @proxy(from: "video-react")
+  emotion_server: String @proxy(from: "emotion-server")
+  modern_normalize: String @proxy(from: "modern-normalize")
+  postcss_color_function: String @proxy(from: "postcss-color-function")
+  prism_themes: String @proxy(from: "prism-themes")
+  react_emotion: String @proxy(from: "react-emotion")
+  image_downloader: String @proxy(from: "image-downloader")
+  _svgr_webpack: String @proxy(from: "@svgr/webpack")
+  gatsby_plugin_svgr: String @proxy(from: "gatsby-plugin-svgr")
+  hex2rgba: String
+  gtoken: String
+  typeface_petit_formal_script: String @proxy(from: "typeface-petit-formal-script")
+  typeface_rubik: String @proxy(from: "typeface-rubik")
+  form_data: String @proxy(from: "form-data")
+  _code_surfer_standalone: String @proxy(from: "@code-surfer/standalone")
+  rebound: String
+  shell_quote: String @proxy(from: "shell-quote")
+  use_spring: String @proxy(from: "use-spring")
+  babel_eslint: String @proxy(from: "babel-eslint")
+  gatsby_remark_reading_time: String @proxy(from: "gatsby-remark-reading-time")
+  analytics_js_without_segment: String @proxy(from: "analytics-js-without-segment")
+  remark_code_frontmatter: String @proxy(from: "remark-code-frontmatter")
+  anymatch: String
+  blork: String
+  hokey_cokey: String @proxy(from: "hokey-cokey")
+  path_to_from_params: String @proxy(from: "path-to-from-params")
+  imurmurhash: String
+  react_apollo_hooks: String @proxy(from: "react-apollo-hooks")
+  react_draggable: String @proxy(from: "react-draggable")
+  to_style: String @proxy(from: "to-style")
+  gatsby_plugin_client_side_redirect: String @proxy(from: "gatsby-plugin-client-side-redirect")
+  gatsby_wpgraphql_inline_images: String @proxy(from: "gatsby-wpgraphql-inline-images")
+  typeface_crimson_text: String @proxy(from: "typeface-crimson-text")
+  rehype_parse: String @proxy(from: "rehype-parse")
+  rehype_remark: String @proxy(from: "rehype-remark")
+  folder_hash: String @proxy(from: "folder-hash")
+  jsonfile: String
+  dropbox: String
+  typeface_nunito: String @proxy(from: "typeface-nunito")
+  feedparser: String
+  vega_embed: String @proxy(from: "vega-embed")
+  eventbrite: String
+  react_docgen_displayname_handler: String @proxy(from: "react-docgen-displayname-handler")
+  ietf_language_tag_regex: String @proxy(from: "ietf-language-tag-regex")
+  querystring: String
+  _agility_content_fetch: String @proxy(from: "@agility/content-fetch")
+  podcast: String
+  _arrempee_gatsby_helpers: String @proxy(from: "@arrempee/gatsby-helpers")
+  _arrempee_gatsby_theme_mdx_pages: String @proxy(from: "@arrempee/gatsby-theme-mdx-pages")
+  _arrempee_gatsby_plugin_collections: String @proxy(from: "@arrempee/gatsby-plugin-collections")
+  _arrempee_gatsby_plugin_taxonomies: String @proxy(from: "@arrempee/gatsby-plugin-taxonomies")
+  css_customs_loader: String @proxy(from: "css-customs-loader")
+  postcss_preset_env: String @proxy(from: "postcss-preset-env")
+  lodash_capitalize: String @proxy(from: "lodash.capitalize")
+  react_side_effect: String @proxy(from: "react-side-effect")
+  babel_plugin_transform_runtime: String @proxy(from: "babel-plugin-transform-runtime")
+  _types_request: String @proxy(from: "@types/request")
+  babel_plugin_ramda: String @proxy(from: "babel-plugin-ramda")
+  _types_fs_extra: String @proxy(from: "@types/fs-extra")
+  execa: String
+  truncate_html: String @proxy(from: "truncate-html")
+  _chakra_ui_core: String @proxy(from: "@chakra-ui/core")
+  react_extras: String @proxy(from: "react-extras")
+  istextorbinary: String
+  mammoth: String
+  office_document_properties: String @proxy(from: "office-document-properties")
+  typeface_quattrocento_sans: String @proxy(from: "typeface-quattrocento-sans")
+  xmldom: String
+  xpath: String
+  _microsoft_load_themed_styles: String @proxy(from: "@microsoft/load-themed-styles")
+  copy_webpack_plugin: String @proxy(from: "copy-webpack-plugin")
+  strip_pragma_loader: String @proxy(from: "strip-pragma-loader")
+  ion_parser: String @proxy(from: "ion-parser")
+  gatsby_plugin_brotli: String @proxy(from: "gatsby-plugin-brotli")
+  gatsby_plugin_no_sourcemaps: String @proxy(from: "gatsby-plugin-no-sourcemaps")
+  gatsby_remark_yuque_images: String @proxy(from: "gatsby-remark-yuque-images")
+  vsmarketplace_api: String @proxy(from: "vsmarketplace-api")
+  tachyons: String
+  babel_jest: String @proxy(from: "babel-jest")
+  photoswipe: String
+  hast_util_to_string: String @proxy(from: "hast-util-to-string")
+  rehype: String
+  _pilon_io_js_sdk: String @proxy(from: "@pilon-io/js-sdk")
+  speed_measure_webpack_plugin: String @proxy(from: "speed-measure-webpack-plugin")
+  install: String
+  _pasdo501_gatsby_source_woocommerce: String @proxy(from: "@pasdo501/gatsby-source-woocommerce")
+  yeoman_generator: String @proxy(from: "yeoman-generator")
+  yosay: String
+  map_obj: String @proxy(from: "map-obj")
+  quick_lru: String @proxy(from: "quick-lru")
+  convert_array_to_csv: String @proxy(from: "convert-array-to-csv")
+  remark_sub_super: String @proxy(from: "remark-sub-super")
+  babel_preset_flow: String @proxy(from: "babel-preset-flow")
+  elm_hot_webpack_loader: String @proxy(from: "elm-hot-webpack-loader")
+  elm_webpack_loader: String @proxy(from: "elm-webpack-loader")
+  gatsby_plugin_lunr: String @proxy(from: "gatsby-plugin-lunr")
+  react_string_replace: String @proxy(from: "react-string-replace")
+  react_typed: String @proxy(from: "react-typed")
+  styled_normalize: String @proxy(from: "styled-normalize")
+  tocbot: String
+  react_modal_image: String @proxy(from: "react-modal-image")
+  gatsby_custom_md: String @proxy(from: "gatsby-custom-md")
+  gatsby_plugin_less: String @proxy(from: "gatsby-plugin-less")
+  less: String
+  react_sidebar: String @proxy(from: "react-sidebar")
+  gdal: String
+  jsc8: String
+  react_script_tag: String @proxy(from: "react-script-tag")
+  gitlab: String
+  react_swipeable: String @proxy(from: "react-swipeable")
+  rehype_format: String @proxy(from: "rehype-format")
+  remark_rehype: String @proxy(from: "remark-rehype")
+  extract_text_webpack_plugin: String @proxy(from: "extract-text-webpack-plugin")
+  _grsmto_gatsby_i18n: String @proxy(from: "@grsmto/gatsby-i18n")
+  fetch_retry: String @proxy(from: "fetch-retry")
+  css_modules_flow_types_loader: String @proxy(from: "css-modules-flow-types-loader")
+  css_literal_loader: String @proxy(from: "css-literal-loader")
+  _honeybadger_io_webpack: String @proxy(from: "@honeybadger-io/webpack")
+  honeybadger_js: String @proxy(from: "honeybadger-js")
+  togeojson: String
+  _slack_client: String @proxy(from: "@slack/client")
+  config: String
+  figlet: String
+  pinyin: String
+  regexpu_core: String @proxy(from: "regexpu-core")
+  react_testing_library: String @proxy(from: "react-testing-library")
+  _carbon_icons_react: String @proxy(from: "@carbon/icons-react")
+  apollo_link_schema: String @proxy(from: "apollo-link-schema")
+  isomorphic_unfetch: String @proxy(from: "isomorphic-unfetch")
+  localStorage: String
+  recursive_copy: String @proxy(from: "recursive-copy")
+  sessionstorage: String
+  lodash_isobject: String @proxy(from: "lodash.isobject")
+  lodash_transform: String @proxy(from: "lodash.transform")
+  oauth_1_0a: String @proxy(from: "oauth-1.0a")
+  bottleneck: String
+  lodash_isequal: String @proxy(from: "lodash.isequal")
+  remark_behead: String @proxy(from: "remark-behead")
+  fridge: String
+  add: String
+  ignore_loader: String @proxy(from: "ignore-loader")
+  postcss_scss: String @proxy(from: "postcss-scss")
+  dat_node: String @proxy(from: "dat-node")
+  dat_pinning_service_client: String @proxy(from: "dat-pinning-service-client")
+  react_iframe: String @proxy(from: "react-iframe")
+  epub_gen: String @proxy(from: "epub-gen")
+  gatsby_source_youtube_v2: String @proxy(from: "gatsby-source-youtube-v2")
+  simple_load_script: String @proxy(from: "simple-load-script")
+  co: String
+  _wyze_favicons_webpack_plugin: String @proxy(from: "@wyze/favicons-webpack-plugin")
+  gatsby_remark_footnotes: String @proxy(from: "gatsby-remark-footnotes")
+  jquery: String
+  react_slick: String @proxy(from: "react-slick")
+  slick_carousel: String @proxy(from: "slick-carousel")
+  system_docs: String @proxy(from: "system-docs")
+  typeface_lora: String @proxy(from: "typeface-lora")
+  typeface_playfair_display: String @proxy(from: "typeface-playfair-display")
+  eslint_plugin_promise: String @proxy(from: "eslint-plugin-promise")
+  react_a11y: String @proxy(from: "react-a11y")
+  remark_external_links: String @proxy(from: "remark-external-links")
+  fast_xml_parser: String @proxy(from: "fast-xml-parser")
+  remark_encrypted_block: String @proxy(from: "remark-encrypted-block")
+  is_plain_object: String @proxy(from: "is-plain-object")
+  url_slug: String @proxy(from: "url-slug")
+  _jamfury_gatsby_i18n: String @proxy(from: "@jamfury/gatsby-i18n")
+  i18next_browser_languagedetector: String @proxy(from: "i18next-browser-languagedetector")
+  supports_color: String @proxy(from: "supports-color")
+  js_base64: String @proxy(from: "js-base64")
+  _aws_amplify_cli: String @proxy(from: "@aws-amplify/cli")
+  aws_amplify: String @proxy(from: "aws-amplify")
+  aws_amplify_react: String @proxy(from: "aws-amplify-react")
+  gatsby_1_config_extract_plugin: String @proxy(from: "gatsby-1-config-extract-plugin")
+  mastodon: String
+  sash: String
+  opencage_api_client: String @proxy(from: "opencage-api-client")
+  fountain_js: String @proxy(from: "fountain-js")
+  _tufte_markdown_remark_figure_parser: String @proxy(from: "@tufte-markdown/remark-figure-parser")
+  _tufte_markdown_remark_figure_transformer: String @proxy(from: "@tufte-markdown/remark-figure-transformer")
+  _tufte_markdown_remark_sidenotes: String @proxy(from: "@tufte-markdown/remark-sidenotes")
+  _tufte_markdown_remark_wrap_in_section: String @proxy(from: "@tufte-markdown/remark-wrap-in-section")
+  remark_gemoji_to_emoji: String @proxy(from: "remark-gemoji-to-emoji")
+  bulma: String
+  react_notifications_component: String @proxy(from: "react-notifications-component")
+  react_stripe_elements_universal: String @proxy(from: "react-stripe-elements-universal")
+  _reach_dialog: String @proxy(from: "@reach/dialog")
+  _reach_tabs: String @proxy(from: "@reach/tabs")
+  gatsby_plugin_netlify_identity: String @proxy(from: "gatsby-plugin-netlify-identity")
+  _zesty_io_sdk: String @proxy(from: "@zesty-io/sdk")
+  _spree_storefront_api_v2_sdk: String @proxy(from: "@spree/storefront-api-v2-sdk")
+  babel_preset_latest_node: String @proxy(from: "babel-preset-latest-node")
+  gatsby_plugin_relative: String @proxy(from: "gatsby-plugin-relative")
+  lodash_template: String @proxy(from: "lodash.template")
+  helmet: String
+  gatsby_theme_mdx_deck: String @proxy(from: "gatsby-theme-mdx-deck")
+  gatsby_theme_waves: String @proxy(from: "gatsby-theme-waves")
+  smoothscroll_polyfill: String @proxy(from: "smoothscroll-polyfill")
+  purs_loader: String @proxy(from: "purs-loader")
+  nerv_devtools: String @proxy(from: "nerv-devtools")
+  nervjs: String
+  gatsby_plugin_react_leaflet: String @proxy(from: "gatsby-plugin-react-leaflet")
+  leaflet: String
+  react_leaflet: String @proxy(from: "react-leaflet")
+  animated: String
+  keycode: String
+  react_event_listener: String @proxy(from: "react-event-listener")
+  easygraphql_mock: String @proxy(from: "easygraphql-mock")
+  remark_ruby: String @proxy(from: "remark-ruby")
+  babel_plugin_transform_imports: String @proxy(from: "babel-plugin-transform-imports")
+  _ptb_gatsby_1_config_css_modules: String @proxy(from: "@ptb/gatsby-1-config-css-modules")
+  fixer_io_utility: String @proxy(from: "fixer-io-utility")
+  _tvai_gatsby_i18n: String @proxy(from: "@tvai/gatsby-i18n")
+  _stylable_webpack_plugin: String @proxy(from: "@stylable/webpack-plugin")
+  backpack_core: String @proxy(from: "backpack-core")
+  remark_containers: String @proxy(from: "remark-containers")
+  football_data_v2: String @proxy(from: "football-data-v2")
+  lodash_memoize: String @proxy(from: "lodash.memoize")
+  typeface_eb_garamond: String @proxy(from: "typeface-eb-garamond")
+  typeface_roboto_mono: String @proxy(from: "typeface-roboto-mono")
+  facepaint: String
+  gatsby_source_twitter: String @proxy(from: "gatsby-source-twitter")
+  gatsby_plugin_transition_link: String @proxy(from: "gatsby-plugin-transition-link")
+  gsap: String
+  gatsby_source_shopify: String @proxy(from: "gatsby-source-shopify")
+  react_use: String @proxy(from: "react-use")
+  _horacioh_gatsby_theme_mdx: String @proxy(from: "@horacioh/gatsby-theme-mdx")
+  gatsby_source_hacker_news: String @proxy(from: "gatsby-source-hacker-news")
+  infima: String
+  reactjs_popup: String @proxy(from: "reactjs-popup")
+  react_masonry_component: String @proxy(from: "react-masonry-component")
+  react_player: String @proxy(from: "react-player")
+  react_waypoint: String @proxy(from: "react-waypoint")
+  gatsby_theme_comments: String @proxy(from: "gatsby-theme-comments")
+  _types_bluebird: String @proxy(from: "@types/bluebird")
+  pageres: String
+  mysql2: String
+  cloudcms: String
+  wasm_twitter_card: String @proxy(from: "wasm-twitter-card")
+  _rauschma_stringio: String @proxy(from: "@rauschma/stringio")
+  hasbin: String
+  remark_music: String @proxy(from: "remark-music")
+  xmlbuilder: String
+  react_svg_loader: String @proxy(from: "react-svg-loader")
+  _gatsby_plugin_multilingual_shared: String @proxy(from: "@gatsby-plugin-multilingual/shared")
+  _gatsby_plugin_multilingual_translations_loader: String @proxy(from: "@gatsby-plugin-multilingual/translations-loader")
+  _types_reach__router: String @proxy(from: "@types/reach__router")
+  _zilahir_gatsby_source_prismic: String @proxy(from: "@zilahir/gatsby-source-prismic")
+  gatsby_theme_casper: String @proxy(from: "gatsby-theme-casper")
+  gatsby_plugin_algolia: String @proxy(from: "gatsby-plugin-algolia")
+  react_instantsearch_dom: String @proxy(from: "react-instantsearch-dom")
+  react_timeago: String @proxy(from: "react-timeago")
+  styled_icons: String @proxy(from: "styled-icons")
+  _bundle_analyzer_webpack_plugin: String @proxy(from: "@bundle-analyzer/webpack-plugin")
+  es6_promise: String @proxy(from: "es6-promise")
+  _contentful_rich_text_html_renderer: String @proxy(from: "@contentful/rich-text-html-renderer")
+  _contentful_rich_text_plain_text_renderer: String @proxy(from: "@contentful/rich-text-plain-text-renderer")
+  lodash_words: String @proxy(from: "lodash.words")
+  remark_autolink_headings: String @proxy(from: "remark-autolink-headings")
+  excerpt_html: String @proxy(from: "excerpt-html")
+  _amory_jpeg_archive_bin: String @proxy(from: "@amory/jpeg-archive-bin")
+  _amory_schema_filesystem: String @proxy(from: "@amory/schema-filesystem")
+  advpng_bin: String @proxy(from: "advpng-bin")
+  exec_buffer: String @proxy(from: "exec-buffer")
+  lodash_sortby: String @proxy(from: "lodash.sortby")
+  optipng_bin: String @proxy(from: "optipng-bin")
+  pngcrush_bin: String @proxy(from: "pngcrush-bin")
+  pngout_bin: String @proxy(from: "pngout-bin")
+  pngquant_bin: String @proxy(from: "pngquant-bin")
+  tempfile: String
+  zopflipng_bin: String @proxy(from: "zopflipng-bin")
+  flatted: String
+  kentico_cloud_delivery: String @proxy(from: "kentico-cloud-delivery")
+  gatsby_plugin_i18n: String @proxy(from: "gatsby-plugin-i18n")
+  utility_types: String @proxy(from: "utility-types")
+  _theme_ui_sidenav: String @proxy(from: "@theme-ui/sidenav")
+  _amory_watch_filesystem: String @proxy(from: "@amory/watch-filesystem")
+  lodash_includes: String @proxy(from: "lodash.includes")
+  gzip_size: String @proxy(from: "gzip-size")
+  node_dir: String @proxy(from: "node-dir")
+  fuzzysort: String
+  _amory_style_animations: String @proxy(from: "@amory/style-animations")
+  _amory_styletron: String @proxy(from: "@amory/styletron")
+  _ptb_gatsby_plugin_styletron: String @proxy(from: "@ptb/gatsby-plugin-styletron")
+  intersection_observer: String @proxy(from: "intersection-observer")
+  picturefill: String
+  _ptb_watch_filesystem: String @proxy(from: "@ptb/watch-filesystem")
+  remark_breaks: String @proxy(from: "remark-breaks")
+  _amory_style_styletron: String @proxy(from: "@amory/style-styletron")
+}
+
+type NPMPackageDevDependencies {
+  _babel_cli: String @proxy(from: "@babel/cli")
+  _babel_core: String @proxy(from: "@babel/core")
+  babel_preset_gatsby_package: String @proxy(from: "babel-preset-gatsby-package")
+  cross_env: String @proxy(from: "cross-env")
+  _testing_library_react: String @proxy(from: "@testing-library/react")
+  cpx: String
+  rewire: String
+  hast_util_to_html: String @proxy(from: "hast-util-to-html")
+  mdast_util_to_hast: String @proxy(from: "mdast-util-to-hast")
+  remark: String
+  remark_mdx: String @proxy(from: "remark-mdx")
+  semver: String
+  babel_cli: String @proxy(from: "babel-cli")
+  babel_plugin_rewire: String @proxy(from: "babel-plugin-rewire")
+  babel_plugin_transform_es2015_modules_commonjs: String @proxy(from: "babel-plugin-transform-es2015-modules-commonjs")
+  babel_plugin_transform_export_extensions: String @proxy(from: "babel-plugin-transform-export-extensions")
+  babel_plugin_transform_object_rest_spread: String @proxy(from: "babel-plugin-transform-object-rest-spread")
+  jest: String
+  prettier: String
+  prismjs: String
+  react: String
+  react_dom: String @proxy(from: "react-dom")
+  react_typography: String @proxy(from: "react-typography")
+  typography: String
+  _babel_plugin_proposal_object_rest_spread: String @proxy(from: "@babel/plugin-proposal-object-rest-spread")
+  _babel_plugin_transform_runtime: String @proxy(from: "@babel/plugin-transform-runtime")
+  _babel_preset_env: String @proxy(from: "@babel/preset-env")
+  babel_eslint: String @proxy(from: "babel-eslint")
+  eslint: String
+  eslint_plugin_babel: String @proxy(from: "eslint-plugin-babel")
+  eslint_plugin_markdown: String @proxy(from: "eslint-plugin-markdown")
+  memory_fs: String @proxy(from: "memory-fs")
+  semantic_release: String @proxy(from: "semantic-release")
+  travis_deploy_once: String @proxy(from: "travis-deploy-once")
+  unist_util_find: String @proxy(from: "unist-util-find")
+  _mdx_js_mdx: String @proxy(from: "@mdx-js/mdx")
+  _mdx_js_react: String @proxy(from: "@mdx-js/react")
+  js_combinatorics: String @proxy(from: "js-combinatorics")
+  react_test_renderer: String @proxy(from: "react-test-renderer")
+  _babel_plugin_transform_modules_commonjs: String @proxy(from: "@babel/plugin-transform-modules-commonjs")
+  _release_it_conventional_changelog: String @proxy(from: "@release-it/conventional-changelog")
+  coveralls: String
+  dotenv: String
+  gatsby: String
+  gatsby_plugin_less: String @proxy(from: "gatsby-plugin-less")
+  gatsby_plugin_postcss: String @proxy(from: "gatsby-plugin-postcss")
+  gatsby_plugin_sass: String @proxy(from: "gatsby-plugin-sass")
+  gatsby_plugin_stylus: String @proxy(from: "gatsby-plugin-stylus")
+  less: String
+  release_it: String @proxy(from: "release-it")
+  runjs: String
+  sass: String
+  symlink_dir: String @proxy(from: "symlink-dir")
+  tailwindcss: String
+  esca_scripts: String @proxy(from: "esca-scripts")
+  opn_cli: String @proxy(from: "opn-cli")
+  babel_preset_es2015: String @proxy(from: "babel-preset-es2015")
+  babel_runtime: String @proxy(from: "babel-runtime")
+  concurrently: String
+  onchange: String
+  dedent: String
+  _babel_plugin_proposal_class_properties: String @proxy(from: "@babel/plugin-proposal-class-properties")
+  _babel_plugin_proposal_decorators: String @proxy(from: "@babel/plugin-proposal-decorators")
+  _babel_plugin_proposal_do_expressions: String @proxy(from: "@babel/plugin-proposal-do-expressions")
+  _babel_plugin_proposal_export_default_from: String @proxy(from: "@babel/plugin-proposal-export-default-from")
+  _babel_plugin_proposal_export_namespace_from: String @proxy(from: "@babel/plugin-proposal-export-namespace-from")
+  _babel_plugin_proposal_function_bind: String @proxy(from: "@babel/plugin-proposal-function-bind")
+  _babel_plugin_proposal_function_sent: String @proxy(from: "@babel/plugin-proposal-function-sent")
+  _babel_plugin_proposal_json_strings: String @proxy(from: "@babel/plugin-proposal-json-strings")
+  _babel_plugin_proposal_logical_assignment_operators: String @proxy(from: "@babel/plugin-proposal-logical-assignment-operators")
+  _babel_plugin_proposal_nullish_coalescing_operator: String @proxy(from: "@babel/plugin-proposal-nullish-coalescing-operator")
+  _babel_plugin_proposal_numeric_separator: String @proxy(from: "@babel/plugin-proposal-numeric-separator")
+  _babel_plugin_proposal_optional_chaining: String @proxy(from: "@babel/plugin-proposal-optional-chaining")
+  _babel_plugin_proposal_pipeline_operator: String @proxy(from: "@babel/plugin-proposal-pipeline-operator")
+  _babel_plugin_proposal_throw_expressions: String @proxy(from: "@babel/plugin-proposal-throw-expressions")
+  _babel_plugin_syntax_dynamic_import: String @proxy(from: "@babel/plugin-syntax-dynamic-import")
+  _babel_plugin_syntax_import_meta: String @proxy(from: "@babel/plugin-syntax-import-meta")
+  _babel_plugin_syntax_jsx: String @proxy(from: "@babel/plugin-syntax-jsx")
+  _babel_preset_react: String @proxy(from: "@babel/preset-react")
+  child_process_async: String @proxy(from: "child-process-async")
+  child_process_promise: String @proxy(from: "child-process-promise")
+  emotion: String
+  emotion_server: String @proxy(from: "emotion-server")
+  enzyme: String
+  enzyme_adapter_react_16: String @proxy(from: "enzyme-adapter-react-16")
+  eslint_config_escalade_sports: String @proxy(from: "eslint-config-escalade-sports")
+  gatsby_plugin_emotion: String @proxy(from: "gatsby-plugin-emotion")
+  husky: String
+  identity_obj_proxy: String @proxy(from: "identity-obj-proxy")
+  isomorphic_fetch: String @proxy(from: "isomorphic-fetch")
+  jest_dom: String @proxy(from: "jest-dom")
+  lint_staged: String @proxy(from: "lint-staged")
+  netlify_cms: String @proxy(from: "netlify-cms")
+  netlify_lambda: String @proxy(from: "netlify-lambda")
+  npm_run_all: String @proxy(from: "npm-run-all")
+  react_helmet: String @proxy(from: "react-helmet")
+  react_netlify_form: String @proxy(from: "react-netlify-form")
+  react_no_ssr: String @proxy(from: "react-no-ssr")
+  react_testing_library: String @proxy(from: "react-testing-library")
+  request: String
+  statable: String
+  static_server: String @proxy(from: "static-server")
+  strip_html_comments: String @proxy(from: "strip-html-comments")
+  toml: String
+  wt_cli: String @proxy(from: "wt-cli")
+  babel_preset_stage_2: String @proxy(from: "babel-preset-stage-2")
+  babel_jest: String @proxy(from: "babel-jest")
+  lodash: String
+  babel_preset_env: String @proxy(from: "babel-preset-env")
+  babel_preset_react: String @proxy(from: "babel-preset-react")
+  eslint_config_prettier: String @proxy(from: "eslint-config-prettier")
+  eslint_config_standard: String @proxy(from: "eslint-config-standard")
+  eslint_plugin_import: String @proxy(from: "eslint-plugin-import")
+  eslint_plugin_node: String @proxy(from: "eslint-plugin-node")
+  eslint_plugin_prettier: String @proxy(from: "eslint-plugin-prettier")
+  eslint_plugin_promise: String @proxy(from: "eslint-plugin-promise")
+  eslint_plugin_standard: String @proxy(from: "eslint-plugin-standard")
+  standard_version: String @proxy(from: "standard-version")
+  _babel_polyfill: String @proxy(from: "@babel/polyfill")
+  _babel_preset_typescript: String @proxy(from: "@babel/preset-typescript")
+  _types_es6_promisify: String @proxy(from: "@types/es6-promisify")
+  _types_fs_extra: String @proxy(from: "@types/fs-extra")
+  _types_glob: String @proxy(from: "@types/glob")
+  _types_inquirer: String @proxy(from: "@types/inquirer")
+  _types_is_ci: String @proxy(from: "@types/is-ci")
+  _types_klaw: String @proxy(from: "@types/klaw")
+  _types_mime: String @proxy(from: "@types/mime")
+  _types_minimatch: String @proxy(from: "@types/minimatch")
+  _types_node_fetch: String @proxy(from: "@types/node-fetch")
+  _types_ora: String @proxy(from: "@types/ora")
+  _types_stream_to_promise: String @proxy(from: "@types/stream-to-promise")
+  _types_yargs: String @proxy(from: "@types/yargs")
+  es6_promisify: String @proxy(from: "es6-promisify")
+  glob: String
+  node_fetch: String @proxy(from: "node-fetch")
+  tslint: String
+  tslint_config_oberon: String @proxy(from: "tslint-config-oberon")
+  typescript: String
+  babel_plugin_transform_async_to_generator: String @proxy(from: "babel-plugin-transform-async-to-generator")
+  babel_plugin_transform_runtime: String @proxy(from: "babel-plugin-transform-runtime")
+  pre_commit: String @proxy(from: "pre-commit")
+  babel_plugin_add_module_exports: String @proxy(from: "babel-plugin-add-module-exports")
+  babel_plugin_transform_flow_strip_types: String @proxy(from: "babel-plugin-transform-flow-strip-types")
+  babel_plugin_transform_react_jsx: String @proxy(from: "babel-plugin-transform-react-jsx")
+  flow_bin: String @proxy(from: "flow-bin")
+  flow_copy_source: String @proxy(from: "flow-copy-source")
+  _types_debug: String @proxy(from: "@types/debug")
+  _types_graphql: String @proxy(from: "@types/graphql")
+  _types_jest: String @proxy(from: "@types/jest")
+  _types_lodash: String @proxy(from: "@types/lodash")
+  _types_node: String @proxy(from: "@types/node")
+  _types_pump: String @proxy(from: "@types/pump")
+  _types_split2: String @proxy(from: "@types/split2")
+  _types_through2: String @proxy(from: "@types/through2")
+  eslint_config_sanity: String @proxy(from: "eslint-config-sanity")
+  ts_jest: String @proxy(from: "ts-jest")
+  eslint_config_airbnb_base: String @proxy(from: "eslint-config-airbnb-base")
+  eslint_plugin_react: String @proxy(from: "eslint-plugin-react")
+  webpack: String
+  np: String
+  cz_conventional_changelog: String @proxy(from: "cz-conventional-changelog")
+  eslint_config_google: String @proxy(from: "eslint-config-google")
+  prettier_eslint_cli: String @proxy(from: "prettier-eslint-cli")
+  rimraf: String
+  eslint_plugin_jsx_a11y: String @proxy(from: "eslint-plugin-jsx-a11y")
+  codecov: String
+  eslint_config_standard_react: String @proxy(from: "eslint-config-standard-react")
+  eslint_plugin_jest: String @proxy(from: "eslint-plugin-jest")
+  ptz_assert: String @proxy(from: "ptz-assert")
+  katex: String
+  babel_preset_latest: String @proxy(from: "babel-preset-latest")
+  babel_preset_stage_0: String @proxy(from: "babel-preset-stage-0")
+  eslint_plugin_ghost: String @proxy(from: "eslint-plugin-ghost")
+  babel_core: String @proxy(from: "babel-core")
+  babel_preset_stage_3: String @proxy(from: "babel-preset-stage-3")
+  babel_plugin_external_helpers: String @proxy(from: "babel-plugin-external-helpers")
+  rollup: String
+  rollup_plugin_babel: String @proxy(from: "rollup-plugin-babel")
+  rollup_plugin_node_resolve: String @proxy(from: "rollup-plugin-node-resolve")
+  copyfiles: String
+  eslint_config_civicsource: String @proxy(from: "eslint-config-civicsource")
+  json2csv: String
+  mocha: String
+  proxyquire: String
+  should: String
+  sinon: String
+  _semantic_release_changelog: String @proxy(from: "@semantic-release/changelog")
+  _semantic_release_git: String @proxy(from: "@semantic-release/git")
+  commitizen: String
+  standard: String
+  _berlitz_eslint_config_max_base: String @proxy(from: "@berlitz/eslint-config-max-base")
+  jest_fetch_mock: String @proxy(from: "jest-fetch-mock")
+  _trevorblades_eslint_config: String @proxy(from: "@trevorblades/eslint-config")
+  _types_mdast: String @proxy(from: "@types/mdast")
+  eslint_import_resolver_ts: String @proxy(from: "eslint-import-resolver-ts")
+  mdast_builder: String @proxy(from: "mdast-builder")
+  _types_decompress: String @proxy(from: "@types/decompress")
+  _types_json5: String @proxy(from: "@types/json5")
+  _types_lodash_escape: String @proxy(from: "@types/lodash.escape")
+  _types_lodash_uniq: String @proxy(from: "@types/lodash.uniq")
+  _types_plist: String @proxy(from: "@types/plist")
+  _types_request: String @proxy(from: "@types/request")
+  hast_util_raw: String @proxy(from: "hast-util-raw")
+  rehype_stringify: String @proxy(from: "rehype-stringify")
+  remark_parse: String @proxy(from: "remark-parse")
+  remark_rehype: String @proxy(from: "remark-rehype")
+  unified: String
+  debug: String
+  eslint_plugin_filenames: String @proxy(from: "eslint-plugin-filenames")
+  eslint_plugin_json: String @proxy(from: "eslint-plugin-json")
+  babel_plugin_lodash: String @proxy(from: "babel-plugin-lodash")
+  jscodeshift: String
+  _commitlint_cli: String @proxy(from: "@commitlint/cli")
+  _commitlint_config_conventional: String @proxy(from: "@commitlint/config-conventional")
+  _testing_library_cypress: String @proxy(from: "@testing-library/cypress")
+  _testing_library_jest_dom: String @proxy(from: "@testing-library/jest-dom")
+  babel_plugin_dynamic_import_node: String @proxy(from: "babel-plugin-dynamic-import-node")
+  cypress: String
+  eslint_config_airbnb: String @proxy(from: "eslint-config-airbnb")
+  eslint_config_react: String @proxy(from: "eslint-config-react")
+  chai: String
+  conventional_changelog_cli: String @proxy(from: "conventional-changelog-cli")
+  axios_mock_adapter: String @proxy(from: "axios-mock-adapter")
+  babel_preset_gatsby: String @proxy(from: "babel-preset-gatsby")
+  _misk_prettier: String @proxy(from: "@misk/prettier")
+  _babel_node: String @proxy(from: "@babel/node")
+  _types_bluebird: String @proxy(from: "@types/bluebird")
+  _types_invariant: String @proxy(from: "@types/invariant")
+  _types_luxon: String @proxy(from: "@types/luxon")
+  _types_mime_types: String @proxy(from: "@types/mime-types")
+  _types_mitm: String @proxy(from: "@types/mitm")
+  _types_redux_mock_store: String @proxy(from: "@types/redux-mock-store")
+  _typescript_eslint_eslint_plugin: String @proxy(from: "@typescript-eslint/eslint-plugin")
+  _typescript_eslint_parser: String @proxy(from: "@typescript-eslint/parser")
+  babel_preset_minify: String @proxy(from: "babel-preset-minify")
+  codacy_coverage: String @proxy(from: "codacy-coverage")
+  eslint_friendly_formatter: String @proxy(from: "eslint-friendly-formatter")
+  eslint_loader: String @proxy(from: "eslint-loader")
+  factory_ts: String @proxy(from: "factory.ts")
+  gatsby_source_filesystem: String @proxy(from: "gatsby-source-filesystem")
+  jest_junit: String @proxy(from: "jest-junit")
+  json_stringify_pretty_compact: String @proxy(from: "json-stringify-pretty-compact")
+  mitm: String
+  nodemon: String
+  prettier_eslint: String @proxy(from: "prettier-eslint")
+  redux: String
+  redux_mock_store: String @proxy(from: "redux-mock-store")
+  eslint_config_ryanditjia: String @proxy(from: "eslint-config-ryanditjia")
+  _babel_runtime: String @proxy(from: "@babel/runtime")
+  babel_plugin_syntax_async_functions: String @proxy(from: "babel-plugin-syntax-async-functions")
+  babel_preset_flow: String @proxy(from: "babel-preset-flow")
+  nps: String
+  nps_utils: String @proxy(from: "nps-utils")
+  gatsby_node_helpers: String @proxy(from: "gatsby-node-helpers")
+  joi: String
+  styled_jsx: String @proxy(from: "styled-jsx")
+  _wkovacs64_eslint_config_react: String @proxy(from: "@wkovacs64/eslint-config-react")
+  del_cli: String @proxy(from: "del-cli")
+  eslint_plugin_react_hooks: String @proxy(from: "eslint-plugin-react-hooks")
+  _apollo_react_common: String @proxy(from: "@apollo/react-common")
+  _types_is_relative_url: String @proxy(from: "@types/is-relative-url")
+  _types_slash: String @proxy(from: "@types/slash")
+  tslint_config_prettier: String @proxy(from: "tslint-config-prettier")
+  tslint_microsoft_contrib: String @proxy(from: "tslint-microsoft-contrib")
+  babel_plugin_react_native_web: String @proxy(from: "babel-plugin-react-native-web")
+  webpack_merge: String @proxy(from: "webpack-merge")
+  eslint_config_react_app: String @proxy(from: "eslint-config-react-app")
+  eslint_plugin_flowtype: String @proxy(from: "eslint-plugin-flowtype")
+  react_redux: String @proxy(from: "react-redux")
+  prop_types: String @proxy(from: "prop-types")
+  _babel_plugin_transform_object_assign: String @proxy(from: "@babel/plugin-transform-object-assign")
+  enzyme_to_json: String @proxy(from: "enzyme-to-json")
+  tap: String
+  _types_babel_core: String @proxy(from: "@types/babel-core")
+  _types_prettier: String @proxy(from: "@types/prettier")
+  _types_unist: String @proxy(from: "@types/unist")
+  eslint_import_resolver_typescript: String @proxy(from: "eslint-import-resolver-typescript")
+  all_contributors_cli: String @proxy(from: "all-contributors-cli")
+  jest_in_case: String @proxy(from: "jest-in-case")
+  kcd_scripts: String @proxy(from: "kcd-scripts")
+  pretty_quick: String @proxy(from: "pretty-quick")
+  generate_changelog: String @proxy(from: "generate-changelog")
+  babel_plugin_transform_es2015_destructuring: String @proxy(from: "babel-plugin-transform-es2015-destructuring")
+  cssbeautify: String
+  nsp: String
+  xo: String
+  language_hugo: String @proxy(from: "language-hugo")
+  language_rust: String @proxy(from: "language-rust")
+  _types_mocha: String @proxy(from: "@types/mocha")
+  _types_md5: String @proxy(from: "@types/md5")
+  babel_plugin_module_resolver: String @proxy(from: "babel-plugin-module-resolver")
+  md5: String
+  parcel_bundler: String @proxy(from: "parcel-bundler")
+  path: String
+  _babel_plugin_transform_react_jsx: String @proxy(from: "@babel/plugin-transform-react-jsx")
+  hast_util_assert: String @proxy(from: "hast-util-assert")
+  hast_util_select: String @proxy(from: "hast-util-select")
+  jest_cli: String @proxy(from: "jest-cli")
+  mdast_util_assert: String @proxy(from: "mdast-util-assert")
+  object_entries: String @proxy(from: "object.entries")
+  unist_util_inspect: String @proxy(from: "unist-util-inspect")
+  unist_util_remove_position: String @proxy(from: "unist-util-remove-position")
+  babel_plugin_emotion: String @proxy(from: "babel-plugin-emotion")
+  mockdate: String
+  dot_json: String @proxy(from: "dot-json")
+  babel_plugin_macros: String @proxy(from: "babel-plugin-macros")
+  gatsby_cli: String @proxy(from: "gatsby-cli")
+  gatsby_plugin_layout: String @proxy(from: "gatsby-plugin-layout")
+  gatsby_plugin_react_helmet: String @proxy(from: "gatsby-plugin-react-helmet")
+  gh_pages: String @proxy(from: "gh-pages")
+  node_sass: String @proxy(from: "node-sass")
+  react_select: String @proxy(from: "react-select")
+  react_spring: String @proxy(from: "react-spring")
+  rollup_plugin_commonjs: String @proxy(from: "rollup-plugin-commonjs")
+  rollup_plugin_peer_deps_external: String @proxy(from: "rollup-plugin-peer-deps-external")
+  rollup_plugin_url: String @proxy(from: "rollup-plugin-url")
+  eclint: String
+  tslint_eslint_rules: String @proxy(from: "tslint-eslint-rules")
+  tslint_react: String @proxy(from: "tslint-react")
+  eslint_plugin_graphql: String @proxy(from: "eslint-plugin-graphql")
+  eslint_d: String
+  _types_react: String @proxy(from: "@types/react")
+  _types_traverse: String @proxy(from: "@types/traverse")
+  _fabiospampinato_bump: String @proxy(from: "@fabiospampinato/bump")
+  stylelint: String
+  unist_util_visit: String @proxy(from: "unist-util-visit")
+  _babel_preset_flow: String @proxy(from: "@babel/preset-flow")
+  auto_changelog: String @proxy(from: "auto-changelog")
+  chalk: String
+  _types_react_dom: String @proxy(from: "@types/react-dom")
+  _types_react_helmet: String @proxy(from: "@types/react-helmet")
+  _types_styled_components: String @proxy(from: "@types/styled-components")
+  react_helmet_async: String @proxy(from: "react-helmet-async")
+  _types_lodash_debounce: String @proxy(from: "@types/lodash.debounce")
+  _types_webpack: String @proxy(from: "@types/webpack")
+  ts_node: String @proxy(from: "ts-node")
+  start_server_and_test: String @proxy(from: "start-server-and-test")
+  eslint_config_devjmetivier: String @proxy(from: "eslint-config-devjmetivier")
+  eslint_plugin_html: String @proxy(from: "eslint-plugin-html")
+  uglify_js: String @proxy(from: "uglify-js")
+  microbundle: String
+  _types_common_tags: String @proxy(from: "@types/common-tags")
+  cxs: String
+  shelljs: String
+  webpack_cli: String @proxy(from: "webpack-cli")
+  webpack_node_externals: String @proxy(from: "webpack-node-externals")
+  eslint_config_wesbos: String @proxy(from: "eslint-config-wesbos")
+  metro_memory_fs: String @proxy(from: "metro-memory-fs")
+  _semantic_release_npm: String @proxy(from: "@semantic-release/npm")
+  gatsby_plugin_eslint: String @proxy(from: "gatsby-plugin-eslint")
+  eslint_config_madecomfy: String @proxy(from: "eslint-config-madecomfy")
+  eslint_plugin_cypress: String @proxy(from: "eslint-plugin-cypress")
+  babel_loader: String @proxy(from: "babel-loader")
+  stylelint_config_prettier: String @proxy(from: "stylelint-config-prettier")
+  stylelint_config_recommended: String @proxy(from: "stylelint-config-recommended")
+  _types_jasmine: String @proxy(from: "@types/jasmine")
+  jasmine: String
+  nyc: String
+  tslint_config_standard: String @proxy(from: "tslint-config-standard")
+  install_peers: String @proxy(from: "install-peers")
+  axios: String
+  gatsby_plugin_offline: String @proxy(from: "gatsby-plugin-offline")
+  gatsby_plugin_sharp: String @proxy(from: "gatsby-plugin-sharp")
+  gatsby_transformer_json: String @proxy(from: "gatsby-transformer-json")
+  gatsby_transformer_sharp: String @proxy(from: "gatsby-transformer-sharp")
+  cz_customizable: String @proxy(from: "cz-customizable")
+  precise_commits: String @proxy(from: "precise-commits")
+  mermaid: String
+  mermaid_cli: String @proxy(from: "mermaid.cli")
+  remark_preset_lint_recommended: String @proxy(from: "remark-preset-lint-recommended")
+  remark_validate_links: String @proxy(from: "remark-validate-links")
+  deepmerge: String
+  strip_indent: String @proxy(from: "strip-indent")
+  tslint_plugin_prettier: String @proxy(from: "tslint-plugin-prettier")
+  _typescript_eslint_eslint_plugin_tslint: String @proxy(from: "@typescript-eslint/eslint-plugin-tslint")
+  commitlint: String
+  css_loader: String @proxy(from: "css-loader")
+  postcss_loader: String @proxy(from: "postcss-loader")
+  style_loader: String @proxy(from: "style-loader")
+  tslint_sonarts: String @proxy(from: "tslint-sonarts")
+  gh_release: String @proxy(from: "gh-release")
+  _babel_plugin_external_helpers: String @proxy(from: "@babel/plugin-external-helpers")
+  bili: String
+  regenerator_runtime: String @proxy(from: "regenerator-runtime")
+  _types_stripe_checkout: String @proxy(from: "@types/stripe-checkout")
+  eslint_plugin_no_null: String @proxy(from: "eslint-plugin-no-null")
+  eslint_plugin_prefer_arrow: String @proxy(from: "eslint-plugin-prefer-arrow")
+  babel_preset_react_app: String @proxy(from: "babel-preset-react-app")
+  _typescript_eslint_typescript_estree: String @proxy(from: "@typescript-eslint/typescript-estree")
+  typedoc: String
+  babel_plugin_styled_components: String @proxy(from: "babel-plugin-styled-components")
+  _babel_plugin_transform_spread: String @proxy(from: "@babel/plugin-transform-spread")
+  _commitlint_prompt_cli: String @proxy(from: "@commitlint/prompt-cli")
+  eslint_plugin_jsdoc: String @proxy(from: "eslint-plugin-jsdoc")
+  gray_matter: String @proxy(from: "gray-matter")
+  jest_dot_reporter: String @proxy(from: "jest-dot-reporter")
+  write_changelog: String @proxy(from: "write-changelog")
+  theme_ui: String @proxy(from: "theme-ui")
+  babel_plugin_transform_remove_strict_mode: String @proxy(from: "babel-plugin-transform-remove-strict-mode")
+  langapi_client: String @proxy(from: "langapi-client")
+  babel_register: String @proxy(from: "babel-register")
+  eslint_config_fbjs: String @proxy(from: "eslint-config-fbjs")
+  eslint_config_moxy: String @proxy(from: "eslint-config-moxy")
+  _types_pluralize: String @proxy(from: "@types/pluralize")
+  graphql: String
+  in_publish: String @proxy(from: "in-publish")
+  prettier_tslint: String @proxy(from: "prettier-tslint")
+  safe_publish_latest: String @proxy(from: "safe-publish-latest")
+  _cid_harvard_eslint_config: String @proxy(from: "@cid-harvard/eslint-config")
+  eslint_config_kabalpt_react: String @proxy(from: "eslint-config-kabalpt-react")
+  fs_extra: String @proxy(from: "fs-extra")
+  lunr: String
+  babel_plugin_transform_class_properties: String @proxy(from: "babel-plugin-transform-class-properties")
+  better_queue: String @proxy(from: "better-queue")
+  core_js: String @proxy(from: "core-js")
+  _styled_system_css: String @proxy(from: "@styled-system/css")
+  _types_styled_system: String @proxy(from: "@types/styled-system")
+  _types_styled_system__css: String @proxy(from: "@types/styled-system__css")
+  csstype: String
+  styled_system: String @proxy(from: "styled-system")
+  eslint_config_jesper: String @proxy(from: "eslint-config-jesper")
+  rollup_plugin_terser: String @proxy(from: "rollup-plugin-terser")
+  _wyze_rio: String @proxy(from: "@wyze/rio")
+  mock_fs: String @proxy(from: "mock-fs")
+  _commitlint_travis_cli: String @proxy(from: "@commitlint/travis-cli")
+  _babel_plugin_transform_destructuring: String @proxy(from: "@babel/plugin-transform-destructuring")
+  babel_plugin_transform_object_assign: String @proxy(from: "babel-plugin-transform-object-assign")
+  _types_lodash_merge: String @proxy(from: "@types/lodash.merge")
+  react_intl: String @proxy(from: "react-intl")
+  unist_util_map: String @proxy(from: "unist-util-map")
+  ava: String
+  _types_html_entities: String @proxy(from: "@types/html-entities")
+  tslint_config_blvd: String @proxy(from: "tslint-config-blvd")
+  colors: String
+  chokidar: String
+  eslint_plugin_flow_vars: String @proxy(from: "eslint-plugin-flow-vars")
+  lerna: String
+  plop: String
+  remotedev_server: String @proxy(from: "remotedev-server")
+  yargs: String
+  stylelint_config_styled_components: String @proxy(from: "stylelint-config-styled-components")
+  stylelint_processor_styled_components: String @proxy(from: "stylelint-processor-styled-components")
+  marked: String
+  isexe: String
+  styled_components: String @proxy(from: "styled-components")
+  _glennsl_bs_jest: String @proxy(from: "@glennsl/bs-jest")
+  bs_platform: String @proxy(from: "bs-platform")
+  then_request: String @proxy(from: "then-request")
+  _testing_library_react_hooks: String @proxy(from: "@testing-library/react-hooks")
+  babel_plugin_ramda: String @proxy(from: "babel-plugin-ramda")
+  rollup_plugin_json: String @proxy(from: "rollup-plugin-json")
+  rollup_plugin_string: String @proxy(from: "rollup-plugin-string")
+  _joshuaavalon_eslint_config_typescript: String @proxy(from: "@joshuaavalon/eslint-config-typescript")
+  _types_prismjs: String @proxy(from: "@types/prismjs")
+  inquirer: String
+  inquirer_directory: String @proxy(from: "inquirer-directory")
+  _types_classnames: String @proxy(from: "@types/classnames")
+  _types_mkdirp: String @proxy(from: "@types/mkdirp")
+  eslint_config_xo_react: String @proxy(from: "eslint-config-xo-react")
+  eslint_config_xo_space: String @proxy(from: "eslint-config-xo-space")
+  eslint_config_xo_typescript: String @proxy(from: "eslint-config-xo-typescript")
+  danger: String
+  trash_cli: String @proxy(from: "trash-cli")
+  _babel_plugin_transform_named_capturing_groups_regex: String @proxy(from: "@babel/plugin-transform-named-capturing-groups-regex")
+  _types_chokidar: String @proxy(from: "@types/chokidar")
+  lighthousebot: String
+  puppeteer: String
+  yaml: String
+  gatsby_plugin_css_modules_flow_types: String @proxy(from: "gatsby-plugin-css-modules-flow-types")
+  babel_plugin_transform_decorators_legacy: String @proxy(from: "babel-plugin-transform-decorators-legacy")
+  apollo: String
+  _types_cheerio: String @proxy(from: "@types/cheerio")
+  _jgierer12_js_configs: String @proxy(from: "@jgierer12/js-configs")
+  graphql_type_json: String @proxy(from: "graphql-type-json")
+  react_docgen: String @proxy(from: "react-docgen")
+  cheerio: String
+  contentful_cli: String @proxy(from: "contentful-cli")
+  yorkie: String
+  remark_cli: String @proxy(from: "remark-cli")
+  copy_template_dir: String @proxy(from: "copy-template-dir")
+  mkdirp: String
+  _babel_preset_stage_0: String @proxy(from: "@babel/preset-stage-0")
+  tslint_react_hooks: String @proxy(from: "tslint-react-hooks")
+  babel_plugin_transform_es2015_modules_umd: String @proxy(from: "babel-plugin-transform-es2015-modules-umd")
+  clean_webpack_plugin: String @proxy(from: "clean-webpack-plugin")
+  copy_webpack_plugin: String @proxy(from: "copy-webpack-plugin")
+  esm: String
+  html_webpack_plugin: String @proxy(from: "html-webpack-plugin")
+  jsdom: String
+  minimist: String
+  opn: String
+  tap_spec: String @proxy(from: "tap-spec")
+  tape: String
+  testdouble: String
+  testem: String
+  webpack_dev_server: String @proxy(from: "webpack-dev-server")
+  _4c_semantic_release_config: String @proxy(from: "@4c/semantic-release-config")
+  eslint_config_4catalyzer: String @proxy(from: "eslint-config-4catalyzer")
+  babel_preset_stage_1: String @proxy(from: "babel-preset-stage-1")
+  validate_commit_msg: String @proxy(from: "validate-commit-msg")
+  git_cz: String @proxy(from: "git-cz")
+  _ahmedelgabri_eslint_config: String @proxy(from: "@ahmedelgabri/eslint-config")
+  mockery: String
+  _fortawesome_fontawesome_free: String @proxy(from: "@fortawesome/fontawesome-free")
+  eslint_config_defaults: String @proxy(from: "eslint-config-defaults")
+  gatsby_plugin_google_tagmanager: String @proxy(from: "gatsby-plugin-google-tagmanager")
+  gatsby_remark_images: String @proxy(from: "gatsby-remark-images")
+  gatsby_remark_relative_images: String @proxy(from: "gatsby-remark-relative-images")
+  rollup_plugin_clear: String @proxy(from: "rollup-plugin-clear")
+  babel_polyfill: String @proxy(from: "babel-polyfill")
+  react_collapsible: String @proxy(from: "react-collapsible")
+  _babel_plugin_transform_async_to_generator: String @proxy(from: "@babel/plugin-transform-async-to-generator")
+  graphql_tools: String @proxy(from: "graphql-tools")
+  bluebird: String
+  eslint_config_gatsby_standard: String @proxy(from: "eslint-config-gatsby-standard")
+  abcjs: String
+  jest_runner_prettier: String @proxy(from: "jest-runner-prettier")
+  chai_as_promised: String @proxy(from: "chai-as-promised")
+  mocha_junit_reporter: String @proxy(from: "mocha-junit-reporter")
+  sinon_chai: String @proxy(from: "sinon-chai")
+  _types_rehype_react: String @proxy(from: "@types/rehype-react")
+  stylelint_webpack_plugin: String @proxy(from: "stylelint-webpack-plugin")
+  kentico_cloud_js_sdk_test_http_service: String @proxy(from: "kentico-cloud-js-sdk-test-http-service")
+  markdown_it: String @proxy(from: "markdown-it")
+  eslint_config_travisreynolds_node: String @proxy(from: "eslint-config-travisreynolds-node")
+}
+
+type NPMPackageRepository {
+  url: String
+  project: String
+  user: String
+  host: String
+  path: String
+  head: String
+  branch: String
+  type: String
+  directory: String
+}
+
+type NPMPackageGithubRepo {
+  user: String
+  project: String
+  path: String
+  head: String
+}
+
+type NPMPackageOwner {
+  name: String
+  avatar: String
+  link: String
+  email: String
+}
+
+type NPMPackageLastPublisher {
+  name: String
+  email: String
+  avatar: String
+  link: String
+}
+
+type NPMPackageOwners {
+  email: String
+  name: String
+  avatar: String
+  link: String
+}
+
+type NPMPackage_searchInternal {
+  alternativeNames: [String]
+  downloadsMagnitude: Int
+  jsDelivrPopularity: Int
+  concatenatedName: String
+}
+
+type NPMPackageBin {
+  gatsby_plugin_s3: String @proxy(from: "gatsby-plugin-s3")
+  gatsby_preload_fonts: String @proxy(from: "gatsby-preload-fonts")
+  gatsby_source_spotify: String @proxy(from: "gatsby-source-spotify")
+  gatsby_plugin_yandex_s3_test: String @proxy(from: "gatsby-plugin-yandex-s3-test")
+  gatsby_new_blog: String @proxy(from: "gatsby-new-blog")
+  sortter_gatsby_plugin_s3: String @proxy(from: "sortter-gatsby-plugin-s3")
+}
