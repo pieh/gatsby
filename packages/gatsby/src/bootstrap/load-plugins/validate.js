@@ -197,16 +197,12 @@ const handleMultipleReplaceRenderers = ({ flattenedPlugins }) => {
         `This might be an error, see: https://www.gatsbyjs.org/docs/debugging-replace-renderer-api/`
       )
     } else {
-      console.log(``)
-      reporter.error(
-        `Gatsby's replaceRenderer API is implemented by multiple plugins:`
-      )
-      reporter.error(rendererPlugins.join(`, `))
-      reporter.error(`This will break your build`)
-      reporter.error(
-        `See: https://www.gatsbyjs.org/docs/debugging-replace-renderer-api/`
-      )
-      if (process.env.NODE_ENV === `production`) process.exit(1)
+      reporter.panicOnBuild({
+        id: `11349`,
+        context: {
+          rendererPlugins,
+        },
+      })
     }
 
     // Now update plugin list so only final replaceRenderer will run

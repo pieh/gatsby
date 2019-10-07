@@ -181,6 +181,16 @@ const errorMap = {
         .join(`\n`),
     level: `ERROR`,
   },
+  "11349": {
+    text: context =>
+      stripIndent(`
+        Gatsby's replaceRenderer API is implemented by multiple plugins:
+        ${context.rendererPlugins.join(`, `)}
+        This will break your build.
+      `),
+    level: `ERROR`,
+    docsUrl: `https://www.gatsbyjs.org/docs/debugging-replace-renderer-api/`,
+  },
   // node object didn't pass validation
   "11467": {
     text: context =>
