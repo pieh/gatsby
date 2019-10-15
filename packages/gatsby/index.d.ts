@@ -1168,3 +1168,5 @@ export interface Node extends NodeInput {
   }
   [key: string]: unknown
 }
+
+export * from "./ipc-types"

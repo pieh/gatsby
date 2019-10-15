@@ -119,7 +119,9 @@ const actions = {
         activity_total,
         activity_type,
         activity_uuid,
-        timestamp: new Date().toJSON(),
+        // we have timestamp attached to actions elsewhere
+        // and we don't need timestamp in multiple levels of the object
+        // timestamp: new Date().toJSON(),
         stack,
       },
     }
