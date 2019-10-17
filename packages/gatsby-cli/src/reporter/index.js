@@ -120,6 +120,13 @@ const reporter: Reporter = {
     if (isNoColor) {
       process.env.FORCE_COLOR = `0`
     }
+
+    // Change chalk color level
+    // 0	All colors disabled
+    // 1	Basic color support (16 colors)
+    // 2	256 color support
+    // 3	Truecolor support (16 million colors)
+    this.format.level = isNoColor ? 0 : 3
   },
   /**
    * Log arguments and exit process with status 1.
