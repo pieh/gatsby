@@ -407,6 +407,11 @@ module.exports = async (
       )
     }
 
+    if (process.env.REACT_PROFILING) {
+      resolve.alias[`react-dom$`] = `react-dom/profiling`
+      resolve.alias[`scheduler/tracing`] = `scheduler/tracing-profiling`
+    }
+
     return resolve
   }
 

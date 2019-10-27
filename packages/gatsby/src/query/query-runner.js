@@ -85,9 +85,11 @@ ${formatErrorDetails(errorDetails)}`)
 
     if (queryJob.isPage) {
       const publicDir = path.join(program.directory, `public`)
-      const { pages } = store.getState()
+      const { pages, components } = store.getState()
       const page = pages.get(queryJob.id)
-      await pageDataUtil.write({ publicDir }, page, result)
+      // debugger
+      const component = components.get(page.componentPath)
+      await pageDataUtil.write({ publicDir }, page, result, component)
     } else {
       // The babel plugin is hard-coded to load static queries from
       // public/static/d/
@@ -98,7 +100,7 @@ ${formatErrorDetails(errorDetails)}`)
         `d`,
         `${queryJob.hash}.json`
       )
-
+      // debugger
       await fs.outputFile(resultPath, resultJSON)
     }
   }

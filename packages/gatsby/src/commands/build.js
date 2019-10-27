@@ -63,8 +63,6 @@ module.exports = async function build(program: BuildArgs) {
     parentSpan: buildSpan,
   })
 
-  await processStaticQueries()
-
   await apiRunnerNode(`onPreBuild`, {
     graphql: graphqlRunner,
     parentSpan: buildSpan,
@@ -85,6 +83,9 @@ module.exports = async function build(program: BuildArgs) {
     activity.panic(structureWebpackErrors(`build-javascript`, err))
   })
   activity.end()
+
+  await processStaticQueries()
+  await processPageQueries()
 
   const workerPool = WorkerPool.create()
 
@@ -107,8 +108,6 @@ module.exports = async function build(program: BuildArgs) {
 
     activity.end()
   }
-
-  await processPageQueries()
 
   require(`../redux/actions`).boundActionCreators.setProgramStatus(
     `BOOTSTRAP_QUERY_RUNNING_FINISHED`

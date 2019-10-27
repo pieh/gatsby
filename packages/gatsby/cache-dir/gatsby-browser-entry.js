@@ -60,6 +60,9 @@ const useStaticQuery = query => {
   if (context[query] && context[query].data) {
     return context[query].data
   } else {
+    // this is only because static queries that come from gatsby-browser API are not handled yet
+    // and my test site have one and throwing would not allow app to mount
+    return null
     throw new Error(
       `The result of this StaticQuery could not be fetched.\n\n` +
         `This is likely a bug in Gatsby and if refreshing the page does not fix it, ` +

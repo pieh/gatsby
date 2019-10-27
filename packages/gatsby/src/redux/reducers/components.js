@@ -26,6 +26,7 @@ module.exports = (state = new Map(), action) => {
           query: state.get(action.payload.componentPath)?.query || ``,
           pages: new Set([action.payload.path]),
           isInBootstrap: programStatus === `BOOTSTRAPPING`,
+          staticQueries: new Set(),
         })
         service = interpret(machine).start()
         // .onTransition(nextState => {
@@ -53,6 +54,7 @@ module.exports = (state = new Map(), action) => {
         Object.assign(
           {
             query: ``,
+            staticQueries: new Set(),
           },
           service.state.context
         )
@@ -134,6 +136,11 @@ module.exports = (state = new Map(), action) => {
         type: `DELETE_PAGE`,
         page: action.payload,
       })
+      return state
+    }
+    case `ADD_STATIC_QUERY_TO_PAGES`: {
+      const component = state.get(action.payload.componentPath)
+      component.staticQueries.add(action.payload.hash)
       return state
     }
   }

@@ -15,6 +15,7 @@ import asyncRequires from "./async-requires"
 import { setLoader, ProdLoader, publicLoader } from "./loader"
 import EnsureResources from "./ensure-resources"
 import stripPrefix from "./strip-prefix"
+import { ProductionStaticQueryContext } from "./prod-static-query-context"
 
 // Generated during bootstrap
 import matchPaths from "./match-paths.json"
@@ -150,7 +151,9 @@ apiRunnerAsync(`onClientEntry`).then(() => {
 
     domReady(() => {
       renderer(
-        <NewRoot />,
+        <ProductionStaticQueryContext>
+          <NewRoot />
+        </ProductionStaticQueryContext>,
         typeof window !== `undefined`
           ? document.getElementById(`___gatsby`)
           : void 0,

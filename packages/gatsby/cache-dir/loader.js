@@ -133,6 +133,7 @@ export class BaseLoader {
     this.pageDb = new Map()
     this.inFlightDb = new Map()
     this.pageDataDb = new Map()
+    this.staticQueryDb = new Map()
     this.prefetchTriggered = new Set()
     this.prefetchCompleted = new Set()
     this.loadComponent = loadComponent
@@ -191,33 +192,77 @@ export class BaseLoader {
         }
 
         let pageData = result.payload
-        const { componentChunkName } = pageData
-        return this.loadComponent(componentChunkName).then(component => {
-          const finalResult = { createdAt: new Date() }
-          let pageResources
-          if (!component) {
-            finalResult.status = `error`
-          } else {
-            finalResult.status = `success`
-            if (result.notFound === true) {
-              finalResult.notFound = true
+        const { componentChunkName, staticQueries } = pageData
+        return Promise.all([
+          this.loadComponent(componentChunkName).then(component => {
+            const finalResult = { createdAt: new Date() }
+            let pageResources
+            if (!component) {
+              finalResult.status = `error`
+            } else {
+              finalResult.status = `success`
+              if (result.notFound === true) {
+                finalResult.notFound = true
+              }
+              pageData = Object.assign(pageData, {
+                webpackCompilationHash: allData[0]
+                  ? allData[0].webpackCompilationHash
+                  : ``,
+              })
+              pageResources = toPageResources(pageData, component)
+              finalResult.payload = pageResources
+              emitter.emit(`onPostLoadPageResources`, {
+                page: pageResources,
+                pageResources,
+              })
             }
-            pageData = Object.assign(pageData, {
-              webpackCompilationHash: allData[0]
-                ? allData[0].webpackCompilationHash
-                : ``,
-            })
-            pageResources = toPageResources(pageData, component)
-            finalResult.payload = pageResources
-            emitter.emit(`onPostLoadPageResources`, {
-              page: pageResources,
-              pageResources,
-            })
-          }
-          this.pageDb.set(pagePath, finalResult)
-          // undefined if final result is an error
-          return pageResources
-        })
+            this.pageDb.set(pagePath, finalResult)
+            // undefined if final result is an error
+            return pageResources
+          }),
+          Promise.all(
+            staticQueries
+              ? staticQueries.map(staticQueryHash => {
+                  console.log(
+                    `[static-query] "${pagePath}" need`,
+                    staticQueryHash
+                  )
+                  if (this.staticQueryDb.has(staticQueryHash)) {
+                    const jsonPayload = this.staticQueryDb.get(staticQueryHash)
+                    console.log(
+                      `[static-query] "${pagePath}" is in cache`,
+                      staticQueryHash,
+                      jsonPayload
+                    )
+                    return Promise.resolve(undefined)
+                  }
+
+                  // TO-DO: add in flight promise handling to avoid multiple concurrent requests
+
+                  return doFetch(`/static/d/${staticQueryHash}.json`).then(
+                    req => {
+                      const jsonPayload = JSON.parse(req.responseText)
+                      console.log(
+                        `[static-query] "${pagePath}" fetched`,
+                        staticQueryHash,
+                        jsonPayload
+                      )
+                      this.staticQueryDb.set(staticQueryHash, jsonPayload)
+                      return { staticQueryHash, jsonPayload }
+                    }
+                  )
+                })
+              : []
+          ).then(staticQueriesFetchResults => {
+            console.log(staticQueriesFetchResults)
+            const itemsToEmit = staticQueriesFetchResults.filter(Boolean)
+            if (itemsToEmit.length) {
+              emitter.emit(`static-query-result`, {
+                staticQueriesFetchResults: itemsToEmit,
+              })
+            }
+          }),
+        ]).then(([pageResources]) => pageResources)
       })
       // prefer duplication with then + catch over .finally to prevent problems in ie11 + firefox
       .then(response => {
