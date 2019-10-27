@@ -178,6 +178,7 @@ export class BaseLoader {
       this.loadPageDataJson(pagePath),
     ])
       .then(allData => {
+        const appDatastaticQueries = allData[0] && allData[0].staticQueries
         const result = allData[1]
         if (result.status === `error`) {
           return {
@@ -220,48 +221,11 @@ export class BaseLoader {
             // undefined if final result is an error
             return pageResources
           }),
-          Promise.all(
-            staticQueries
-              ? staticQueries.map(staticQueryHash => {
-                  console.log(
-                    `[static-query] "${pagePath}" need`,
-                    staticQueryHash
-                  )
-                  if (this.staticQueryDb.has(staticQueryHash)) {
-                    const jsonPayload = this.staticQueryDb.get(staticQueryHash)
-                    console.log(
-                      `[static-query] "${pagePath}" is in cache`,
-                      staticQueryHash,
-                      jsonPayload
-                    )
-                    return Promise.resolve(undefined)
-                  }
-
-                  // TO-DO: add in flight promise handling to avoid multiple concurrent requests
-
-                  return doFetch(`/static/d/${staticQueryHash}.json`).then(
-                    req => {
-                      const jsonPayload = JSON.parse(req.responseText)
-                      console.log(
-                        `[static-query] "${pagePath}" fetched`,
-                        staticQueryHash,
-                        jsonPayload
-                      )
-                      this.staticQueryDb.set(staticQueryHash, jsonPayload)
-                      return { staticQueryHash, jsonPayload }
-                    }
-                  )
-                })
-              : []
-          ).then(staticQueriesFetchResults => {
-            console.log(staticQueriesFetchResults)
-            const itemsToEmit = staticQueriesFetchResults.filter(Boolean)
-            if (itemsToEmit.length) {
-              emitter.emit(`static-query-result`, {
-                staticQueriesFetchResults: itemsToEmit,
-              })
-            }
-          }),
+          this.fetchAndEmitStaticQueryResults(staticQueries, pagePath),
+          this.fetchAndEmitStaticQueryResults(
+            appDatastaticQueries,
+            `[app-data]`
+          ),
         ]).then(([pageResources]) => pageResources)
       })
       // prefer duplication with then + catch over .finally to prevent problems in ie11 + firefox
@@ -386,6 +350,49 @@ export class BaseLoader {
       }
 
       return appData
+    })
+  }
+
+  fetchAndEmitStaticQueryResults(staticQueries, pagePath) {
+    if (!staticQueries) {
+      return Promise.resolve()
+    }
+
+    return Promise.all(
+      staticQueries
+        ? staticQueries.map(staticQueryHash => {
+            console.log(`[static-query] "${pagePath}" need`, staticQueryHash)
+            if (this.staticQueryDb.has(staticQueryHash)) {
+              const jsonPayload = this.staticQueryDb.get(staticQueryHash)
+              console.log(
+                `[static-query] "${pagePath}" is in cache`,
+                staticQueryHash,
+                jsonPayload
+              )
+              return Promise.resolve(undefined)
+            }
+
+            // TO-DO: add in flight promise handling to avoid multiple concurrent requests
+
+            return doFetch(`/static/d/${staticQueryHash}.json`).then(req => {
+              const jsonPayload = JSON.parse(req.responseText)
+              console.log(
+                `[static-query] "${pagePath}" fetched`,
+                staticQueryHash,
+                jsonPayload
+              )
+              this.staticQueryDb.set(staticQueryHash, jsonPayload)
+              return { staticQueryHash, jsonPayload }
+            })
+          })
+        : []
+    ).then(staticQueriesFetchResults => {
+      const itemsToEmit = staticQueriesFetchResults.filter(Boolean)
+      if (itemsToEmit.length) {
+        emitter.emit(`static-query-result`, {
+          staticQueriesFetchResults: itemsToEmit,
+        })
+      }
     })
   }
 }

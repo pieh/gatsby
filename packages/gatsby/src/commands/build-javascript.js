@@ -127,6 +127,13 @@ module.exports = async (program, { parentSpan }) => {
             )
               .map(t => {
                 if (t.type === `entry`) {
+                  store.dispatch({
+                    type: `ADD_STATIC_QUERY_TO_APP`,
+                    payload: {
+                      hash: c.hash,
+                      id: c.id,
+                    },
+                  })
                   return ` - [app] from gatsby-browser / gatsby-plugin-layout etc (need in app-data)`
                 } else if (t.type === `page-template`) {
                   store.dispatch({

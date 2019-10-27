@@ -1,11 +1,13 @@
 const fs = require(`fs-extra`)
 const path = require(`path`)
+const { store } = require(`../redux`)
 
 const APP_DATA_JSON = `app-data.json`
 
 const write = (publicDir, hash) => {
   fs.outputJson(path.join(publicDir, `page-data`, APP_DATA_JSON), {
     webpackCompilationHash: hash,
+    staticQueries: Array.from(store.getState().appStaticQueries.values()),
   })
 }
 

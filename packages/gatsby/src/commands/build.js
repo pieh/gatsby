@@ -91,6 +91,7 @@ module.exports = async function build(program: BuildArgs) {
 
   const webpackCompilationHash = stats.hash
   if (
+    true || // yay - hacks! (probably not needed as hash should change if anything in code changes)
     webpackCompilationHash !== store.getState().webpackCompilationHash ||
     !appDataUtil.exists(publicDir)
   ) {
