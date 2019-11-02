@@ -4,6 +4,7 @@ const webpackConfig = require(`../utils/webpack.config`)
 
 const { reportWebpackWarnings } = require(`../utils/webpack-error-utils`)
 const { store } = require(`../redux`)
+const fs = require(`fs-extra`)
 
 module.exports = async (program, { parentSpan }) => {
   const { directory } = program
@@ -28,6 +29,10 @@ module.exports = async (program, { parentSpan }) => {
       if (stats.hasErrors()) {
         reject(stats.compilation.errors)
         return
+      }
+
+      if (process.env.WEBPACK_PROFILING) {
+        fs.outputJSONSync(`public/stats.json`, stats.toJson())
       }
 
       const state = store.getState()

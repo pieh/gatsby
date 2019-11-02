@@ -407,7 +407,7 @@ module.exports = async (
       )
     }
 
-    if (process.env.REACT_PROFILING) {
+    if (target === `web` && process.env.REACT_PROFILING) {
       resolve.alias[`react-dom$`] = `react-dom/profiling`
       resolve.alias[`scheduler/tracing`] = `scheduler/tracing-profiling`
     }
@@ -578,6 +578,10 @@ module.exports = async (
         }
       },
     ]
+  }
+
+  if (process.env.WEBPACK_PROFILING && stage === `build-javascript`) {
+    config.profile = true
   }
 
   store.dispatch(actions.replaceWebpackConfig(config))
