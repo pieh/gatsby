@@ -26,6 +26,16 @@ module.exports = (state = new Map(), action) => {
       state.delete(action.payload.path)
       return state
     }
+    case `CREATE_PAGE_MODULE_DEPENDENCY`: {
+      const page = state.get(action.payload.path)
+      if (!page.moduleDependencies) {
+        page.moduleDependencies = []
+      }
+      if (!page.moduleDependencies.includes(action.payload.moduleId)) {
+        page.moduleDependencies.push(action.payload.moduleId)
+      }
+      return state
+    }
     default:
       return state
   }

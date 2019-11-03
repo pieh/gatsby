@@ -11,6 +11,7 @@ import Link, {
 } from "gatsby-link"
 import PageRenderer from "./public-page-renderer"
 import loader from "./loader"
+import { getModule } from "./modules-provider"
 
 const prefetchPathname = loader.enqueue
 
@@ -99,4 +100,5 @@ export {
   PageRenderer,
   useStaticQuery,
   prefetchPathname,
+  getModule,
 }

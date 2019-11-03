@@ -40,7 +40,17 @@ const BabelPluginPluckImports = require(`./babel-plugin-pluck-imports`)
  *  */
 
 module.exports = async function genMDX(
-  { isLoader, node, options, getNode, getNodes, reporter, cache, pathPrefix },
+  {
+    isLoader,
+    node,
+    options,
+    getNode,
+    getNodes,
+    reporter,
+    cache,
+    pathPrefix,
+    actions,
+  },
   { forceDisableCache = false } = {}
 ) {
   const pathPrefixCacheStr = pathPrefix || ``
@@ -60,7 +70,9 @@ module.exports = async function genMDX(
     html: undefined,
     scopeImports: [],
     scopeIdentifiers: [],
+    usedModules: [],
     body: undefined,
+    modulesMapping: {},
   }
 
   // TODO: a remark and a hast plugin that pull out the ast and store it in results
@@ -145,12 +157,29 @@ ${code}`
       ],
     })
 
-    const identifiers = Array.from(instance.state.identifiers)
-    const imports = Array.from(instance.state.imports)
+    const identifiers = [] // Array.from(instance.state.identifiers)
+    const imports = [] // Array.from(instance.state.imports)
+
     if (!identifiers.includes(`React`)) {
       identifiers.push(`React`)
       imports.push(`import React from 'react'`)
     }
+
+    instance.state.modules.forEach(({ importPath, exportName, localName }) => {
+      // console.log("a", mod)
+      // console.trace()
+      const id = `${importPath}-${exportName}`
+      if (!results.usedModules.includes(id)) {
+        actions.registerModule({
+          id,
+          module: importPath,
+          export: exportName,
+        })
+
+        results.modulesMapping[localName] = id
+        results.usedModules.push(id)
+      }
+    })
 
     results.scopeImports = imports
     results.scopeIdentifiers = identifiers

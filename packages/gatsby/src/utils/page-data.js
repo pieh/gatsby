@@ -22,6 +22,7 @@ const write = async ({ publicDir }, page, result, component) => {
         ? Array.from(component.staticQueries.values())
         : undefined
       : undefined,
+    moduleDependencies: page.moduleDependencies,
     result,
   }
 

@@ -61,4 +61,5 @@ module.exports = {
   themes: require(`./themes`),
   logs: require(`gatsby-cli/lib/reporter/redux/reducer`),
   appStaticQueries: require(`./app-static-queries`),
+  modules: require(`./modules`),
 }

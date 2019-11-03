@@ -105,7 +105,16 @@ module.exports = (
   }
 
   const processMDX = ({ node }) =>
-    genMDX({ node, getNode, getNodes, reporter, cache, pathPrefix, options })
+    genMDX({
+      node,
+      getNode,
+      getNodes,
+      reporter,
+      cache,
+      pathPrefix,
+      options,
+      actions,
+    })
 
   // New Code // Schema
   const MdxType = schema.buildObjectType({
@@ -115,10 +124,26 @@ module.exports = (
       fileAbsolutePath: { type: `String!` },
       frontmatter: { type: `MdxFrontmatter` },
       body: {
-        type: `String!`,
-        async resolve(mdxNode) {
-          const { body } = await processMDX({ node: mdxNode })
-          return body
+        type: `JSON!`,
+        async resolve(mdxNode, a, context, c) {
+          const { body, usedModules, modulesMapping } = await processMDX({
+            node: mdxNode,
+          })
+
+          if (context && context.path) {
+            usedModules.forEach(usedModule => {
+              actions.createPageModuleDependency({
+                path: context.path,
+                moduleId: usedModule,
+              })
+            })
+          }
+
+          // console.log(context.path, usedModules)
+          return {
+            body,
+            modulesMapping,
+          }
         },
       },
       excerpt: {

@@ -100,11 +100,26 @@ const getMatchPaths = pages => {
     })
 }
 
-const createHash = (matchPaths, components) =>
+const createHash = (matchPaths, components, modules) =>
   crypto
     .createHash(`md5`)
-    .update(JSON.stringify({ matchPaths, components }))
+    .update(JSON.stringify({ matchPaths, components, modules }))
     .digest(`hex`)
+
+const getModules = modules => {
+  const ret = []
+  modules.forEach(({ resource, exportIdentifier }, moduleIdentifier) => {
+    ret.push({
+      moduleIdentifier,
+      moduleImport: resource,
+      moduleExport: exportIdentifier,
+    })
+  })
+
+  return ret.sort((a, b) =>
+    a.moduleIdentifier.localeCompare(b.moduleIdentifier)
+  )
+}
 
 // Write out pages information.
 const writeAll = async state => {
@@ -113,8 +128,9 @@ const writeAll = async state => {
   const pages = [...state.pages.values()]
   const matchPaths = getMatchPaths(pages)
   const components = getComponents(pages)
+  const modules = getModules(state.modules)
 
-  const newHash = createHash(matchPaths, components)
+  const newHash = createHash(matchPaths, components, modules)
 
   if (newHash === lastHash) {
     // Nothing changed. No need to rewrite files
@@ -126,6 +142,7 @@ const writeAll = async state => {
 
   // Create file with sync requires of components/json files.
   let syncRequires = `const { hot } = require("react-hot-loader/root")
+  const { setModules } = require("./modules-provider")
 
 // prefer default export if available
 const preferDefault = m => m && m.default || m
@@ -138,26 +155,43 @@ const preferDefault = m => m && m.default || m
         )}")))`
     )
     .join(`,\n`)}
-}\n\n`
+}\n\nsetModules({\n${modules
+    .map(
+      ({ moduleIdentifier, moduleImport, moduleExport }) =>
+        `  "${moduleIdentifier}": require("${moduleImport}")["${moduleExport}"]`
+    )
+    .join(`,\n`)}});`
 
   // Create file with async requires of components/json files.
   let asyncRequires = `// prefer default export if available
 const preferDefault = m => m && m.default || m
 \n`
-  asyncRequires += `exports.components = {\n${components
-    .map(c => {
-      // we need a relative import path to keep contenthash the same if directory changes
-      const relativeComponentPath = path.relative(
-        path.join(program.directory, `.cache`),
-        c.component
-      )
+  asyncRequires += `exports.components = {\n${[
+    components
+      .map(c => {
+        // we need a relative import path to keep contenthash the same if directory changes
+        const relativeComponentPath = path.relative(
+          path.join(program.directory, `.cache`),
+          c.component
+        )
 
-      return `  "${c.componentChunkName}": () => import("${slash(
-        relativeComponentPath
-      )}" /* webpackChunkName: "${c.componentChunkName}" */)`
-    })
-    .join(`,\n`)}
+        return `  "${c.componentChunkName}": () => import("${slash(
+          relativeComponentPath
+        )}" /* webpackChunkName: "${c.componentChunkName}" */)`
+      })
+      .join(`,\n`),
+    modules
+      .map(
+        ({ moduleIdentifier, moduleImport, moduleExport }) =>
+          `  "${moduleIdentifier}": () => import("${moduleImport}" /* webpackChunkName: "${moduleIdentifier}" */).then(mod => {
+            return mod['${moduleExport}']
+          })`
+      )
+      .join(`,\n`),
+  ].join(`,\n`)}
 }\n\n`
+
+  // asyncRequires += `exports.modules = {\n}\n\n`
 
   const writeAndMove = (file, data) => {
     const destination = joinPath(program.directory, `.cache`, file)

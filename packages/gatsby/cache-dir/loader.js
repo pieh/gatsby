@@ -179,6 +179,7 @@ export class BaseLoader {
     ])
       .then(allData => {
         const appDatastaticQueries = allData[0] && allData[0].staticQueries
+
         const result = allData[1]
         if (result.status === `error`) {
           return {
@@ -193,39 +194,46 @@ export class BaseLoader {
         }
 
         let pageData = result.payload
-        const { componentChunkName, staticQueries } = pageData
+        const {
+          componentChunkName,
+          staticQueries,
+          moduleDependencies,
+        } = pageData
         return Promise.all([
-          this.loadComponent(componentChunkName).then(component => {
-            const finalResult = { createdAt: new Date() }
-            let pageResources
-            if (!component) {
-              finalResult.status = `error`
-            } else {
-              finalResult.status = `success`
-              if (result.notFound === true) {
-                finalResult.notFound = true
+          this.loadComponent(componentChunkName)
+            .then(preferDefault)
+            .then(component => {
+              const finalResult = { createdAt: new Date() }
+              let pageResources
+              if (!component) {
+                finalResult.status = `error`
+              } else {
+                finalResult.status = `success`
+                if (result.notFound === true) {
+                  finalResult.notFound = true
+                }
+                pageData = Object.assign(pageData, {
+                  webpackCompilationHash: allData[0]
+                    ? allData[0].webpackCompilationHash
+                    : ``,
+                })
+                pageResources = toPageResources(pageData, component)
+                finalResult.payload = pageResources
+                emitter.emit(`onPostLoadPageResources`, {
+                  page: pageResources,
+                  pageResources,
+                })
               }
-              pageData = Object.assign(pageData, {
-                webpackCompilationHash: allData[0]
-                  ? allData[0].webpackCompilationHash
-                  : ``,
-              })
-              pageResources = toPageResources(pageData, component)
-              finalResult.payload = pageResources
-              emitter.emit(`onPostLoadPageResources`, {
-                page: pageResources,
-                pageResources,
-              })
-            }
-            this.pageDb.set(pagePath, finalResult)
-            // undefined if final result is an error
-            return pageResources
-          }),
+              this.pageDb.set(pagePath, finalResult)
+              // undefined if final result is an error
+              return pageResources
+            }),
           this.fetchAndEmitStaticQueryResults(staticQueries, pagePath),
           this.fetchAndEmitStaticQueryResults(
             appDatastaticQueries,
             `[app-data]`
           ),
+          this.fetchAndEmitModuleDependencies(moduleDependencies, pagePath),
         ]).then(([pageResources]) => pageResources)
       })
       // prefer duplication with then + catch over .finally to prevent problems in ie11 + firefox
@@ -359,33 +367,31 @@ export class BaseLoader {
     }
 
     return Promise.all(
-      staticQueries
-        ? staticQueries.map(staticQueryHash => {
-            console.log(`[static-query] "${pagePath}" need`, staticQueryHash)
-            if (this.staticQueryDb.has(staticQueryHash)) {
-              const jsonPayload = this.staticQueryDb.get(staticQueryHash)
-              console.log(
-                `[static-query] "${pagePath}" is in cache`,
-                staticQueryHash,
-                jsonPayload
-              )
-              return Promise.resolve(undefined)
-            }
+      staticQueries.map(staticQueryHash => {
+        console.log(`[static-query] "${pagePath}" need`, staticQueryHash)
+        if (this.staticQueryDb.has(staticQueryHash)) {
+          const jsonPayload = this.staticQueryDb.get(staticQueryHash)
+          console.log(
+            `[static-query] "${pagePath}" is in cache`,
+            staticQueryHash,
+            jsonPayload
+          )
+          return Promise.resolve(undefined)
+        }
 
-            // TO-DO: add in flight promise handling to avoid multiple concurrent requests
+        // TO-DO: add in flight promise handling to avoid multiple concurrent requests
 
-            return doFetch(`/static/d/${staticQueryHash}.json`).then(req => {
-              const jsonPayload = JSON.parse(req.responseText)
-              console.log(
-                `[static-query] "${pagePath}" fetched`,
-                staticQueryHash,
-                jsonPayload
-              )
-              this.staticQueryDb.set(staticQueryHash, jsonPayload)
-              return { staticQueryHash, jsonPayload }
-            })
-          })
-        : []
+        return doFetch(`/static/d/${staticQueryHash}.json`).then(req => {
+          const jsonPayload = JSON.parse(req.responseText)
+          console.log(
+            `[static-query] "${pagePath}" fetched`,
+            staticQueryHash,
+            jsonPayload
+          )
+          this.staticQueryDb.set(staticQueryHash, jsonPayload)
+          return { staticQueryHash, jsonPayload }
+        })
+      })
     ).then(staticQueriesFetchResults => {
       const itemsToEmit = staticQueriesFetchResults.filter(Boolean)
       if (itemsToEmit.length) {
@@ -394,6 +400,28 @@ export class BaseLoader {
         })
       }
     })
+  }
+
+  fetchAndEmitModuleDependencies(moduleDependencies, pagePath) {
+    console.log(`fetch modules`, moduleDependencies, pagePath)
+
+    if (!moduleDependencies) {
+      return Promise.resolve()
+    }
+
+    // in-flight db and all that jazz
+
+    return Promise.all(
+      moduleDependencies.map(moduleId => {
+        return this.loadComponent(moduleId).then(c => {
+          emitter.emit(`module-fetched`, {
+            moduleId,
+            module: c,
+          })
+          return c
+        })
+      })
+    )
   }
 }
 
@@ -404,8 +432,7 @@ const createComponentUrls = componentChunkName =>
 
 export class ProdLoader extends BaseLoader {
   constructor(asyncRequires, matchPaths) {
-    const loadComponent = chunkName =>
-      asyncRequires.components[chunkName]().then(preferDefault)
+    const loadComponent = chunkName => asyncRequires.components[chunkName]()
 
     super(loadComponent, matchPaths)
   }

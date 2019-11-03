@@ -1300,4 +1300,25 @@ actions.createPageDependency = (
   }
 }
 
+actions.registerModule = ({ id, module, export: exportName = `default` }) => {
+  return {
+    type: `REGISTER_MODULE`,
+    payload: {
+      id,
+      module,
+      export: exportName,
+    },
+  }
+}
+
+actions.createPageModuleDependency = ({ path, moduleId }) => {
+  return {
+    type: `CREATE_PAGE_MODULE_DEPENDENCY`,
+    payload: {
+      path,
+      moduleId,
+    },
+  }
+}
+
 module.exports = { actions }

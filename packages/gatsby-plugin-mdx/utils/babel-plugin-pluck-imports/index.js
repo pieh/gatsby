@@ -4,7 +4,8 @@ module.exports = class Plugin {
   constructor() {
     const imports = []
     const identifiers = []
-    this.state = { imports: imports, identifiers: identifiers }
+    const modules = []
+    this.state = { imports: imports, identifiers: identifiers, modules }
     this.plugin = declare(api => {
       api.assertVersion(7)
 
@@ -19,6 +20,28 @@ module.exports = class Plugin {
                 }
               },
             })
+
+            const importPath = path.node.source.value
+
+            path.traverse({
+              ImportSpecifier(path2) {
+                const exportName = path2.node.imported.name
+                const localName = path2.node.local.name
+                console.log("ImportSpecifier", importPath, exportName)
+                modules.push({ importPath, exportName, localName })
+                // debugger
+              },
+              ImportDefaultSpecifier(path2) {
+                console.log("ImportDefaultSpecifier", importPath)
+                const localName = path2.node.local.name
+                modules.push({ importPath, exportName: `default`, localName })
+                // debugger
+              },
+            })
+
+            // if (!modules.includes(importPath)) {
+            //   modules.push(importPath)
+            // }
 
             //            const name = path.get("declaration.declarations.0").node.id.name;
 

@@ -68,6 +68,7 @@ module.exports = async (
       cache,
       pathPrefix,
       options,
+      actions,
     },
     { forceDisableCache: true }
   )
