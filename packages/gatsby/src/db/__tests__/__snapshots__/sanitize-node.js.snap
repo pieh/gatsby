@@ -7,7 +7,7 @@ Object {
     "self": [Circular],
   },
   "deep": Object {
-    "deepCircular": Object {
+    "indirectCircular": Object {
       "down1": Object {
         "down2": Object {
           "deepCircular": [Circular],
