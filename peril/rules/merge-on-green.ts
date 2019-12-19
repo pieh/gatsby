@@ -1,5 +1,5 @@
 import { danger, peril } from "danger"
-import octokit from "@octokit/rest"
+import * as octokit from "@octokit/rest"
 
 const ACCEPTABLE_MERGEABLE_STATES = [`clean`, `unstable`]
 
@@ -51,7 +51,7 @@ const checkPRConditionsAndMerge = async ({
 }
 
 export const mergeOnGreen = async () => {
-  console.log("just console.log to check if modified rule is actually used")
+  console.log(`just console.log to check if modified rule is actually used`)
   try {
     if (danger.github.action === `completed` && danger.github.check_suite) {
       // this is for check_suite.completed
