@@ -2,6 +2,7 @@
   repo: https://github.com/vim-labs/gatsby-theme-sky-lite-starter
   description: A lightweight GatsbyJS starter with Material-UI and MDX Markdown support.
   tags:
+    - wat
     - Blog
     - Styling:Material
   features:
