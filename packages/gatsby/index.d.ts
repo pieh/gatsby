@@ -120,8 +120,10 @@ export interface GatsbyNode {
    *
    * @see https://www.gatsbyjs.org/docs/node-apis/#createPages
    */
-  createPages?(
-    args: CreatePagesArgs & { traceId: "initial-createPages" },
+  createPages?<TSource = any, TContext = any>(
+    args: CreatePagesArgs<TSource, TContext> & {
+      traceId: "initial-createPages"
+    },
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
@@ -140,8 +142,10 @@ export interface GatsbyNode {
    * Gatsby, it needs to keep its own state about its world to know when to
    * add and remove pages.
    */
-  createPagesStatefully?(
-    args: CreatePagesArgs & { traceId: "initial-createPagesStatefully" },
+  createPagesStatefully?<TSource = any, TContext = any>(
+    args: CreatePagesArgs<TSource, TContext> & {
+      traceId: "initial-createPagesStatefully"
+    },
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
@@ -151,8 +155,8 @@ export interface GatsbyNode {
    * This API will change before 2.0 as it needs still to be converted to use
    * Redux actions.
    */
-  onCreateBabelConfig?(
-    args: CreateBabelConfigArgs,
+  onCreateBabelConfig?<TSource = any, TContext = any>(
+    args: CreateBabelConfigArgs<TSource, TContext>,
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
@@ -171,8 +175,8 @@ export interface GatsbyNode {
    *   })
    * }
    */
-  onCreateDevServer?(
-    args: CreateDevServerArgs,
+  onCreateDevServer?<TSource = any, TContext = any>(
+    args: CreateDevServerArgs<TSource, TContext>,
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
@@ -190,8 +194,8 @@ export interface GatsbyNode {
    *   // create a new node field.
    * }
    */
-  onCreateNode?(
-    args: CreateNodeArgs,
+  onCreateNode?<TNode extends object = {}, TSource = any, TContext = any>(
+    args: CreateNodeArgs<TNode, TSource, TContext>,
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
@@ -204,8 +208,8 @@ export interface GatsbyNode {
    * See the guide [Creating and Modifying Pages](https://www.gatsbyjs.org/docs/creating-and-modifying-pages/)
    * for more on this API.
    */
-  onCreatePage?(
-    args: CreatePageArgs,
+  onCreatePage?<TNode extends object = {}, TSource = any, TContext = any>(
+    args: CreatePageArgs<TNode, TSource, TContext>,
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
@@ -214,50 +218,50 @@ export interface GatsbyNode {
    * Let plugins extend/mutate the site's webpack configuration.
    * @see https://www.gatsbyjs.org/docs/node-apis/#onCreateWebpackConfig
    */
-  onCreateWebpackConfig?(
-    args: CreateWebpackConfigArgs,
+  onCreateWebpackConfig?<TSource = any, TContext = any>(
+    args: CreateWebpackConfigArgs<TSource, TContext>,
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
 
   /** Called at the end of the bootstrap process after all other extension APIs have been called. */
-  onPostBootstrap?(
-    args: ParentSpanPluginArgs,
+  onPostBootstrap?<TSource = any, TContext = any>(
+    args: ParentSpanPluginArgs<TSource, TContext>,
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
 
   /** The last extension point called after all other parts of the build process are complete. */
-  onPostBuild?(
-    args: BuildArgs,
+  onPostBuild?<TSource = any, TContext = any>(
+    args: BuildArgs<TSource, TContext>,
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
 
   /** Called at the end of the bootstrap process after all other extension APIs have been called. */
-  onPreBootstrap?(
-    args: ParentSpanPluginArgs,
+  onPreBootstrap?<TSource = any, TContext = any>(
+    args: ParentSpanPluginArgs<TSource, TContext>,
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
 
   /** The first extension point called during the build process. Called after the bootstrap has completed but before the build steps start. */
-  onPreBuild?(
-    args: BuildArgs,
+  onPreBuild?<TSource = any, TContext = any>(
+    args: BuildArgs<TSource, TContext>,
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
 
   /** Called once Gatsby has initialized itself and is ready to bootstrap your site. */
-  onPreExtractQueries?(
-    args: ParentSpanPluginArgs,
+  onPreExtractQueries?<TSource = any, TContext = any>(
+    args: ParentSpanPluginArgs<TSource, TContext>,
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
 
   /** The first API called during Gatsby execution, runs as soon as plugins are loaded, before cache initialization and bootstrap preparation. */
-  onPreInit?(
-    args: ParentSpanPluginArgs,
+  onPreInit?<TSource = any, TContext = any>(
+    args: ParentSpanPluginArgs<TSource, TContext>,
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
@@ -266,8 +270,8 @@ export interface GatsbyNode {
    * Ask compile-to-js plugins to process source to JavaScript so the query
    * runner can extract out GraphQL queries for running.
    */
-  preprocessSource?(
-    args: PreprocessSourceArgs,
+  preprocessSource?<TSource = any, TContext = any>(
+    args: PreprocessSourceArgs<TSource, TContext>,
     options?: PluginOptions,
     callback?: PluginCallback
   ): void
@@ -275,8 +279,8 @@ export interface GatsbyNode {
   /**
    * Lets plugins implementing support for other compile-to-js add to the list of "resolvable" file extensions. Gatsby supports `.js` and `.jsx` by default.
    */
-  resolvableExtensions?(
-    args: ResolvableExtensionsArgs,
+  resolvableExtensions?<TSource = any, TContext = any>(
+    args: ResolvableExtensionsArgs<TSource, TContext>,
     options: PluginOptions,
     callback: PluginCallback
   ): any[] | Promise<any[]>
@@ -300,16 +304,16 @@ export interface GatsbyNode {
    *
    * @see https://www.gatsbyjs.org/docs/node-apis/#setFieldsOnGraphQLNodeType
    */
-  setFieldsOnGraphQLNodeType?(
-    args: SetFieldsOnGraphQLNodeTypeArgs,
+  setFieldsOnGraphQLNodeType?<TSource = any, TContext = any>(
+    args: SetFieldsOnGraphQLNodeTypeArgs<TSource, TContext>,
     options: PluginOptions
   ): any
-  setFieldsOnGraphQLNodeType?(
-    args: SetFieldsOnGraphQLNodeTypeArgs,
+  setFieldsOnGraphQLNodeType?<TSource = any, TContext = any>(
+    args: SetFieldsOnGraphQLNodeTypeArgs<TSource, TContext>,
     options: PluginOptions
   ): Promise<any>
-  setFieldsOnGraphQLNodeType?(
-    args: SetFieldsOnGraphQLNodeTypeArgs,
+  setFieldsOnGraphQLNodeType?<TSource = any, TContext = any>(
+    args: SetFieldsOnGraphQLNodeTypeArgs<TSource, TContext>,
     options: PluginOptions,
     callback: PluginCallback
   ): void
@@ -324,10 +328,16 @@ export interface GatsbyNode {
    *
    * @see https://www.gatsbyjs.org/docs/node-apis/#sourceNodes
    */
-  sourceNodes?(args: SourceNodesArgs, options: PluginOptions): any
-  sourceNodes?(args: SourceNodesArgs, options: PluginOptions): Promise<any>
-  sourceNodes?(
-    args: SourceNodesArgs,
+  sourceNodes?<TSource = any, TContext = any>(
+    args: SourceNodesArgs<TSource, TContext>,
+    options: PluginOptions
+  ): any
+  sourceNodes?<TSource = any, TContext = any>(
+    args: SourceNodesArgs<TSource, TContext>,
+    options: PluginOptions
+  ): Promise<any>
+  sourceNodes?<TSource = any, TContext = any>(
+    args: SourceNodesArgs<TSource, TContext>,
     options: PluginOptions,
     callback: PluginCallback
   ): void
@@ -369,13 +379,16 @@ export interface GatsbyNode {
    *
    * @see https://www.gatsbyjs.org/docs/node-apis/#createResolvers
    */
-  createResolvers?(args: CreateResolversArgs, options: PluginOptions): any
-  createResolvers?(
-    args: CreateResolversArgs,
+  createResolvers?<TSource = any, TContext = any>(
+    args: CreateResolversArgs<TSource, TContext>,
+    options: PluginOptions
+  ): any
+  createResolvers?<TSource = any, TContext = any>(
+    args: CreateResolversArgs<TSource, TContext>,
     options: PluginOptions
   ): Promise<any>
-  createResolvers?(
-    args: CreateResolversArgs,
+  createResolvers?<TSource = any, TContext = any>(
+    args: CreateResolversArgs<TSource, TContext>,
     options: PluginOptions,
     callback: PluginCallback
   ): void
@@ -390,16 +403,16 @@ export interface GatsbyNode {
    * to customize added third-party types, use the createResolvers API.
    * @see https://www.gatsbyjs.org/docs/node-apis/#createSchemaCustomization
    */
-  createSchemaCustomization?(
-    args: CreateSchemaCustomizationArgs,
+  createSchemaCustomization?<TSource = any, TContext = any>(
+    args: CreateSchemaCustomizationArgs<TSource, TContext>,
     options: PluginOptions
   ): any
-  createSchemaCustomization?(
-    args: CreateSchemaCustomizationArgs,
+  createSchemaCustomization?<TSource = any, TContext = any>(
+    args: CreateSchemaCustomizationArgs<TSource, TContext>,
     options: PluginOptions
   ): Promise<any>
-  createSchemaCustomization?(
-    args: CreateSchemaCustomizationArgs,
+  createSchemaCustomization?<TSource = any, TContext = any>(
+    args: CreateSchemaCustomizationArgs<TSource, TContext>,
     options: PluginOptions,
     callback: PluginCallback
   ): void
@@ -480,13 +493,16 @@ export interface GatsbySSR {
    *   replaceHeadComponents(headComponents)
    * }
    */
-  onPreRenderHTML?(args: PreRenderHTMLArgs, options: PluginOptions): any
-  onPreRenderHTML?(
-    args: PreRenderHTMLArgs,
+  onPreRenderHTML?<TSource = any, TContext = any>(
+    args: PreRenderHTMLArgs<TSource, TContext>,
+    options: PluginOptions
+  ): any
+  onPreRenderHTML?<TSource = any, TContext = any>(
+    args: PreRenderHTMLArgs<TSource, TContext>,
     options: PluginOptions
   ): Promise<any>
-  onPreRenderHTML?(
-    args: PreRenderHTMLArgs,
+  onPreRenderHTML?<TSource = any, TContext = any>(
+    args: PreRenderHTMLArgs<TSource, TContext>,
     options: PluginOptions,
     callback: PluginCallback
   ): void
@@ -528,10 +544,16 @@ export interface GatsbySSR {
    *   ])
    * }
    */
-  onRenderBody?(args: RenderBodyArgs, options: PluginOptions): any
-  onRenderBody?(args: RenderBodyArgs, options: PluginOptions): Promise<any>
-  onRenderBody?(
-    args: RenderBodyArgs,
+  onRenderBody?<TSource = any, TContext = any>(
+    args: RenderBodyArgs<TSource, TContext>,
+    options: PluginOptions
+  ): any
+  onRenderBody?<TSource = any, TContext = any>(
+    args: RenderBodyArgs<TSource, TContext>,
+    options: PluginOptions
+  ): Promise<any>
+  onRenderBody?<TSource = any, TContext = any>(
+    args: RenderBodyArgs<TSource, TContext>,
     options: PluginOptions,
     callback: PluginCallback
   ): void
@@ -552,13 +574,16 @@ export interface GatsbySSR {
    *   replaceBodyHTMLString(inlinedHTML)
    * }
    */
-  replaceRenderer?(args: ReplaceRendererArgs, options: PluginOptions): any
-  replaceRenderer?(
-    args: ReplaceRendererArgs,
+  replaceRenderer?<TSource = any, TContext = any>(
+    args: ReplaceRendererArgs<TSource, TContext>,
+    options: PluginOptions
+  ): any
+  replaceRenderer?<TSource = any, TContext = any>(
+    args: ReplaceRendererArgs<TSource, TContext>,
     options: PluginOptions
   ): Promise<any>
-  replaceRenderer?(
-    args: ReplaceRendererArgs,
+  replaceRenderer?<TSource = any, TContext = any>(
+    args: ReplaceRendererArgs<TSource, TContext>,
     options: PluginOptions,
     callback: PluginCallback
   ): void
@@ -580,13 +605,16 @@ export interface GatsbySSR {
    *   return <Layout {...props}>{element}</Layout>
    * }
    */
-  wrapPageElement?(args: WrapPageElementNodeArgs, options: PluginOptions): any
-  wrapPageElement?(
-    args: WrapPageElementNodeArgs,
+  wrapPageElement?<TSource = any, TContext = any>(
+    args: WrapPageElementNodeArgs<TSource, TContext>,
+    options: PluginOptions
+  ): any
+  wrapPageElement?<TSource = any, TContext = any>(
+    args: WrapPageElementNodeArgs<TSource, TContext>,
     options: PluginOptions
   ): Promise<any>
-  wrapPageElement?(
-    args: WrapPageElementNodeArgs,
+  wrapPageElement?<TSource = any, TContext = any>(
+    args: WrapPageElementNodeArgs<TSource, TContext>,
     options: PluginOptions,
     callback: PluginCallback
   ): void
@@ -612,13 +640,16 @@ export interface GatsbySSR {
    *   )
    * }
    */
-  wrapRootElement?(args: WrapRootElementNodeArgs, options: PluginOptions): any
-  wrapRootElement?(
-    args: WrapRootElementNodeArgs,
+  wrapRootElement?<TSource = any, TContext = any>(
+    args: WrapRootElementNodeArgs<TSource, TContext>,
+    options: PluginOptions
+  ): any
+  wrapRootElement?<TSource = any, TContext = any>(
+    args: WrapRootElementNodeArgs<TSource, TContext>,
     options: PluginOptions
   ): Promise<any>
-  wrapRootElement?(
-    args: WrapRootElementNodeArgs,
+  wrapRootElement?<TSource = any, TContext = any>(
+    args: WrapRootElementNodeArgs<TSource, TContext>,
     options: PluginOptions,
     callback: PluginCallback
   ): void
@@ -631,7 +662,8 @@ export interface PluginOptions {
 
 export type PluginCallback = (err: Error | null, result?: any) => void
 
-export interface CreatePagesArgs extends ParentSpanPluginArgs {
+export interface CreatePagesArgs<TSource = any, TContext = any>
+  extends ParentSpanPluginArgs<TSource, TContext> {
   graphql<TData, TVariables = any>(
     query: string,
     variables?: TVariables
@@ -649,17 +681,22 @@ type GatsbyStages =
   | "build-javascript"
   | "build-html"
 
-export interface CreateBabelConfigArgs extends ParentSpanPluginArgs {
+export interface CreateBabelConfigArgs<TSource = any, TContext = any>
+  extends ParentSpanPluginArgs<TSource, TContext> {
   stage: GatsbyStages
 }
 
-export interface CreateDevServerArgs extends ParentSpanPluginArgs {
+export interface CreateDevServerArgs<TSource = any, TContext = any>
+  extends ParentSpanPluginArgs<TSource, TContext> {
   app: any
 }
 
-export interface CreateNodeArgs<T extends object = {}>
-  extends ParentSpanPluginArgs {
-  node: Node & T
+export interface CreateNodeArgs<
+  TNode extends object = {},
+  TSource = any,
+  TContext = any
+> extends ParentSpanPluginArgs<TSource, TContext> {
+  node: Node & TNode
   traceId: string
   traceTags: {
     nodeId: string
@@ -667,12 +704,17 @@ export interface CreateNodeArgs<T extends object = {}>
   }
 }
 
-export interface CreatePageArgs extends ParentSpanPluginArgs {
-  page: Node
+export interface CreatePageArgs<
+  TNode extends object = {},
+  TSource = any,
+  TContext = any
+> extends ParentSpanPluginArgs<TSource, TContext> {
+  page: Node & TNode
   traceId: string
 }
 
-export interface CreateWebpackConfigArgs extends ParentSpanPluginArgs {
+export interface CreateWebpackConfigArgs<TSource = any, TContext = any>
+  extends ParentSpanPluginArgs<TSource, TContext> {
   getConfig: Function
   stage: GatsbyStages
   rules: WebpackRules
@@ -680,16 +722,19 @@ export interface CreateWebpackConfigArgs extends ParentSpanPluginArgs {
   plugins: WebpackPlugins
 }
 
-export interface PreprocessSourceArgs extends ParentSpanPluginArgs {
+export interface PreprocessSourceArgs<TSource = any, TContext = any>
+  extends ParentSpanPluginArgs<TSource, TContext> {
   filename: string
   contents: string
 }
 
-export interface ResolvableExtensionsArgs extends ParentSpanPluginArgs {
+export interface ResolvableExtensionsArgs<TSource = any, TContext = any>
+  extends ParentSpanPluginArgs<TSource, TContext> {
   traceId: "initial-resolvableExtensions"
 }
 
-export interface SetFieldsOnGraphQLNodeTypeArgs extends ParentSpanPluginArgs {
+export interface SetFieldsOnGraphQLNodeTypeArgs<TSource = any, TContext = any>
+  extends ParentSpanPluginArgs<TSource, TContext> {
   type: {
     name: string
     nodes: any[]
@@ -735,7 +780,7 @@ export type GatsbyGraphQLType<TSource = any, TContext = any> =
   | GatsbyGraphQLEnumType
   | GatsbyGraphQLScalarType
 
-export interface SourceNodesSchemaObject<TSource = any, TContext = any> {
+export interface NodePluginSchema<TSource = any, TContext = any> {
   buildObjectType(
     config: ComposeObjectTypeConfig<TSource, TContext>
   ): GatsbyGraphQLObjectType<TSource, TContext>
@@ -753,23 +798,25 @@ export interface SourceNodesSchemaObject<TSource = any, TContext = any> {
 }
 
 export interface SourceNodesArgs<TSource = any, TContext = any>
-  extends ParentSpanPluginArgs {
+  extends ParentSpanPluginArgs<TSource, TContext> {
   traceId: "initial-sourceNodes"
   waitForCascadingActions: boolean
-  schema: SourceNodesSchemaObject<TSource, TContext>
 }
 
-export interface CreateResolversArgs extends ParentSpanPluginArgs {
+export interface CreateResolversArgs<TSource = any, TContext = any>
+  extends ParentSpanPluginArgs<TSource, TContext> {
   intermediateSchema: object
   createResolvers: Function
   traceId: "initial-createResolvers"
 }
 
-export interface CreateSchemaCustomizationArgs extends ParentSpanPluginArgs {
+export interface CreateSchemaCustomizationArgs<TSource = any, TContext = any>
+  extends ParentSpanPluginArgs<TSource, TContext> {
   traceId: "initial-createSchemaCustomization"
 }
 
-export interface PreRenderHTMLArgs extends NodePluginArgs {
+export interface PreRenderHTMLArgs<TSource = any, TContext = any>
+  extends NodePluginArgs<TSource, TContext> {
   getHeadComponents: any[]
   replaceHeadComponents: Function
   getPreBodyComponents: any[]
@@ -778,7 +825,8 @@ export interface PreRenderHTMLArgs extends NodePluginArgs {
   replacePostBodyComponents: Function
 }
 
-export interface RenderBodyArgs extends NodePluginArgs {
+export interface RenderBodyArgs<TSource = any, TContext = any>
+  extends NodePluginArgs<TSource, TContext> {
   pathname: string
   setHeadComponents: Function
   setHtmlAttributes: Function
@@ -788,7 +836,8 @@ export interface RenderBodyArgs extends NodePluginArgs {
   setBodyProps: Function
 }
 
-export interface ReplaceRendererArgs extends NodePluginArgs {
+export interface ReplaceRendererArgs<TSource = any, TContext = any>
+  extends NodePluginArgs<TSource, TContext> {
   replaceBodyHTMLString: Function
   setHeadComponents: Function
   setHtmlAttributes: Function
@@ -798,21 +847,24 @@ export interface ReplaceRendererArgs extends NodePluginArgs {
   setBodyProps: Function
 }
 
-export interface WrapPageElementNodeArgs extends NodePluginArgs {
+export interface WrapPageElementNodeArgs<TSource = any, TContext = any>
+  extends NodePluginArgs<TSource, TContext> {
   element: object
   props: object
   pathname: string
 }
 
-export interface WrapRootElementNodeArgs extends NodePluginArgs {
+export interface WrapRootElementNodeArgs<TSource = any, TContext = any>
+  extends NodePluginArgs<TSource, TContext> {
   element: object
 }
 
-export interface ParentSpanPluginArgs extends NodePluginArgs {
+export interface ParentSpanPluginArgs<TSource = any, TContext = any>
+  extends NodePluginArgs<TSource, TContext> {
   parentSpan: object
 }
 
-export interface NodePluginArgs {
+export interface NodePluginArgs<TSource = any, TContext = any> {
   pathPrefix: string
   boundActionCreators: Actions
   actions: Actions
@@ -829,6 +881,7 @@ export interface NodePluginArgs {
   createNodeId: Function
   createContentDigest: typeof createContentDigest
   tracing: Tracing
+  schema: NodePluginSchema<TSource, TContext>
   [key: string]: unknown
 }
 
@@ -860,7 +913,8 @@ interface ActionOptions {
   [key: string]: unknown
 }
 
-export interface BuildArgs extends ParentSpanPluginArgs {
+export interface BuildArgs<TSource = any, TContext = any>
+  extends ParentSpanPluginArgs<TSource, TContext> {
   graphql: Function
 }
 
@@ -1201,8 +1255,8 @@ export interface ReplaceComponentRendererArgs extends BrowserPluginArgs {
     children: undefined
     pageResources: object
     data: object
-    pageContext: { id: string; [key: string]: unknown }
-    pathContext: { id: string; [key: string]: unknown }
+    pageContext: { [key: string]: unknown }
+    pathContext: { [key: string]: unknown }
   }
   loader: object
 }
