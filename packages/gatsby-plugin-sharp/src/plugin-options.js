@@ -77,6 +77,14 @@ const healOptions = (
     options.maxHeight = parseInt(options.maxHeight, 10)
   }
 
+  ;[`width`, `height`, `maxWidth`, `maxHeight`].forEach(prop => {
+    if (typeof options[prop] !== `undefined` && options[prop] < 1) {
+      throw new Error(
+        `${prop} has to be a positive int larger than zero (> 0), now it's ${options[prop]}`
+      )
+    }
+  })
+
   return options
 }
 

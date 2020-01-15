@@ -11,6 +11,9 @@ const { createArgsDigest } = require(`./process-file`)
 const { reportError } = require(`./report-error`)
 const { getPluginOptions, healOptions } = require(`./plugin-options`)
 const { memoizedTraceSVG, notMemoizedtraceSVG } = require(`./trace-svg`)
+const duotone = require(`./duotone`)
+const { IMAGE_PROCESSING_JOB_NAME } = require(`./gatsby-worker`)
+const { createProgress } = require(`./utils`)
 
 const imageSizeCache = new Map()
 const getImageSize = file => {
@@ -28,7 +31,45 @@ const getImageSize = file => {
   }
 }
 
-const duotone = require(`./duotone`)
+let progressBar
+let pendingImagesCounter = 0
+let firstPass = true
+const createOrGetProgressBar = reporter => {
+  if (!progressBar) {
+    progressBar = createProgress(`Generating image thumbnails`, reporter)
+
+    const originalDoneFn = progressBar.done
+
+    // TODO this logic should be moved to the reporter.
+    // when done is called we remove the progressbar instance and reset all the things
+    // this will be called onPostBuild or when devserver is created
+    progressBar.done = () => {
+      originalDoneFn.call(progressBar)
+      progressBar = null
+      pendingImagesCounter = 0
+    }
+
+    // when we create a progressBar for the second time so when .done() has been called before
+    // we create a modified tick function that automatically stops the progressbar when total is reached
+    // this is used for development as we're watching for changes
+    if (!firstPass) {
+      let progressBarCurrentValue = 0
+      const originalTickFn = progressBar.tick
+      progressBar.tick = (ticks = 1) => {
+        originalTickFn.call(progressBar, ticks)
+        progressBarCurrentValue += ticks
+
+        if (progressBarCurrentValue === pendingImagesCounter) {
+          progressBar.done()
+        }
+      }
+    }
+    firstPass = false
+  }
+
+  return progressBar
+}
+exports.getProgressBar = () => progressBar
 
 // Bound action creators should be set when passed to onPreInit in gatsby-node.
 // ** It is NOT safe to just directly require the gatsby module **.
@@ -40,8 +81,7 @@ exports.setBoundActionCreators = actions => {
   boundActionCreators = actions
 }
 
-const cachedOutputFiles = new Map()
-function queueImageResizing({ file, args = {}, reporter }) {
+function prepareQueue({ file, args }) {
   const pluginOptions = getPluginOptions()
   const options = healOptions(pluginOptions, args, file.extension)
   if (!options.toFormat) {
@@ -59,14 +99,13 @@ function queueImageResizing({ file, args = {}, reporter }) {
   const outputFilePath = path.join(argsDigestShort, imgSrc)
 
   // make sure outputDir is created
-  fs.ensureDirSync(path.join(outputDir, argsDigestShort))
+  fs.ensureDirSync(outputDir)
 
   let width
   let height
   // Calculate the eventual width/height of the image.
   const dimensions = getImageSize(file)
   let aspectRatio = dimensions.width / dimensions.height
-  const originalName = file.base
 
   // If the width/height are both set, we're cropping so just return
   // that.
@@ -95,58 +134,138 @@ function queueImageResizing({ file, args = {}, reporter }) {
   const prefixedSrc =
     options.pathPrefix + `/static/${digestDirPrefix}` + encodedImgSrc
 
-  // Create job and add it to the queue, the queue will be processed inside gatsby-node.js
-  const job = {
-    args: options,
-    inputPath: file.absolutePath,
-    contentDigest: file.internal.contentDigest,
-    outputDir,
-    outputPath: outputFilePath,
-  }
-
-  const outputFile = path.join(job.outputDir, job.outputPath)
-  let finishedPromise = Promise.resolve()
-
-  if (cachedOutputFiles.has(outputFile)) {
-    finishedPromise = cachedOutputFiles.get(outputFile)
-  }
-
-  // Check if the output file already exists or already is being created.
-  // TODO: Remove this when jobs api is stable, it will have a better check
-  if (!fs.existsSync(outputFile) && !cachedOutputFiles.has(outputFile)) {
-    // schedule job immediately - this will be changed when image processing on demand is implemented
-    finishedPromise = scheduleJob(
-      job,
-      boundActionCreators,
-      pluginOptions,
-      reporter
-    ).then(res => {
-      cachedOutputFiles.delete(outputFile)
-
-      return res
-    })
-
-    cachedOutputFiles.set(outputFile, finishedPromise)
-  }
-
   return {
     src: prefixedSrc,
-    absolutePath: outputFile,
+    outputDir: outputDir,
+    relativePath: outputFilePath,
+    width,
+    height,
+    aspectRatio,
+    options,
+  }
+}
+
+async function createJob(job, { reporter }) {
+  const progressBar = createOrGetProgressBar(reporter)
+
+  if (pendingImagesCounter === 0) {
+    progressBar.start()
+  }
+
+  const transforms = job.args.operations
+  pendingImagesCounter += transforms.length
+  progressBar.total = pendingImagesCounter
+
+  if (boundActionCreators.createJobV2) {
+    await boundActionCreators.createJobV2(job)
+  } else {
+    await scheduleJob(job, boundActionCreators)
+  }
+
+  progressBar.tick(transforms.length)
+}
+
+function queueImageResizing({ file, args = {}, reporter }) {
+  const {
+    src,
+    width,
+    height,
+    aspectRatio,
+    relativePath,
+    outputDir,
+    options,
+  } = prepareQueue({ file, args })
+
+  // Create job and add it to the queue, the queue will be processed inside gatsby-node.js
+  const finishedPromise = createJob(
+    {
+      name: IMAGE_PROCESSING_JOB_NAME,
+      inputPaths: [file.absolutePath],
+      outputDir,
+      args: {
+        operations: [
+          {
+            outputPath: relativePath,
+            args: options,
+          },
+        ],
+        pluginOptions: getPluginOptions(),
+      },
+    },
+    { reporter }
+  ).catch(err => {
+    reporter.panic(err)
+  })
+
+  return {
+    src,
+    absolutePath: path.join(outputDir, relativePath),
     width,
     height,
     aspectRatio,
     finishedPromise,
-    // // finishedPromise is needed to not break our API (https://github.com/gatsbyjs/gatsby/blob/master/packages/gatsby-transformer-sqip/src/extend-node-type.js#L115)
-    // finishedPromise: {
-    //   then: (resolve, reject) => {
-    //     scheduleJob(job, boundActionCreators, pluginOptions).then(() => {
-    //       queue.delete(prefixedSrc)
-    //       resolve()
-    //     }, reject)
-    //   },
-    // },
-    originalName: originalName,
+    originalName: file.base,
   }
+}
+
+function batchQueueImageResizing({ file, transforms = [], reporter }) {
+  const operations = []
+  const images = []
+
+  // loop through all transforms to set correct variables
+  transforms.forEach(transform => {
+    const {
+      src,
+      width,
+      height,
+      aspectRatio,
+      relativePath,
+      outputDir,
+      options,
+    } = prepareQueue({ file, args: transform })
+    // queue operations of an image
+    operations.push({
+      outputPath: relativePath,
+      args: options,
+    })
+
+    // create output results
+    images.push({
+      src,
+      absolutePath: path.join(outputDir, relativePath),
+      width,
+      height,
+      aspectRatio,
+      originalName: file.base,
+    })
+  })
+
+  const finishedPromise = createJob(
+    {
+      name: IMAGE_PROCESSING_JOB_NAME,
+      inputPaths: [file.absolutePath],
+      outputDir: path.join(
+        process.cwd(),
+        `public`,
+        `static`,
+        file.internal.contentDigest
+      ),
+      args: {
+        operations,
+        pluginOptions: getPluginOptions(),
+      },
+    },
+    { reporter }
+  ).catch(err => {
+    reporter.panic(err)
+  })
+
+  return images.map(image => {
+    return {
+      ...image,
+      finishedPromise,
+    }
+  })
 }
 
 // A value in pixels(Int)
@@ -316,7 +435,11 @@ async function fluid({ file, args = {}, reporter, cache }) {
   try {
     metadata = await sharp(file.absolutePath).metadata()
   } catch (err) {
-    reportError(`Failed to process image ${file.absolutePath}`, err, reporter)
+    reportError(
+      `Failed to retrieve metadata from image ${file.absolutePath}`,
+      err,
+      reporter
+    )
     return null
   }
 
@@ -392,22 +515,25 @@ async function fluid({ file, args = {}, reporter, cache }) {
   // Queue sizes for processing.
   const dimensionAttr = fixedDimension === `maxWidth` ? `width` : `height`
   const otherDimensionAttr = fixedDimension === `maxWidth` ? `height` : `width`
-  const images = sortedSizes.map(size => {
-    const arrrgs = {
-      ...options,
-      [otherDimensionAttr]: undefined,
-      [dimensionAttr]: Math.round(size),
-    }
-    // Queue sizes for processing.
-    if (options.maxWidth !== undefined && options.maxHeight !== undefined) {
-      arrrgs.height = Math.round(size * (options.maxHeight / options.maxWidth))
-    }
 
-    return queueImageResizing({
-      file,
-      args: arrrgs, // matey
-      reporter,
-    })
+  const images = batchQueueImageResizing({
+    file,
+    transforms: sortedSizes.map(size => {
+      const arrrgs = {
+        ...options,
+        [otherDimensionAttr]: undefined,
+        [dimensionAttr]: Math.round(size),
+      }
+      // Queue sizes for processing.
+      if (options.maxWidth !== undefined && options.maxHeight !== undefined) {
+        arrrgs.height = Math.round(
+          size * (options.maxHeight / options.maxWidth)
+        )
+      }
+
+      return arrrgs
+    }),
+    reporter,
   })
 
   let base64Image
@@ -509,21 +635,21 @@ async function fixed({ file, args = {}, reporter, cache }) {
   // Sort images for prettiness.
   const sortedSizes = _.sortBy(filteredSizes)
 
-  const images = sortedSizes.map(size => {
-    const arrrgs = {
-      ...options,
-      [fixedDimension]: Math.round(size),
-    }
-    // Queue images for processing.
-    if (options.width !== undefined && options.height !== undefined) {
-      arrrgs.height = Math.round(size * (options.height / options.width))
-    }
+  const images = batchQueueImageResizing({
+    file,
+    transforms: sortedSizes.map(size => {
+      const arrrgs = {
+        ...options,
+        [fixedDimension]: Math.round(size),
+      }
+      // Queue images for processing.
+      if (options.width !== undefined && options.height !== undefined) {
+        arrrgs.height = Math.round(size * (options.height / options.width))
+      }
 
-    return queueImageResizing({
-      file,
-      args: arrrgs,
-      reporter,
-    })
+      return arrrgs
+    }),
+    reporter,
   })
 
   let base64Image
