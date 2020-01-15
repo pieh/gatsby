@@ -207,4 +207,25 @@ actions.pageQueryRun = (
   }
 }
 
+/**
+ * Remove jobs which are marked as stale (inputPath doesn't exists)
+ *
+ * @param {string} contentDigest
+ * @private
+ */
+actions.removeStaleJob = (
+  contentDigest,
+  plugin?: ?Plugin,
+  traceId?: string
+) => {
+  return {
+    type: `REMOVE_STALE_JOB_V2`,
+    plugin,
+    traceId,
+    payload: {
+      contentDigest,
+    },
+  }
+}
+
 module.exports = { actions }
