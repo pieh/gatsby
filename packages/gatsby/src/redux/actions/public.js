@@ -30,6 +30,11 @@ const { getNonGatsbyCodeFrame } = require(`../../utils/stack-trace-utils`)
 const shadowCreatePagePath = _.memoize(
   require(`../../internal-plugins/webpack-theme-component-shadowing/create-page`)
 )
+const {
+  enqueueJob,
+  createInternalJob,
+  removeInProgressJob,
+} = require(`../../utils/jobs-manager`)
 
 const actions = {}
 const isWindows = platform() === `win32`
@@ -61,11 +66,59 @@ const findChildren = initialChildren => {
   return children
 }
 
+const alreadyTriggeredJobs = new Set()
+
+/**
+ * The jobs api will be called a lot of time during the gatsby process.
+ * A job can be queued multiple times with the same arguments. The job api
+ * is smart enought to only do the work once which means we should only run
+ * the end job redux action once. There is no need to run it on every cached promise
+ * as this will lead to doubling our promise creation.
+ */
+const wrapJobPromiseWithReduxActionOnFirstOccurence = ({
+  jobContentDigest,
+  enqueuedJobPromise,
+  plugin,
+  dispatch,
+}) => {
+  if (alreadyTriggeredJobs.has(jobContentDigest)) {
+    return enqueuedJobPromise
+  }
+
+  alreadyTriggeredJobs.add(jobContentDigest)
+
+  return enqueuedJobPromise.then(result => {
+    // store the result in redux so we have it for the next run
+    dispatch({
+      type: `END_JOB_V2`,
+      plugin,
+      payload: {
+        jobContentDigest,
+        result,
+      },
+    })
+
+    // remove the job from our inProgressJobQueue as it's available in our done state.
+    // this is a perf optimisations so we don't grow our memory too much when using gatsby preview
+    removeInProgressJob(jobContentDigest)
+
+    return result
+  })
+}
+
 import type { Plugin } from "./types"
 
 type Job = {
   id: string,
 }
+
+type JobV2 = {
+  name: string,
+  inputPaths: string[],
+  outputDir: string,
+  args: Object,
+}
+
 type PageInput = {
   path: string,
   component: string,
@@ -350,7 +403,7 @@ ${reservedFields.map(f => `  * "${f}"`).join(`\n`)}
     internalComponentName = `Component${pascalCase(page.path)}`
   }
 
-  let internalPage: Page = {
+  const internalPage: Page = {
     internalComponentName,
     path: page.path,
     matchPath: page.matchPath,
@@ -752,7 +805,7 @@ const createNode = (
   // Ensure the plugin isn't creating a node type owned by another
   // plugin. Type "ownership" is first come first served.
   if (plugin) {
-    let pluginName = plugin.name
+    const pluginName = plugin.name
 
     if (!typeOwners[node.internal.type])
       typeOwners[node.internal.type] = pluginName
@@ -840,6 +893,7 @@ const createNode = (
 
 actions.createNode = (...args) => dispatch => {
   const actions = createNode(...args)
+
   dispatch(actions)
   const createNodeAction = (Array.isArray(actions) ? actions : [actions]).find(
     action => action.type === `CREATE_NODE`
@@ -1168,7 +1222,7 @@ actions.setBabelPreset = (config: Object, plugin?: ?Plugin = null) => {
  * [`gatsby-plugin-sharp`](/packages/gatsby-plugin-sharp/) uses this for
  * example.
  *
- * Gatsby doesn't finish its bootstrap until all jobs are ended.
+ * Gatsby doesn't finish its process until all jobs are ended.
  * @param {Object} job A job object with at least an id set
  * @param {id} job.id The id of the job
  * @example
@@ -1180,6 +1234,57 @@ actions.createJob = (job: Job, plugin?: ?Plugin = null) => {
     plugin,
     payload: job,
   }
+}
+
+/**
+ * Create a "job". This is a long-running process that are generally
+ * started as side-effects to GraphQL queries.
+ * [`gatsby-plugin-sharp`](/packages/gatsby-plugin-sharp/) uses this for
+ * example.
+ *
+ * Gatsby doesn't finish its process until all jobs are ended.
+ * @param {Object} job A job object with name, inputPaths, outputDir and args
+ * @param {string} job.name The name of the job you want to execute
+ * @param {string[]} job.inputPaths The inputPaths that are needed to run
+ * @param {string} job.outputDir The directory where all files are being saved to
+ * @param {Object} job.args The arguments the job needs to execute
+ * @returns {Promise<object>} Promise to see if the job is done executing
+ * @example
+ * createJobV2({ name: `IMAGE_PROCESSING`, inputPaths: [`something.jpeg`], outputDir: `public/static`, args: { width: 100, height: 100 } })
+ */
+actions.createJobV2 = (job: JobV2, plugin: Plugin) => (dispatch, getState) => {
+  const currentState = getState()
+  const internalJob = createInternalJob(job, plugin)
+
+  // Check if we already ran this job before, if yes we return the result
+  // We have an inflight (in progress) queue inside the jobs manager to make sure
+  // we don't waste resources twice during the process
+  if (
+    currentState.jobsV2 &&
+    currentState.jobsV2.complete.has(internalJob.contentDigest)
+  ) {
+    return Promise.resolve(
+      currentState.jobsV2.complete.get(internalJob.contentDigest).result
+    )
+  }
+
+  dispatch({
+    type: `CREATE_JOB_V2`,
+    plugin,
+    payload: {
+      job: internalJob,
+      plugin,
+    },
+  })
+
+  const enqueuedJobPromise = enqueueJob(internalJob)
+  // Releases some memory pressure from Gatsby
+  return wrapJobPromiseWithReduxActionOnFirstOccurence({
+    jobContentDigest: internalJob.contentDigest,
+    enqueuedJobPromise,
+    plugin,
+    dispatch,
+  })
 }
 
 /**
@@ -1202,7 +1307,7 @@ actions.setJob = (job: Job, plugin?: ?Plugin = null) => {
 /**
  * End a "job".
  *
- * Gatsby doesn't finish its bootstrap until all jobs are ended.
+ * Gatsby doesn't finish its process until all jobs are ended.
  * @param {Object} job  A job object with at least an id set
  * @param {id} job.id The id of the job
  * @example
