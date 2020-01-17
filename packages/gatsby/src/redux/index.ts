@@ -62,6 +62,8 @@ export const configureStore = (initialState: IReduxState): Store<IReduxState> =>
 
 export const store = configureStore(readState())
 
+process.GatsbyReduxStore = store
+
 // Persist state.
 export const saveState = (): void => {
   const state = store.getState()

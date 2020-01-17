@@ -35,6 +35,16 @@ exports.setPluginOptions = opts => {
   return pluginOptions
 }
 
+class TrackedOptions {
+  constructor(from) {
+    Object.entries(from).forEach(([key, value]) => {
+      this[key] = value
+    })
+  }
+}
+
+exports.TrackedOptions = TrackedOptions
+
 exports.getPluginOptions = () => pluginOptions
 
 const healOptions = (

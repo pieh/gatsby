@@ -1236,6 +1236,20 @@ actions.createJob = (job: Job, plugin?: ?Plugin = null) => {
   }
 }
 
+let totalCreateJobCalls = 0
+
+const debounceWriteStatsJobs = _.throttle(
+  () => {
+    console.log(`createJobV2 calls ${totalCreateJobCalls}`)
+  },
+  10000,
+  { trailing: false }
+)
+
+try {
+  fs.unlinkSync(`./jobs.csv`)
+} catch {}
+
 /**
  * Create a "job". This is a long-running process that are generally
  * started as side-effects to GraphQL queries.
@@ -1253,9 +1267,20 @@ actions.createJob = (job: Job, plugin?: ?Plugin = null) => {
  * createJobV2({ name: `IMAGE_PROCESSING`, inputPaths: [`something.jpeg`], outputDir: `public/static`, args: { width: 100, height: 100 } })
  */
 actions.createJobV2 = (job: JobV2, plugin: Plugin) => (dispatch, getState) => {
+  totalCreateJobCalls++
+  debounceWriteStatsJobs()
+  // debugger
+
   const currentState = getState()
   const internalJob = createInternalJob(job, plugin)
 
+  if (job.contextPath) {
+    const jobEntry = `${internalJob.id},${internalJob.contentDigest},${
+      internalJob.inputPaths[0].path
+    },${job.contextPath},${JSON.stringify(internalJob.args)}\n`
+
+    fs.appendFileSync(`./jobs.csv`, jobEntry)
+  }
   // Check if we already ran this job before, if yes we return the result
   // We have an inflight (in progress) queue inside the jobs manager to make sure
   // we don't waste resources twice during the process

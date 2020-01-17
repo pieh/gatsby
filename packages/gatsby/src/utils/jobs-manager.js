@@ -7,6 +7,7 @@ const slash = require(`slash`)
 const _ = require(`lodash`)
 const { createContentDigest } = require(`gatsby-core-utils`)
 const reporter = require(`gatsby-cli/lib/reporter`)
+const { store } = require(`../redux`)
 
 let activityForJobs = null
 let activeJobs = 0
@@ -174,6 +175,15 @@ exports.createInternalJob = (job, plugin) => {
   return internalJob
 }
 
+const debounceWriteStatsJobs = _.throttle(
+  () => {
+    console.log(`real jobs ${realJobs}`)
+  },
+  10000,
+  { trailing: false }
+)
+
+let realJobs = 0
 /**
  * Creates a job
  *
@@ -184,15 +194,22 @@ exports.enqueueJob = async job => {
   // When we already have a job that's executing, return the same promise.
   // we have another check in our createJobV2 action to return jobs that have been done in a previous gatsby run
   if (jobsInProcess.has(job.contentDigest)) {
+    job.args.debugAnnotation = `this_is_copy_and_we_dont_use_that_really_we_will_grab_stuff_from_jobs_in_process`
     return jobsInProcess.get(job.contentDigest).deferred.promise
   }
+
+  job.args.debugAnnotation = `this_is_real_job_xD`
 
   if (activeJobs === 0) {
     hasActiveJobs = pDefer()
   }
 
   // Bump active jobs
+  realJobs++
   activeJobs++
+
+  debounceWriteStatsJobs()
+
   if (!activityForJobs) {
     activityForJobs = reporter.phantomActivity(`Running jobs v2`)
     activityForJobs.start()
@@ -212,6 +229,18 @@ exports.enqueueJob = async job => {
         `Result of a worker should be an object, type of "${typeof result}" was given`
       )
     }
+
+    // store.dispatch({
+    //   type: `END_JOB_V2`,
+    //   // plugin,
+    //   payload: {
+    //     job,
+    //     result,
+    //   },
+    // })
+
+    // jobsInProcess.delete(job.contentDigest)
+
     deferred.resolve(result)
   } catch (err) {
     if (err instanceof Error) {

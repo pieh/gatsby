@@ -1,3 +1,24 @@
+const _ = require(`lodash`)
+const objectSzeOf = require(`object-sizeof`)
+
+const writeStats2 = (label, someMap) => {
+  let total = 0
+  someMap.forEach(v => {
+    total += objectSzeOf(v)
+  })
+  console.log(` ${label} : ${someMap.size} = ${total}`)
+}
+
+const writeStats = state => {
+  console.log(`---------`)
+  writeStats2(`complete  `, state.complete)
+  writeStats2(`incomplete`, state.incomplete)
+}
+
+const debounceWriteStats = _.throttle(writeStats, 10000, { trailing: false })
+
+console.log(`test ${objectSzeOf({ foo: `bar` })}`)
+
 module.exports = (
   state = { incomplete: new Map(), complete: new Map() },
   action
@@ -10,6 +31,8 @@ module.exports = (
         job,
         plugin,
       })
+
+      debounceWriteStats(state)
 
       return state
     }
@@ -26,6 +49,8 @@ module.exports = (
         inputPaths: job.inputPaths,
       })
 
+      debounceWriteStats(state)
+
       return state
     }
 
@@ -33,6 +58,8 @@ module.exports = (
       const { contentDigest } = action.payload
       state.incomplete.delete(contentDigest)
       state.complete.delete(contentDigest)
+
+      debounceWriteStats(state)
 
       return state
     }

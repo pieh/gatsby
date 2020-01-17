@@ -19,8 +19,11 @@ exports.IMAGE_PROCESSING_JOB_NAME = `IMAGE_PROCESSING`
  */
 const q = queue(
   async ({ inputPaths, outputDir, args }) =>
-    Promise.all(
-      processFile(
+    Promise.all([
+      // give some time to let all queries to run
+      // so we don't finish the one real job and see what happens in memory after that
+      new Promise(r => setTimeout(r, 15000)),
+      ...processFile(
         inputPaths[0].path,
         args.operations.map(operation => {
           return {
@@ -29,8 +32,8 @@ const q = queue(
           }
         }),
         args.pluginOptions
-      )
-    ),
+      ),
+    ]),
   1
 )
 
@@ -40,11 +43,14 @@ const q = queue(
  */
 exports.IMAGE_PROCESSING = ({ inputPaths, outputDir, args }) =>
   new Promise((resolve, reject) => {
+    console.log(`actual processing`)
     q.push({ inputPaths, outputDir, args }, function(err) {
       if (err) {
         return reject(err)
       }
 
+      // pause execution right before resolving the job
+      debugger
       return resolve()
     })
   })
