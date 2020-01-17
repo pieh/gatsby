@@ -197,6 +197,7 @@ const fixedNodeType = ({
           args,
           reporter,
           cache,
+          contextPath: context.path,
         })
       ).then(o =>
         Object.assign({}, o, {
@@ -363,6 +364,7 @@ const fluidNodeType = ({
           args,
           reporter,
           cache,
+          contextPath: context.path,
         })
       ).then(o =>
         Object.assign({}, o, {
@@ -567,6 +569,7 @@ const createFields = ({
             const o = queueImageResizing({
               file,
               args,
+              contextPath: context.path,
             })
             resolve(
               Object.assign({}, o, {

@@ -7,6 +7,7 @@ const slash = require(`slash`)
 const _ = require(`lodash`)
 const { createContentDigest } = require(`gatsby-core-utils`)
 const reporter = require(`gatsby-cli/lib/reporter`)
+const { store } = require(`../redux`)
 
 let activityForJobs = null
 let activeJobs = 0
@@ -174,6 +175,15 @@ exports.createInternalJob = (job, plugin) => {
   return internalJob
 }
 
+const debounceWriteStatsJobs = _.throttle(
+  () => {
+    console.log(`real jobs ${realJobs}`)
+  },
+  10000,
+  { trailing: false }
+)
+
+let realJobs = 0
 /**
  * Creates a job
  *
@@ -192,7 +202,11 @@ exports.enqueueJob = async job => {
   }
 
   // Bump active jobs
+  realJobs++
   activeJobs++
+
+  debounceWriteStatsJobs()
+
   if (!activityForJobs) {
     activityForJobs = reporter.phantomActivity(`Running jobs v2`)
     activityForJobs.start()
@@ -212,6 +226,18 @@ exports.enqueueJob = async job => {
         `Result of a worker should be an object, type of "${typeof result}" was given`
       )
     }
+
+    store.dispatch({
+      type: `END_JOB_V2`,
+      // plugin,
+      payload: {
+        job,
+        result,
+      },
+    })
+
+    jobsInProcess.delete(job.contentDigest)
+
     deferred.resolve(result)
   } catch (err) {
     deferred.reject(err)

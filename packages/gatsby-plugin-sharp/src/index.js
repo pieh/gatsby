@@ -9,7 +9,11 @@ const path = require(`path`)
 const { scheduleJob } = require(`./scheduler`)
 const { createArgsDigest } = require(`./process-file`)
 const { reportError } = require(`./report-error`)
-const { getPluginOptions, healOptions } = require(`./plugin-options`)
+const {
+  getPluginOptions,
+  healOptions,
+  TrackedOptions,
+} = require(`./plugin-options`)
 const { memoizedTraceSVG, notMemoizedtraceSVG } = require(`./trace-svg`)
 const duotone = require(`./duotone`)
 const { IMAGE_PROCESSING_JOB_NAME } = require(`./gatsby-worker`)
@@ -150,6 +154,8 @@ async function createJob(job, { reporter }) {
   pendingImagesCounter += transforms.length
   progressBar.total = pendingImagesCounter
 
+  // const new
+
   try {
     if (boundActionCreators.createJobV2) {
       await boundActionCreators.createJobV2(job)
@@ -163,7 +169,7 @@ async function createJob(job, { reporter }) {
   progressBar.tick(transforms.length)
 }
 
-function queueImageResizing({ file, args = {}, reporter }) {
+function queueImageResizing({ file, args = {}, reporter, contextPath }) {
   const {
     src,
     width,
@@ -180,7 +186,8 @@ function queueImageResizing({ file, args = {}, reporter }) {
       name: IMAGE_PROCESSING_JOB_NAME,
       inputPaths: [file.absolutePath],
       outputDir,
-      args: {
+      contextPath,
+      args: new TrackedOptions({
         operations: [
           {
             outputPath: relativePath,
@@ -188,7 +195,7 @@ function queueImageResizing({ file, args = {}, reporter }) {
           },
         ],
         pluginOptions: getPluginOptions(),
-      },
+      }),
     },
     { reporter }
   )
@@ -204,7 +211,12 @@ function queueImageResizing({ file, args = {}, reporter }) {
   }
 }
 
-function batchQueueImageResizing({ file, transforms = [], reporter }) {
+function batchQueueImageResizing({
+  file,
+  transforms = [],
+  reporter,
+  contextPath,
+}) {
   const operations = []
   const images = []
 
@@ -247,10 +259,11 @@ function batchQueueImageResizing({ file, transforms = [], reporter }) {
         `static`,
         file.internal.contentDigest
       ),
-      args: {
-        operations,
+      contextPath,
+      args: new TrackedOptions({
+        operations: operations,
         pluginOptions: getPluginOptions(),
-      },
+      }),
     },
     { reporter }
   )
@@ -404,7 +417,7 @@ async function stats({ file, reporter }) {
   }
 }
 
-async function fluid({ file, args = {}, reporter, cache }) {
+async function fluid({ file, args = {}, reporter, cache, contextPath }) {
   const options = healOptions(getPluginOptions(), args, file.extension)
 
   if (options.sizeByPixelDensity) {
@@ -512,6 +525,7 @@ async function fluid({ file, args = {}, reporter, cache }) {
 
   const images = batchQueueImageResizing({
     file,
+    contextPath,
     transforms: sortedSizes.map(size => {
       const arrrgs = {
         ...options,
@@ -597,7 +611,7 @@ async function fluid({ file, args = {}, reporter, cache }) {
   }
 }
 
-async function fixed({ file, args = {}, reporter, cache }) {
+async function fixed({ file, args = {}, reporter, cache, contextPath }) {
   const options = healOptions(getPluginOptions(), args, file.extension)
 
   // if no width is passed, we need to resize the image based on the passed height
@@ -631,6 +645,7 @@ async function fixed({ file, args = {}, reporter, cache }) {
 
   const images = batchQueueImageResizing({
     file,
+    contextPath,
     transforms: sortedSizes.map(size => {
       const arrrgs = {
         ...options,

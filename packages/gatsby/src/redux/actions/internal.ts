@@ -233,9 +233,9 @@ export const pageQueryRun = (
  * @param {string} contentDigest
  * @private
  */
-actions.removeStaleJob = (
+export const removeStaleJob = (
   contentDigest,
-  plugin?: ?Plugin,
+  plugin?: Plugin,
   traceId?: string
 ) => {
   return {
@@ -247,5 +247,3 @@ actions.removeStaleJob = (
     },
   }
 }
-
-module.exports = { actions }
