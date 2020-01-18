@@ -143,7 +143,7 @@ function prepareQueue({ file, args }) {
   }
 }
 
-async function createJob(job, { reporter }) {
+function createJob(job, { reporter }) {
   console.log(`some createJob call`)
   const progressBar = createOrGetProgressBar(reporter)
 
@@ -151,23 +151,43 @@ async function createJob(job, { reporter }) {
     progressBar.start()
   }
 
-  const transforms = job.args.operations
-  pendingImagesCounter += transforms.length
+  // const transforms = job.args.operations
+  const transformsCount = job.args.operations.length
+  pendingImagesCounter += transformsCount
   progressBar.total = pendingImagesCounter
 
   // const new
 
-  try {
-    if (boundActionCreators.createJobV2) {
-      await boundActionCreators.createJobV2(job)
-    } else {
-      await scheduleJob(job, boundActionCreators)
-    }
-  } catch (err) {
-    reporter.panic(err)
+  let promise
+  if (boundActionCreators.createJobV2) {
+    promise = boundActionCreators.createJobV2(job)
+  } else {
+    promise = scheduleJob(job, boundActionCreators)
   }
 
-  progressBar.tick(transforms.length)
+  promise
+    .then(() => {
+      progressBar.tick(transformsCount)
+    })
+    .catch(err => {
+      reporter.panic(err)
+    })
+
+  return promise
+
+  // try {
+  //   if (boundActionCreators.createJobV2) {
+  //     /*await */ boundActionCreators.createJobV2(job).then(() => {
+  //       progressBar.tick(transformsCount)
+  //     })
+  //   } else {
+  //     // await scheduleJob(job, boundActionCreators)
+  //   }
+  // } catch (err) {
+  //   // reporter.panic(err)
+  // }
+
+  // progressBar.tick(transformsCount)
 }
 
 function queueImageResizing({ file, args = {}, reporter, contextPath }) {
@@ -464,7 +484,8 @@ async function fluid({ file, args = {}, reporter, cache, contextPath }) {
     )
   }
 
-  let presentationWidth, presentationHeight
+  let presentationWidth
+  let presentationHeight
   if (fixedDimension === `maxWidth`) {
     presentationWidth = Math.min(options.maxWidth, width)
     presentationHeight = Math.round(presentationWidth * (height / width))
@@ -721,9 +742,9 @@ async function fixed({ file, args = {}, reporter, cache, contextPath }) {
 }
 
 function toArray(buf) {
-  var arr = new Array(buf.length)
+  const arr = new Array(buf.length)
 
-  for (var i = 0; i < buf.length; i++) {
+  for (let i = 0; i < buf.length; i++) {
     arr[i] = buf[i]
   }
 
