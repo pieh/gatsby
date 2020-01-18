@@ -34,6 +34,7 @@ const {
   enqueueJob,
   createInternalJob,
   removeInProgressJob,
+  getInProcessJobPromise,
 } = require(`../../utils/jobs-manager`)
 
 const actions = {}
@@ -1291,6 +1292,11 @@ actions.createJobV2 = (job: JobV2, plugin: Plugin) => (dispatch, getState) => {
     return Promise.resolve(
       currentState.jobsV2.complete.get(internalJob.contentDigest).result
     )
+  }
+
+  const potentialInProgress = getInProcessJobPromise(internalJob)
+  if (potentialInProgress) {
+    return potentialInProgress
   }
 
   dispatch({

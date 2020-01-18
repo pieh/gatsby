@@ -63,7 +63,10 @@ let hasActiveJobs = null
  * @deprecated
  * TODO: Remove for Gatsby v3 (compatibility mode)
  */
-exports.jobsInProcess = jobsInProcess
+// exports.jobsInProcess = jobsInProcess
+
+exports.getInProcessJobPromise = job =>
+  jobsInProcess.get(job.contentDigest)?.deferred?.promise
 
 /**
  * Get the local worker function and execute it on the user's machine
