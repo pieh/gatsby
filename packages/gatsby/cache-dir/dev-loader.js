@@ -22,9 +22,13 @@ class DevLoader extends BaseLoader {
       // when we can't find a proper 404.html we fallback to dev-404-page
       // we need to make sure to mark it as not found.
       if (data.status === `failure`) {
-        return this.loadPageDataJson(`/dev-404-page/`).then(result =>
-          Object.assign({}, data, result)
-        )
+        return this.loadPageDataJson(`/dev-404-page/`).then(result => {
+          const c = Object.assign({}, data, result, {
+            notFound: true,
+          })
+          console.log(`failure?`, { data, result, c })
+          return c
+        })
       }
 
       return data
@@ -38,6 +42,7 @@ class DevLoader extends BaseLoader {
   __internal__doesPageExist(rawPath) {
     const pagePath = findPath(rawPath)
     const page = this.pageDb.get(pagePath)
+    console.log({ rawPath, page })
     return !!page && page.notFound !== true
   }
 }

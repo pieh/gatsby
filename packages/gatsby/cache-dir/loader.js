@@ -33,6 +33,8 @@ const loadPageDataJson = loadObj => {
   return doFetch(url).then(req => {
     const { status, responseText } = req
 
+    console.log({ url, status })
+
     // Handle 200
     if (status === 200) {
       try {
@@ -54,6 +56,7 @@ const loadPageDataJson = loadObj => {
     if (status === 404 || status === 200) {
       // If the request was for a 404 page and it doesn't exist, we're done
       if (pagePath === `/404.html`) {
+        console.log(`hmmm`)
         return Object.assign(loadObj, {
           status: `failure`,
         })
@@ -61,6 +64,7 @@ const loadPageDataJson = loadObj => {
 
       // Need some code here to cache the 404 request. In case
       // multiple loadPageDataJsons result in 404s
+      debugger
       return loadPageDataJson(
         Object.assign(loadObj, { pagePath: `/404.html`, notFound: true })
       )
@@ -196,10 +200,12 @@ export class BaseLoader {
           const finalResult = { createdAt: new Date() }
           let pageResources
           if (!component) {
+            console.log(`!component`, { componentChunkName, rawPath })
             finalResult.status = `error`
           } else {
             finalResult.status = `success`
             if (result.notFound === true) {
+              debugger
               finalResult.notFound = true
             }
             pageData = Object.assign(pageData, {

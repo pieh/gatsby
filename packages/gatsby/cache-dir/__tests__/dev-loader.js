@@ -536,4 +536,122 @@ describe(`Dev loader`, () => {
       )
     })
   })
+
+  describe.only(`__internal__doesPageExist`, () => {
+    let originalBasePath
+    let originalPathPrefix
+    let xhrCount
+
+    const mockPageData = (path, status, responseText = ``, json = false) => {
+      mock.get(`/page-data${path}/page-data.json`, (req, res) => {
+        xhrCount++
+        if (json) {
+          res.header(`content-type`, `application/json`)
+        }
+
+        return res
+          .status(status)
+          .body(
+            typeof responseText === `string`
+              ? responseText
+              : JSON.stringify(responseText)
+          )
+      })
+    }
+
+    const defaultPayload = {
+      path: `/mypage/`,
+      componentChunkName: `chunk`,
+    }
+
+    beforeEach(() => {
+      originalBasePath = global.__BASE_PATH__
+      originalPathPrefix = global.__PATH_PREFIX__
+      global.__BASE_PATH__ = ``
+      global.__PATH_PREFIX__ = ``
+      xhrCount = 0
+      mock.setup()
+      mock.get(`/page-data/app-data.json`, (req, res) =>
+        res
+          .status(200)
+          .header(`content-type`, `application/json`)
+          .body(
+            JSON.stringify({
+              webpackCompilationHash: `123`,
+            })
+          )
+      )
+      mockPageData(
+        `/dev-404-page`,
+        200,
+        {
+          path: `/dev-404-page/`,
+          componentChunkName: `chunk`,
+        },
+        true
+      )
+    })
+
+    // put the real XHR object back and clear the mocks after each test
+    afterEach(() => {
+      global.__BASE_PATH__ = originalBasePath
+      global.__PATH_PREFIX__ = originalPathPrefix
+      mock.teardown()
+    })
+
+    it(`404.html exists case`, async () => {
+      const devLoader = new DevLoader(
+        {
+          components: {},
+        },
+        []
+      )
+
+      mockPageData(`/mypage`, 200, defaultPayload, true)
+      mockPageData(`/404.html`, 200, defaultPayload, true)
+
+      // simulate dev bootstrap
+      await devLoader.loadPage(`/dev-404-page/`)
+      await devLoader.loadPage(`/404.html`)
+      await devLoader.loadPage(`/mypage`)
+
+      expect(devLoader.__internal__doesPageExist(`/mypage`)).toBe(true)
+      expect(devLoader.__internal__doesPageExist(`/dev-404-page/`)).toBe(true)
+      expect(devLoader.__internal__doesPageExist(`/404.html`)).toBe(true)
+      expect(devLoader.__internal__doesPageExist(`/does-not-exist/`)).toBe(
+        false
+      )
+    })
+
+    it.only(`404.html doesn't exist case`, async () => {
+      const devLoader = new DevLoader(
+        {
+          components: {
+            chunk: `instance`,
+          },
+        },
+        []
+      )
+
+      mockPageData(`/mypage`, 200, defaultPayload, true)
+      mockPageData(
+        `/404.html`,
+        200,
+        `<html>this is gatsby develop quirk that we return some html with 200 status instead of 404</html>`,
+        true
+      )
+
+      // simulate dev bootstrap
+      await devLoader.loadPage(`/dev-404-page/`)
+      await devLoader.loadPage(`/404.html`)
+      await devLoader.loadPage(`/mypage`)
+
+      // expect(devLoader.__internal__doesPageExist(`/mypage`)).toBe(true)
+      // expect(devLoader.__internal__doesPageExist(`/dev-404-page/`)).toBe(true)
+      expect(devLoader.__internal__doesPageExist(`/404.html`)).toBe(false)
+      expect(devLoader.__internal__doesPageExist(`/does-not-exist/`)).toBe(
+        false
+      )
+    })
+  })
 })

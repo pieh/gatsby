@@ -43,6 +43,8 @@ const onRouteUpdate = (location, prevLocation) => {
     apiRunner(`onRouteUpdate`, { location, prevLocation })
     // Temp hack while awaiting https://github.com/reach/router/issues/119
     window.__navigatingToLink = false
+
+    loader.__internal__doesPageExist(location.pathname)
   }
 }
 
