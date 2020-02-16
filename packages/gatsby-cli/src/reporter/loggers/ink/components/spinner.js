@@ -1,16 +1,50 @@
-import React from "../react-instance-used-by-ink"
+// code vendored from https://github.com/vadimdemedes/ink-spinner due to
+// https://github.com/gatsbyjs/gatsby/issues/19827#issuecomment-586648029
+import React, { Component } from "../react-instance-used-by-ink"
+import PropTypes from "prop-types"
 import { Box } from "ink"
-import Spinner from "ink-spinner"
+import spinners from "cli-spinners"
 
-export default function Activity({ text, statusText }) {
-  let label = text
-  if (statusText) {
-    label += ` — ${statusText}`
+export default class Spinner extends Component {
+  static propTypes = {
+    type: PropTypes.string,
   }
 
-  return (
-    <Box>
-      <Spinner type="dots" /> {label}
-    </Box>
-  )
+  static defaultProps = {
+    type: `dots`,
+  }
+
+  state = {
+    frame: 0,
+  }
+
+  render() {
+    const spinner = this.getSpinner()
+
+    return <Box>{spinner.frames[this.state.frame]}</Box>
+  }
+
+  componentDidMount() {
+    const spinner = this.getSpinner()
+    this.timer = setInterval(this.switchFrame, spinner.interval)
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timer)
+  }
+
+  getSpinner() {
+    return spinners[this.props.type] || spinners.dots
+  }
+
+  switchFrame = () => {
+    const { frame } = this.state
+    const spinner = this.getSpinner()
+    const isLastFrame = frame === spinner.frames.length - 1
+    const nextFrame = isLastFrame ? 0 : frame + 1
+
+    this.setState({
+      frame: nextFrame,
+    })
+  }
 }

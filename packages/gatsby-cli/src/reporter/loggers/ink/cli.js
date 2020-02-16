@@ -3,7 +3,7 @@ import { Box, Static } from "ink"
 import isTTY from "../../../util/is-tty"
 import { trackBuildError } from "gatsby-telemetry"
 
-import Spinner from "../ink/components/spinner"
+import SpinnerActivity from "../ink/components/spinner-activity"
 import ProgressBar from "../ink/components/progress-bar"
 
 import { Message } from "../ink/components/messages"
@@ -82,7 +82,7 @@ class CLI extends React.Component {
           </Static>
 
           {spinners.map(activity => (
-            <Spinner key={activity.id} {...activity} />
+            <SpinnerActivity key={activity.id} {...activity} />
           ))}
 
           {progressBars.map(activity => (
