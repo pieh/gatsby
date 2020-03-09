@@ -155,6 +155,7 @@
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "rimraf": "^3.0.0",
+    "wait-for-expect": "^3.0.2",
     "xhr-mock": "^2.5.1"
   },
   "engines": {
