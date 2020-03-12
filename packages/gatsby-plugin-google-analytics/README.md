@@ -15,6 +15,7 @@ module.exports = {
     {
       resolve: `gatsby-plugin-google-analytics`,
       options: {
+        // The property ID; the tracking code won't be generated without it
         trackingId: "YOUR_GOOGLE_ANALYTICS_TRACKING_ID",
         // Defines where to place the tracking script - `true` in the head and `false` in the body
         head: false,
@@ -54,18 +55,16 @@ the plugin provides a component.
 To use it, simply import it and use it like you would the `<a>` element e.g.
 
 ```jsx
-import React
-import { OutboundLink } from 'gatsby-plugin-google-analytics'
+import React from "react"
+import { OutboundLink } from "gatsby-plugin-google-analytics"
 
-export default () => {
+export default () => (
   <div>
-    <OutboundLink
-      href="https://www.gatsbyjs.org/packages/gatsby-plugin-google-analytics/"
-    >
+    <OutboundLink href="https://www.gatsbyjs.org/packages/gatsby-plugin-google-analytics/">
       Visit the Google Analytics plugin page!
     </OutboundLink>
   </div>
-}
+)
 ```
 
 ## Options
