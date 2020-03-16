@@ -47,7 +47,8 @@
       ],
     },
     {
-      groupName: "minor updates in packages <1.0.0",
+      // minor updates in packages <1.0.0 - need master issue approval
+      // not grouped
       masterIssueApproval: true,
       updateTypes: ["minor"],
       packageNames: [
