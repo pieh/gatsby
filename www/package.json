@@ -9,12 +9,12 @@
     "@lingui/react": "^2.9.1",
     "@loadable/component": "^5.12.0",
     "@mdx-js/mdx": "^1.5.7",
-    "@reach/skip-nav": "^0.6.2",
+    "@reach/skip-nav": "^0.9.0",
     "@styled-system/prop-types": "^5.1.5",
     "@styled-system/should-forward-prop": "^5.1.5",
     "@styled-system/theme-get": "^5.1.2",
     "@xstate/react": "^0.8.1",
-    "axios": "^0.19.0",
+    "axios": "^0.19.2",
     "bluebird": "^3.7.2",
     "color-blend": "^2.0.9",
     "dotenv": "^8.2.0",
@@ -101,9 +101,9 @@
     "typography-plugin-code": "^1.0.0-alpha.0",
     "wcag-contrast": "^2.1.1",
     "xstate": "^4.8.0",
-    "zipkin": "^0.19.1",
+    "zipkin": "^0.19.2",
     "zipkin-javascript-opentracing": "^2.1.0",
-    "zipkin-transport-http": "^0.19.1"
+    "zipkin-transport-http": "^0.19.2"
   },
   "keywords": [
     "gatsby"
@@ -155,7 +155,7 @@
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^24.9.0",
     "babel-plugin-macros": "^2.8.0",
-    "babel-preset-gatsby": "^0.2.23",
+    "babel-preset-gatsby": "^0.2.36",
     "cross-env": "^5.2.1",
     "front-matter": "^2.3.0",
     "github-api": "^3.3.0",
