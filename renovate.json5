@@ -18,7 +18,7 @@
   prHourlyLimit: 0,
   packageRules: [
     {
-      groupName: "minor updates in packages >=1.0.-",
+      groupName: "minor updates in packages >=1.0.0",
       updateTypes: ["minor"],
       excludePackageNames: [
         // below is list of packages that use 0.X version range, any minor bump there can contain breaking changes, so we just ignore minor bumps for those packages and will need to bump them manually
