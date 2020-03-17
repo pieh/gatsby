@@ -1,10 +1,5 @@
 {
-  
-Error: Parse error on line 1:
-{  extends: ["config:ba
----^
-Expecting 'STRING', '}'
-extends: ["config:base", ":disablePeerDependencies"],
+  extends: ["config:base", ":disablePeerDependencies"],
   includePaths: [
     "package.json",
     "starters/**",
