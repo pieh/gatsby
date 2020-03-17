@@ -1,6 +1,6 @@
 import { slash } from "gatsby-core-utils"
 import path from "path"
-import opentracing, { Tracer } from "opentracing"
+import opentracing from "opentracing"
 
 let tracerProvider
 
@@ -13,8 +13,8 @@ let tracerProvider
  * `stop` - Run any tracer cleanup required before the node.js process
  * exits
  */
-export const initTracer = (tracerFile: string): Tracer => {
-  let tracer: Tracer
+export const initTracer = (tracerFile: string): any => {
+  let tracer: any
   if (tracerFile) {
     const resolvedPath = slash(path.resolve(tracerFile))
     tracerProvider = require(resolvedPath)
