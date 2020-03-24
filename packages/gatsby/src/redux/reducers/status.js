@@ -1,13 +1,24 @@
 const _ = require(`lodash`)
 
-module.exports = (state = { plugins: {} }, action) => {
+module.exports = (
+  state = {
+    plugins: {},
+    cacheKeys: {},
+  },
+  action
+) => {
   switch (action.type) {
     case `DELETE_CACHE`:
-      return { plugins: {} }
+      return { plugins: {}, cacheKeys: state.cacheKeys }
     case `UPDATE_PLUGINS_HASH`:
       return {
         ...state,
         PLUGINS_HASH: action.payload,
+      }
+    case `UPDATE_CACHE_KEYS`:
+      return {
+        ...state,
+        cacheKeys: action.payload,
       }
     case `SET_PLUGIN_STATUS`:
       if (!action.plugin && !action.plugin.name) {

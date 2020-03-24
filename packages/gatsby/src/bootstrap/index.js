@@ -3,17 +3,17 @@
 const _ = require(`lodash`)
 const { slash } = require(`gatsby-core-utils`)
 const fs = require(`fs-extra`)
-const md5File = require(`md5-file/promise`)
-const crypto = require(`crypto`)
+
 const del = require(`del`)
 const path = require(`path`)
-const Promise = require(`bluebird`)
+require(`bluebird`)
 const telemetry = require(`gatsby-telemetry`)
 
 const apiRunnerNode = require(`../utils/api-runner-node`)
 import { getBrowsersList } from "../utils/browserslist"
 import { createSchemaCustomization } from "../utils/create-schema-customization"
 const { store, emitter } = require(`../redux`)
+import { maybeInvalidateCache } from "./cache-invalidation"
 const loadPlugins = require(`./load-plugins`)
 const loadThemes = require(`./load-themes`)
 const report = require(`gatsby-cli/lib/reporter`)
@@ -213,71 +213,8 @@ module.exports = async (args: BootstrapArgs) => {
     parentSpan: bootstrapSpan,
   })
   activity.start()
-  // Check if any plugins have been updated since our last run. If so
-  // we delete the cache is there's likely been changes
-  // since the previous run.
-  //
-  // We do this by creating a hash of all the version numbers of installed
-  // plugins, the site's package.json, gatsby-config.js, and gatsby-node.js.
-  // The last, gatsby-node.js, is important as many gatsby sites put important
-  // logic in there e.g. generating slugs for custom pages.
-  const pluginVersions = flattenedPlugins.map(p => p.version)
-  const hashes = await Promise.all([
-    !!process.env.GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES,
-    md5File(`package.json`),
-    Promise.resolve(
-      md5File(`${program.directory}/gatsby-config.js`).catch(() => {})
-    ), // ignore as this file isn't required),
-    Promise.resolve(
-      md5File(`${program.directory}/gatsby-node.js`).catch(() => {})
-    ), // ignore as this file isn't required),
-  ])
-  const pluginsHash = crypto
-    .createHash(`md5`)
-    .update(JSON.stringify(pluginVersions.concat(hashes)))
-    .digest(`hex`)
-  const state = store.getState()
-  const oldPluginsHash = state && state.status ? state.status.PLUGINS_HASH : ``
-
-  // Check if anything has changed. If it has, delete the site's .cache
-  // directory and tell reducers to empty themselves.
-  //
-  // Also if the hash isn't there, then delete things just in case something
-  // is weird.
-  if (oldPluginsHash && pluginsHash !== oldPluginsHash) {
-    report.info(report.stripIndent`
-      One or more of your plugins have changed since the last time you ran Gatsby. As
-      a precaution, we're deleting your site's cache to ensure there's no stale data.
-    `)
-  }
   const cacheDirectory = `${program.directory}/.cache`
-  if (!oldPluginsHash || pluginsHash !== oldPluginsHash) {
-    try {
-      // Attempt to empty dir if remove fails,
-      // like when directory is mount point
-      await fs.remove(cacheDirectory).catch(() => fs.emptyDir(cacheDirectory))
-    } catch (e) {
-      report.error(`Failed to remove .cache files.`, e)
-    }
-    // Tell reducers to delete their data (the store will already have
-    // been loaded from the file system cache).
-    store.dispatch({
-      type: `DELETE_CACHE`,
-    })
-  }
-
-  // Update the store with the new plugins hash.
-  store.dispatch({
-    type: `UPDATE_PLUGINS_HASH`,
-    payload: pluginsHash,
-  })
-
-  // Now that we know the .cache directory is safe, initialize the cache
-  // directory.
-  await fs.ensureDir(cacheDirectory)
-
-  // Ensure the public/static directory
-  await fs.ensureDir(`${program.directory}/public/static`)
+  await maybeInvalidateCache({ flattenedPlugins, cacheDirectory })
 
   activity.end()
 

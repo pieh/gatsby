@@ -104,6 +104,9 @@ export interface IGatsbyState {
   schema: GraphQLSchema
   status: {
     plugins: {}
+    cacheKeys?: {
+      [key: string]: string | boolean
+    }
     PLUGINS_HASH: Identifier
   }
   componentDataDependencies: {
