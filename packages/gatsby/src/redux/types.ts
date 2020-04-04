@@ -105,6 +105,13 @@ export interface IGatsbyState {
   status: {
     plugins: {}
     PLUGINS_HASH: Identifier
+    loadedFromCache?: boolean
+    cacheKeys?: {
+      [key: string]: string | boolean
+    }
+    pluginVersions?: {
+      [key: string]: string
+    }
   }
   componentDataDependencies: {
     nodes: Map<string, Set<string>>

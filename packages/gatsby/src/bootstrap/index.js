@@ -17,7 +17,7 @@ const report = require(`gatsby-cli/lib/reporter`)
 const getConfigFile = require(`./get-config-file`)
 const tracer = require(`opentracing`).globalTracer()
 const preferDefault = require(`./prefer-default`)
-const safeRemoveCache = require(`./cache/remove`)
+import { maybeInvalidateCache } from "./cache"
 const removeStaleJobs = require(`./remove-stale-jobs`)
 
 // Show stack trace on unhandled promises.
@@ -207,26 +207,6 @@ module.exports = async (args: BootstrapArgs) => {
     activity.end()
   }
 
-  activity = report.activityTimer(`initialize cache`, {
-    parentSpan: bootstrapSpan,
-  })
-  activity.start()
-  const state = store.getState()
-  let existingPluginHash
-  try {
-    existingPluginHash = JSON.parse(state.status.PLUGINS_HASH)
-  } catch (e) {
-    existingPluginHash = {}
-  }
-
-  // TO-DO re-add full cache invalidation on GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES change
-  const { cacheDirectory, changes, hash } = await safeRemoveCache({
-    directory: program.directory,
-    existing: existingPluginHash,
-    plugins: flattenedPlugins,
-    report,
-  })
-
   if (process.env.GATSBY_DB_NODES === `loki`) {
     const loki = require(`../db/loki`)
     // Start the nodes database (in memory loki js with interval disk
@@ -249,27 +229,40 @@ module.exports = async (args: BootstrapArgs) => {
     lokiActivity.end()
   }
 
-  if (changes.length > 0) {
-    store.dispatch({
-      type: `DELETE_CACHE`,
-      payload: changes,
-    })
-  }
-
-  store.dispatch({
-    type: `UPDATE_PLUGINS_HASH`,
-    payload: JSON.stringify(hash),
+  activity = report.activityTimer(`initialize cache`, {
+    parentSpan: bootstrapSpan,
   })
+  activity.start()
 
-  if (process.env.GATSBY_DB_NODES !== `loki`) {
-    store.dispatch({
-      type: `REBUILD_NODES_BY_TYPE`,
-      payload: store.getState().nodes,
-    })
-  }
+  const cacheDirectory = `${program.directory}/.cache`
+
+  await maybeInvalidateCache({ flattenedPlugins, cacheDirectory })
+
+  // if (changes.length > 0) {
+  //   store.dispatch({
+  //     type: `DELETE_CACHE`,
+  //     payload: changes,
+  //   })
+  // }
+
+  // store.dispatch({
+  //   type: `UPDATE_PLUGINS_HASH`,
+  //   payload: JSON.stringify(hash),
+  // })
+
+  // if (process.env.GATSBY_DB_NODES !== `loki`) {
+  //   store.dispatch({
+  //     type: `REBUILD_NODES_BY_TYPE`,
+  //     payload: store.getState().nodes,
+  //   })
+  // }
+
+  // Now that we know the .cache directory is safe, initialize the cache
+  // directory.
+  await fs.ensureDir(cacheDirectory)
 
   // Ensure the public/static directory
-  await fs.ensureDir(path.join(program.directory, `public`, `static`))
+  await fs.ensureDir(`${program.directory}/public/static`)
 
   activity.end()
 
