@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.4](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.5.3...gatsby-plugin-sharp@2.5.4) (2020-04-04)
+
+### Bug Fixes
+
+- **dependencies:** bump potrace version ([#22803](https://github.com/gatsbyjs/gatsby/issues/22803)) ([7a8f016](https://github.com/gatsbyjs/gatsby/commit/7a8f016))
+
+## [2.5.3](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.5.2...gatsby-plugin-sharp@2.5.3) (2020-03-24)
+
+### Bug Fixes
+
+- **docs:** remove double words ([#22494](https://github.com/gatsbyjs/gatsby/issues/22494)) ([75f6ee2](https://github.com/gatsbyjs/gatsby/commit/75f6ee2))
+- **gatsby-plugin-sharp:** Apply transformArgs on compressJpg a… ([#22538](https://github.com/gatsbyjs/gatsby/issues/22538)) ([4fd158f](https://github.com/gatsbyjs/gatsby/commit/4fd158f))
+
 ## [2.5.2](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.5.1...gatsby-plugin-sharp@2.5.2) (2020-03-23)
 
 ### Bug Fixes

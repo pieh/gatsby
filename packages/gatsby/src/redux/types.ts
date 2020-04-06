@@ -127,13 +127,13 @@ export interface IGatsbyState {
     }
   >
   staticQueryComponents: Map<
-    string,
+    number,
     {
       name: string
       componentPath: SystemPath
       id: Identifier
       query: string
-      hash: number
+      hash: string
     }
   >
   // @deprecated
