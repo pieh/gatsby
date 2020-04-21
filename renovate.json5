@@ -1,12 +1,6 @@
 
 {
   extends: ["config:base", ":disablePeerDependencies"],
-  includePaths: [
-    "package.json",
-    "packages/**",
-    "starters/**",
-    "www/package.json",
-  ],
   major: {
     masterIssueApproval: true,
   },
