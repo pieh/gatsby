@@ -20,7 +20,7 @@
     // We have our own groups - this might mess with this config?
     // "group:monorepos",
     // "group:recommended",
-    "helpers:disableTypesNodeMajor"
+    "helpers:disableTypesNodeMajor",
     // END subset of config:base
     ":disablePeerDependencies"
   ],
