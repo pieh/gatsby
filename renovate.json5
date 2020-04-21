@@ -21,6 +21,11 @@
     {
       groupName: "minor updates in packages",
       updateTypes: ["minor"],
+      paths: [
+          "package.json",
+          "packages/**",
+          "www/package.json",
+      ],
       excludePackageNames: [
         // below is list of packages that use 0.X version range, any minor bump there can contain breaking changes, so we just ignore minor bumps for those packages and will need to bump them manually
         "@reach/skip-nav",
@@ -52,6 +57,11 @@
       // not grouped
       masterIssueApproval: true,
       updateTypes: ["minor"],
+      paths: [
+          "package.json",
+          "packages/**",
+          "www/package.json",
+      ],
       packageNames: [
         // below is list of packages that use 0.X version range, any minor bump there can contain breaking changes, so we just ignore minor bumps for those packages and will need to bump them manually
         "@reach/skip-nav",
@@ -81,6 +91,11 @@
     {
       groupName: "patch updates in packages",
       updateTypes: ["patch"],
+      paths: [
+          "package.json",
+          "packages/**",
+          "www/package.json",
+      ],
     },
     {
       depTypeList: ["engines"],
