@@ -1,6 +1,29 @@
 
 {
-  extends: ["config:base", ":disablePeerDependencies"],
+  extends: [
+    // START subset of config:base
+    ":separateMajorReleases",
+    // We have explicit separate rules for minor and patches - this setting seemed to cause problems
+    // ":combinePatchMinorReleases",
+    ":ignoreUnstable",
+    ":prImmediately",
+    ":semanticPrefixFixDepsChoreOthers",
+    ":updateNotScheduled",
+    ":automergeDisabled",
+    ":ignoreModulesAndTests",
+    ":maintainLockFilesDisabled",
+    // this was setting rangeStrategy
+    //":autodetectPinVersions",
+    // this was not doing anything as we have different override for prHourlyLimit
+    // ":prHourlyLimit2",
+    ":prConcurrentLimit10",
+    // We have our own groups - this might mess with this config?
+    // "group:monorepos",
+    // "group:recommended",
+    "helpers:disableTypesNodeMajor"
+    // END subset of config:base
+    ":disablePeerDependencies"
+  ],
   major: {
     masterIssueApproval: true,
   },
