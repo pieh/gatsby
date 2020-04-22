@@ -119,6 +119,10 @@
       enabled: false,
     },
     {
+      groupName: "type updates",
+      packagePatterns: ["^@types"],
+    },
+    {
       groupName: "updates in starters",
       paths: ["starters/**"],
     },
