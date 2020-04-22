@@ -1,46 +1,66 @@
-import md5File from "md5-file/promise"
-import crypto from "crypto"
+// import md5File from "md5-file/promise"
+// import crypto from "crypto"
 import fs from "fs-extra"
 import report from "gatsby-cli/lib/reporter"
-import { isEmpty } from "lodash"
+// import { isEmpty } from "lodash"
 
-import { registerCacheKey, collectCacheKeyChanges } from "./cache-keys"
+// import { registerCacheKey, collectCacheKeyChanges } from "./cache-keys"
 import { store } from "../../redux"
 // import { getPlugin}
 import { collectPluginChanges } from "./plugin-versions"
 
+import { FlattenedPlugins } from "./types"
+import { string } from "joi"
+
+interface GlobalCacheKeys {
+  coreVersion: string
+  dbType: string
+  experimentalSelectiveHtmlBuilds: boolean
+  pathPrefix: string
+}
+
 export const maybeInvalidateCache = async ({
   flattenedPlugins,
   cacheDirectory,
+}: {
+  flattenedPlugins: FlattenedPlugins
+  cacheDirectory: string
 }) => {
-  const coreVersion = require(`../../../package.json`).version
-  registerCacheKey(
-    `dbType`,
-    () => {
-      return process.env.GATSBY_DB_NODES || `redux`
-    },
-    `redux`
-  )
-  registerCacheKey(
-    `experimentalSelectiveHtmlBuilds`,
-    () => {
-      return !!process.env.GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES
-    },
-    false
-  )
-  registerCacheKey(
-    `coreVersion`,
-    () => {
-      return coreVersion
-    },
-    coreVersion
-  )
-
   const state = store.getState()
+
+  const currentGlobalCacheKeys: GlobalCacheKeys = {
+    coreVersion: require(`../../../package.json`).version,
+    dbType: process.env.GATSBY_DB_NODES || `redux`,
+    experimentalSelectiveHtmlBuilds: !!process.env
+      .GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES,
+    pathPrefix: state.program.prefixPaths ? state.config.pathPrefix : ``,
+  }
+  // registerCacheKey(
+  //   `dbType`,
+  //   () => {
+  //     return process.env.GATSBY_DB_NODES || `redux`
+  //   },
+  //   `redux`
+  // )
+  // registerCacheKey(
+  //   `experimentalSelectiveHtmlBuilds`,
+  //   () => {
+  //     return !!process.env.GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES
+  //   },
+  //   false
+  // )
+  // registerCacheKey(
+  //   `coreVersion`,
+  //   () => {
+  //     return coreVersion
+  //   },
+  //   coreVersion
+  // )
 
   const isFirstRun = !state.status.loadedFromCache
 
-  const { changedCacheKeys, updatedCacheKeys } = collectCacheKeyChanges(state)
+  // const { changedCacheKeys, updatedCacheKeys } = collectCacheKeyChanges(state)
+
   const { changedPlugins, pluginVersions } = collectPluginChanges(
     flattenedPlugins,
     state

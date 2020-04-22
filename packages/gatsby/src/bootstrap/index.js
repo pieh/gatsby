@@ -18,7 +18,7 @@ const report = require(`gatsby-cli/lib/reporter`)
 import { getConfigFile } from "./get-config-file"
 const tracer = require(`opentracing`).globalTracer()
 const preferDefault = require(`./prefer-default`)
-import { maybeInvalidateCache } from "./cache"
+import { initCache } from "./init-cache"
 const removeStaleJobs = require(`./remove-stale-jobs`)
 
 // Show stack trace on unhandled promises.
@@ -237,7 +237,7 @@ module.exports = async (args: BootstrapArgs) => {
 
   const cacheDirectory = `${program.directory}/.cache`
 
-  await maybeInvalidateCache({ flattenedPlugins, cacheDirectory })
+  await initCache({ flattenedPlugins, cacheDirectory })
 
   // if (changes.length > 0) {
   //   store.dispatch({

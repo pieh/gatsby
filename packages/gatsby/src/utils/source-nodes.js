@@ -88,7 +88,7 @@ module.exports = async ({
     parentSpan,
     webhookBody,
     firstRun,
-    changes,
+    // changes,
   })
 
   const state = store.getState()
