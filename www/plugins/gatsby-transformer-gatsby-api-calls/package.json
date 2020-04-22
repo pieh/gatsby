@@ -5,8 +5,8 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "@babel/parser": "^7.4.4",
-    "@babel/traverse": "^7.4.4",
+    "@babel/parser": "^7.9.4",
+    "@babel/traverse": "^7.9.5",
     "minimatch": "^3.0.4"
   }
 }
