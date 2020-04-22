@@ -43,6 +43,7 @@
           "packages/**",
           "www/package.json",
       ],
+      excludePackagePatterns: ["^@types"],
       excludePackageNames: [
         // below is list of packages that use 0.X version range, any minor bump there can contain breaking changes, so we just ignore minor bumps for those packages and will need to bump them manually
         "@reach/skip-nav",
