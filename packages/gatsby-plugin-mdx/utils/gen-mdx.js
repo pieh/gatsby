@@ -39,6 +39,8 @@ const BabelPluginPluckImports = require(`./babel-plugin-pluck-imports`)
  * }
  *  */
 
+const inFlightGenMdx = new Map()
+
 module.exports = async function genMDX(
   {
     isLoader,
@@ -57,10 +59,21 @@ module.exports = async function genMDX(
   const payloadCacheKey = node =>
     `gatsby-plugin-mdx-entire-payload-${node.internal.contentDigest}-${pathPrefixCacheStr}`
 
+  let cacheKey, inFlightResolve
   if (!forceDisableCache) {
-    const cachedPayload = await cache.get(payloadCacheKey(node))
+    cacheKey = payloadCacheKey(node)
+    const cachedPayload = await cache.get(cacheKey)
     if (cachedPayload) {
       return cachedPayload
+    } else if (inFlightGenMdx.has(cacheKey)) {
+      return inFlightGenMdx.get(cacheKey)
+    } else {
+      inFlightGenMdx.set(
+        cacheKey,
+        new Promise(resolve => {
+          inFlightResolve = resolve
+        })
+      )
     }
   }
 
@@ -70,7 +83,7 @@ module.exports = async function genMDX(
     html: undefined,
     scopeImports: [],
     scopeIdentifiers: [],
-    body: undefined,
+    body: undefined
   }
 
   // TODO: a remark and a hast plugin that pull out the ast and store it in results
@@ -118,9 +131,9 @@ export const _frontmatter = ${JSON.stringify(data)}`
       pathPrefix,
       compiler: {
         parseString: compiler.parse.bind(compiler),
-        generateHTML: ast => mdx(ast, options),
+        generateHTML: ast => mdx(ast, options)
       },
-      ...helpers,
+      ...helpers
     }
   )
 
@@ -130,7 +143,7 @@ export const _frontmatter = ${JSON.stringify(data)}`
     ...options,
     remarkPlugins: options.remarkPlugins.concat(
       gatsbyRemarkPluginsAsremarkPlugins
-    ),
+    )
   })
 
   results.rawMDXOutput = `/* @jsx mdx */
@@ -146,7 +159,7 @@ ${code}`
         instance.plugin,
         objRestSpread,
         htmlAttrToJSXAttr,
-        removeExportKeywords,
+        removeExportKeywords
       ],
       presets: [
         require(`@babel/preset-react`),
@@ -155,10 +168,10 @@ ${code}`
           {
             useBuiltIns: `entry`,
             corejs: 2,
-            modules: false,
-          },
-        ],
-      ],
+            modules: false
+          }
+        ]
+      ]
     })
 
     const identifiers = Array.from(instance.state.identifiers)
@@ -184,8 +197,15 @@ ${code}`
   /* results.html = renderToStaticMarkup(
    *   React.createElement(MDXRenderer, null, results.body)
    * ); */
+
   if (!forceDisableCache) {
     await cache.set(payloadCacheKey(node), results)
   }
+
+  if (inFlightResolve && cacheKey) {
+    inFlightResolve(results)
+    inFlightGenMdx.delete(cacheKey)
+  }
+
   return results
 }
