@@ -65,6 +65,7 @@ export const labeler = async () => {
   const currentLabels = danger.github.issue.labels.map(i => i.name)
 
   let labels: Set<string> = new Set(currentLabels)
+  labels.add("status: triage needed")
 
   if (endsWith("?", title) || matchKeyword(questionWords, title, true)) {
     labels.add("type: question or discussion")
