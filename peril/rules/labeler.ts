@@ -58,18 +58,13 @@ const matchKeyword = (
 }
 
 export const labeler = async () => {
-  console.log('running labeler')
-  
   const gh = danger.github as any
   const repo = gh.repository
   const issue = gh.issue
   const title = issue.title
   const currentLabels = danger.github.issue.labels.map(i => i.name)
-  
-  
 
   let labels: Set<string> = new Set(currentLabels)
-  labels.add("status: triage needed")
 
   if (endsWith("?", title) || matchKeyword(questionWords, title, true)) {
     labels.add("type: question or discussion")
