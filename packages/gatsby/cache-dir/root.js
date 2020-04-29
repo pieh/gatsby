@@ -7,7 +7,7 @@ import {
   init as navigationInit,
   RouteUpdates,
 } from "./navigation"
-import { apiRunner } from "./api-runner-browser"
+import { apiRunner, apiRunnerCreateElement } from "./api-runner-browser"
 import loader from "./loader"
 import { PageQueryStore, StaticQueryStore } from "./query-result-store"
 import EnsureResources from "./ensure-resources"
@@ -126,7 +126,7 @@ const Root = () => (
 )
 
 // Let site, plugins wrap the site e.g. for Redux.
-const WrappedRoot = apiRunner(
+const WrappedRoot = apiRunnerCreateElement(
   `wrapRootElement`,
   { element: <Root /> },
   <Root />,

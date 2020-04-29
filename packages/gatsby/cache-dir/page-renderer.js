@@ -1,7 +1,7 @@
 import React, { createElement } from "react"
 import PropTypes from "prop-types"
 import { publicLoader } from "./loader"
-import { apiRunner } from "./api-runner-browser"
+import { apiRunner, apiRunnerCreateElement } from "./api-runner-browser"
 
 // Renders page
 class PageRenderer extends React.Component {
@@ -23,7 +23,7 @@ class PageRenderer extends React.Component {
         key: this.props.path || this.props.pageResources.page.path,
       })
 
-    const wrappedPage = apiRunner(
+    const wrappedPage = apiRunnerCreateElement(
       `wrapPageElement`,
       { element: pageElement, props },
       pageElement,
