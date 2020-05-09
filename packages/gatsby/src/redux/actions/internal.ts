@@ -104,7 +104,11 @@ export const replaceStaticQuery = (
  * @private
  */
 export const queryExtracted = (
-  { componentPath, query }: { componentPath: string; query: string },
+  {
+    componentPath,
+    query,
+    chunks,
+  }: { componentPath: string; query: string; chunks: any },
   plugin: IGatsbyPlugin,
   traceId?: string
 ): IQueryExtractedAction => {
@@ -112,7 +116,7 @@ export const queryExtracted = (
     type: `QUERY_EXTRACTED`,
     plugin,
     traceId,
-    payload: { componentPath, query },
+    payload: { componentPath, query, chunks },
   }
 }
 

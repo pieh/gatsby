@@ -56,6 +56,18 @@ const getPageDataPath = path => {
   return join(`page-data`, fixedPagePath, `page-data.json`)
 }
 
+const getChunkData = chunkPath => {
+  const absoluteChunkPath = join(
+    process.cwd(),
+    `public`,
+    `static`,
+    `chunks`,
+    `${chunkPath}.json`
+  )
+  const chunkDataRaw = fs.readFileSync(absoluteChunkPath)
+  return JSON.parse(chunkDataRaw.toString())
+}
+
 const getPageDataUrl = pagePath => {
   const pageDataPath = getPageDataPath(pagePath)
   return `${__PATH_PREFIX__}/${pageDataPath}`
@@ -67,8 +79,16 @@ const getPageData = pagePath => {
   const pageDataRaw = fs.readFileSync(absolutePageDataPath)
 
   try {
-    return JSON.parse(pageDataRaw.toString())
+    const pageData = JSON.parse(pageDataRaw.toString())
+    if (pageData.chunks) {
+      pageData.chunks.forEach(({ fieldName, chunkPath }) => {
+        const chunkData = getChunkData(chunkPath)
+        pageData.result.data[fieldName] = chunkData
+      })
+    }
+    return pageData
   } catch (err) {
+    console.log(err)
     return null
   }
 }

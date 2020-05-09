@@ -10,6 +10,7 @@ const { boundActionCreators } = require(`../redux/actions`)
 const pageDataUtil = require(`../utils/page-data`)
 const { getCodeFrame } = require(`./graphql-errors`)
 const { default: errorParser } = require(`./error-parser`)
+const { createContentDigest } = require(`gatsby-core-utils`)
 
 const resultHashes = new Map()
 
@@ -137,7 +138,48 @@ module.exports = async (graphqlRunner, queryJob: QueryJob) => {
       const publicDir = path.join(program.directory, `public`)
       const { pages } = store.getState()
       const page = pages.get(queryJob.id)
-      await pageDataUtil.write({ publicDir }, page, result)
+
+      const chunks = []
+
+      await Promise.all(
+        queryJob.chunks.map(async ({ fieldName, hash, usedArgumentLeafs }) => {
+          const resultToBeChunked = result.data[fieldName]
+          // first - let's even check if there is any data
+          if (!resultToBeChunked) {
+            // nothing to do really
+            return
+          }
+
+          const usedArgs = usedArgumentLeafs.reduce((acc, argumentLeaf) => {
+            if (argumentLeaf.type === `literal`) {
+              acc[argumentLeaf.argPath] = argumentLeaf.value
+            } else {
+              acc[argumentLeaf.argPath] = queryJob.context[argumentLeaf.name]
+            }
+
+            return acc
+          }, {})
+          const argsHash = createContentDigest(usedArgs)
+          const chunkPath = path.join(hash, argsHash)
+
+          const chunkFilePath = path.join(
+            program.directory,
+            `public`,
+            `static`,
+            `chunks`,
+            `${chunkPath}.json`
+          )
+          await fs.outputJSON(chunkFilePath, resultToBeChunked)
+
+          chunks.push({
+            fieldName,
+            chunkPath,
+          })
+          result.data[fieldName] = undefined
+        })
+      )
+
+      await pageDataUtil.write({ publicDir }, page, result, chunks)
     } else {
       // The babel plugin is hard-coded to load static queries from
       // public/static/d/

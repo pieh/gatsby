@@ -21,12 +21,13 @@ const remove = async ({ publicDir }, pagePath) => {
   return Promise.resolve()
 }
 
-const write = async ({ publicDir }, page, result) => {
+const write = async ({ publicDir }, page, result, chunks = []) => {
   const filePath = getFilePath({ publicDir }, page.path)
   const body = {
     componentChunkName: page.componentChunkName,
     path: page.path,
     matchPath: page.matchPath,
+    chunks: chunks.length > 0 ? chunks : undefined,
     result,
   }
   const bodyStr = JSON.stringify(body)

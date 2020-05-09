@@ -200,7 +200,9 @@ export class BaseLoader {
 
         let pageData = result.payload
         const { componentChunkName } = pageData
-        return this.loadComponent(componentChunkName).then(component => {
+        const loadComponentPromise = this.loadComponent(
+          componentChunkName
+        ).then(component => {
           const finalResult = { createdAt: new Date() }
           let pageResources
           if (!component) {
@@ -226,6 +228,30 @@ export class BaseLoader {
           // undefined if final result is an error
           return pageResources
         })
+
+        const chunksPromises = pageData.chunks
+          ? pageData.chunks.map(({ fieldName, chunkPath }) =>
+              doFetch(
+                `${__PATH_PREFIX__}/static/chunks/${chunkPath}.json`
+              ).then(res => {
+                return {
+                  fieldName,
+                  chunkData: JSON.parse(res.responseText),
+                }
+              })
+            )
+          : []
+
+        return Promise.all([loadComponentPromise, ...chunksPromises]).then(
+          ([pageResources, ...chunks]) => {
+            // console.log({ chunks, pageResources })
+            chunks.forEach(({ fieldName, chunkData }) => {
+              pageResources.json.data[fieldName] = chunkData
+            })
+
+            return pageResources
+          }
+        )
       })
       // prefer duplication with then + catch over .finally to prevent problems in ie11 + firefox
       .then(response => {

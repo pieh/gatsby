@@ -2,6 +2,7 @@ const normalize = require(`normalize-path`)
 const { interpret } = require(`xstate`)
 
 import { componentMachine } from "../machines/page-component"
+import { createContentDigest } from "gatsby-core-utils"
 
 const services = new Map()
 let programStatus = `BOOTSTRAPPING`
@@ -26,6 +27,7 @@ module.exports = (state = new Map(), action) => {
           query: state.get(action.payload.componentPath)?.query || ``,
           pages: new Set([action.payload.path]),
           isInBootstrap: programStatus === `BOOTSTRAPPING`,
+          chunks: [],
         })
         service = interpret(machine).start()
         // .onTransition(nextState => {
@@ -69,12 +71,17 @@ module.exports = (state = new Map(), action) => {
       }
 
       // Check if the query has changed or not.
-      if (service.state.context.query === action.payload.query) {
+      if (
+        service.state.context.query === action.payload.query &&
+        createContentDigest(service.state.context.chunks) ===
+          createContentDigest(action.payload.chunks)
+      ) {
         service.send(`QUERY_DID_NOT_CHANGE`)
       } else {
         service.send({
           type: `QUERY_CHANGED`,
           query: action.payload.query,
+          chunks: action.payload.chunks,
         })
       }
 

@@ -279,12 +279,13 @@ const initialProcessQueries = async ({ parentSpan } = {}) => {
 const createPageQueryJob = (state, page) => {
   const component = state.components.get(page.componentPath)
   const { path, componentPath, context } = page
-  const { query } = component
+  const { query, chunks } = component
   return {
     id: path,
     query,
     isPage: true,
     componentPath,
+    chunks,
     context: {
       ...page,
       ...context,

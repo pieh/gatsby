@@ -10,6 +10,7 @@ const _ = require(`lodash`)
 const path = require(`path`)
 const normalize = require(`normalize-path`)
 const glob = require(`glob`)
+const { createContentDigest } = require(`gatsby-core-utils`)
 
 const {
   validate,
@@ -289,7 +290,8 @@ const processDefinitions = ({
   addError,
   parentSpan,
 }) => {
-  const processedQueries: Queries = new Map()
+  const tmpProcessedQueries: Queries = new Map()
+  // const
 
   const fragmentsUsedByFragment = new Map()
 
@@ -301,8 +303,8 @@ const processDefinitions = ({
     const name = operation.name.value
     const originalDefinition = definitionsByName.get(name)
     const filePath = definitionsByName.get(name).filePath
-    if (processedQueries.has(filePath)) {
-      const otherQuery = processedQueries.get(filePath)
+    if (tmpProcessedQueries.has(filePath)) {
+      const otherQuery = tmpProcessedQueries.get(filePath)
 
       addError(
         multipleRootQueriesError(
@@ -393,8 +395,12 @@ const processDefinitions = ({
     const query = {
       name,
       text: print(document),
+      // document,
       originalText: originalDefinition.text,
       path: filePath,
+      operation,
+      chunks: [],
+      // sharedMeta,
       isHook: originalDefinition.isHook,
       isStaticQuery: originalDefinition.isStaticQuery,
       hash: originalDefinition.hash,
@@ -419,10 +425,251 @@ const processDefinitions = ({
       )
     }
 
-    processedQueries.set(filePath, query)
+    tmpProcessedQueries.set(filePath, query)
   }
 
-  return processedQueries
+  const allChunks = new Map()
+  // split chunks
+  // after all the validation we can start optimizing (both to avoid running shared root fields as well as optimize payload splitting)
+  tmpProcessedQueries.forEach((query, filePath) => {
+    const { operation, isStaticQuery } = query
+    // console.log({
+    //   operation,
+    //   restQuery,
+    //   filePath,
+    // })
+    if (isStaticQuery) {
+      // welp - maybe when it's not handled by webpack
+      // console.log(`skipping static query`)
+      return
+    } else {
+      // console.log(`continue`, operation.name.value)
+    }
+
+    visit(operation, {
+      [Kind.FIELD]: node => {
+        const usedArgumentLeafs = []
+
+        const LiteralAndVariableVisitor = (
+          argNode,
+          key,
+          parent,
+          path,
+          ancestors
+        ) => {
+          const normalizedPath = []
+
+          ancestors.forEach(step => {
+            if (step.kind === Kind.ARGUMENT) {
+              normalizedPath.push(step.name.value)
+            } else if (step.kind === Kind.OBJECT_FIELD) {
+              normalizedPath.push(step.name.value)
+            }
+          })
+
+          // hmm, but why direct one doesn't show up in ancestors ? :(((()))
+          normalizedPath.push(parent.name.value)
+          const argPath = normalizedPath.join(`.`)
+
+          if (argNode.kind === Kind.VARIABLE) {
+            usedArgumentLeafs.push({
+              argPath,
+              type: `variable`,
+              name: argNode.name.value,
+            })
+          } else {
+            usedArgumentLeafs.push({
+              argPath,
+              type: `literal`,
+              value: argNode.value,
+            })
+          }
+
+          return {
+            ...argNode,
+            kind: Kind.VARIABLE,
+            name: {
+              kind: Kind.NAME,
+              value: `PLACEHOLDER`,
+            },
+          }
+        }
+
+        // eslint-disable-next-line no-unused-vars
+        const { selectionSet, ...nodeWithoutSelectionSet } = node
+
+        const nodeWithPlaceholderArgs = visit(nodeWithoutSelectionSet, {
+          [Kind.VARIABLE]: LiteralAndVariableVisitor,
+          // TO-DO: add more literals
+          [Kind.STRING]: LiteralAndVariableVisitor,
+        })
+
+        const extractedRootFieldWithArgsAndSelectionSet = print({
+          selectionSet: node.selectionSet,
+          name: nodeWithPlaceholderArgs.name,
+          kind: nodeWithPlaceholderArgs.kind,
+          arguments: nodeWithPlaceholderArgs.arguments,
+        })
+
+        const hash = createContentDigest(
+          extractedRootFieldWithArgsAndSelectionSet
+        )
+
+        let chunk = allChunks.get(hash)
+        if (!chunk) {
+          chunk = {
+            extractedRootFieldWithArgsAndSelectionSet,
+            hash,
+            usedBy: [],
+          }
+          allChunks.set(hash, chunk)
+        }
+
+        chunk.usedBy.push({
+          filePath,
+          operationName: operation.name.value,
+          fieldName: node.alias?.value ?? node.name.value,
+          usedArgumentLeafs,
+          isStaticQuery,
+        })
+
+        // return false cause traversal stop for subtree - we only care about top level fields - because that's our potential "chunks"
+        return false
+      },
+    })
+  })
+
+  // console.log(
+  //   require(`util`).inspect(allChunks, {
+  //     depth: null,
+  //   })
+  // )
+
+  // get actual candidates for chunking
+  //  - first explode variables to all potential values (inspecting page context), to get list of all literal arguments
+  //  - any chunk that is in the end used more than once can be shared, and can be moved to separate virtual query
+
+  allChunks.forEach(chunk => {
+    const allVariants = new Map()
+    // const filePaths = new Set()
+    const whereToChunk = new Map()
+    let shouldChunk = false
+
+    const addVariant = (
+      argumentsObject,
+      filePath,
+      fieldName,
+      usedArgumentLeafs
+    ) => {
+      const variantHash = createContentDigest(argumentsObject)
+      let variant = allVariants.get(variantHash)
+      if (!variant) {
+        variant = {
+          argumentsObject,
+          count: 1,
+          // usedBy: [filePath],
+        }
+        allVariants.set(variantHash, variant)
+      } else {
+        shouldChunk = true
+        variant.count++
+        // variant.usedBy.push(filePath)
+
+        // chunkingCandidates.add(variantHash)
+      }
+
+      const whereToChunkPayload = {
+        filePath,
+        fieldName,
+        usedArgumentLeafs,
+      }
+
+      whereToChunk.set(
+        createContentDigest(whereToChunkPayload),
+        whereToChunkPayload
+      )
+    }
+
+    chunk.usedBy.forEach(usedBy => {
+      const usingVariables = usedBy.usedArgumentLeafs.filter(
+        argumentLeaf => argumentLeaf.type === `variable`
+      )
+
+      const literalArgs = usedBy.usedArgumentLeafs.reduce(
+        (acc, argumentLeaf) => {
+          if (argumentLeaf.type === `literal`) {
+            acc[argumentLeaf.argPath] = argumentLeaf.value
+          }
+          return acc
+        },
+        {}
+      )
+
+      if (usingVariables.length > 0) {
+        // go through all pages ( :( ) and map out all possible argument combinations
+        store.getState().pages.forEach(page => {
+          if (page.componentPath === usedBy.filePath) {
+            const args = usingVariables.reduce(
+              (acc, argumentLeaf) => {
+                acc[argumentLeaf.argPath] = page.context[argumentLeaf.name]
+
+                return acc
+              },
+              { ...literalArgs }
+            )
+
+            addVariant(
+              args,
+              usedBy.filePath,
+              usedBy.fieldName,
+              usedBy.usedArgumentLeafs
+            )
+          }
+        })
+      } else {
+        addVariant(
+          literalArgs,
+          usedBy.filePath,
+          usedBy.fieldName,
+          usedBy.usedArgumentLeafs
+        )
+      }
+    })
+
+    if (shouldChunk) {
+      whereToChunk.forEach(({ filePath, fieldName, usedArgumentLeafs }) => {
+        tmpProcessedQueries.get(filePath).chunks.push({
+          fieldName,
+          hash: chunk.hash,
+          usedArgumentLeafs,
+        })
+      })
+
+      console.log(
+        require(`util`).inspect(
+          {
+            ...chunk,
+            allVariants,
+          },
+          {
+            depth: null,
+          }
+        )
+      )
+    }
+  })
+
+  tmpProcessedQueries.forEach(query => {
+    delete query.operation
+  })
+
+  // console.log(
+  //   require(`util`).inspect(tmpProcessedQueries, {
+  //     depth: null,
+  //   })
+  // )
+
+  return tmpProcessedQueries
 }
 
 const determineUsedFragmentsForDefinition = (

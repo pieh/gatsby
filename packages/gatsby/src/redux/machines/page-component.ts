@@ -5,6 +5,7 @@ export interface IContext {
   componentPath: string
   query: string
   pages: Set<string>
+  chunks: any
 }
 
 export interface IState {
@@ -41,6 +42,7 @@ export interface IEvent {
   type: ActionTypes
   path?: string
   query?: string
+  chunks?: any
   page?: { path: string }
 }
 
@@ -49,6 +51,7 @@ const defaultContext: IContext = {
   componentPath: ``,
   query: ``,
   pages: new Set(``),
+  chunks: [],
 }
 
 export const componentMachine = machine<IContext, IState, IEvent>(
@@ -145,6 +148,13 @@ export const componentMachine = machine<IContext, IState, IEvent>(
             return event.query
           } else {
             return ctx.query
+          }
+        },
+        chunks: (ctx, event): any => {
+          if (typeof event.chunks !== `undefined` && event.chunks !== null) {
+            return event.chunks
+          } else {
+            return ctx.chunks
           }
         },
       }),
