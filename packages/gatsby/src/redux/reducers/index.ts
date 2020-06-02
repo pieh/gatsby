@@ -25,6 +25,8 @@ import { flattenedPluginsReducer } from "./flattened-plugins"
 import { pendingPageDataWritesReducer } from "./pending-page-data-writes"
 import { schemaCustomizationReducer } from "./schema-customization"
 import { inferenceMetadataReducer } from "./inference-metadata"
+import { modulesReducer } from "./modules"
+import { queryModuleDependenciesReducer } from "./query-module-dependencies"
 
 /**
  * @property exports.nodesTouched Set<string>
@@ -57,4 +59,6 @@ export {
   pageDataStatsReducer as pageDataStats,
   pageDataReducer as pageData,
   pendingPageDataWritesReducer as pendingPageDataWrites,
+  modulesReducer as modules,
+  queryModuleDependenciesReducer as queryModuleDependencies,
 }

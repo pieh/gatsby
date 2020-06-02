@@ -140,6 +140,14 @@ export interface IStateProgram extends IProgram {
   extensions: string[]
 }
 
+export interface IDependencyModule {
+  moduleID: string
+  source: string
+  type: string
+  importName?: string
+  queryIDs: Set<string>
+}
+
 export interface IGatsbyState {
   program: IStateProgram
   nodes: GatsbyNodes
@@ -243,6 +251,8 @@ export interface IGatsbyState {
   }
   pageDataStats: Map<SystemPath, number>
   pageData: Map<Identifier, string>
+  modules: Map<string, IDependencyModule>
+  queryModuleDependencies: Map<string, Set<string>>
 }
 
 export interface ICachedReduxState {
@@ -256,6 +266,8 @@ export interface ICachedReduxState {
   pageDataStats: IGatsbyState["pageDataStats"]
   pageData: IGatsbyState["pageData"]
   pendingPageDataWrites: IGatsbyState["pendingPageDataWrites"]
+  modules: IGatsbyState["modules"]
+  queryModuleDependencies: IGatsbyState["queryModuleDependencies"]
 }
 
 export type ActionsUnion =
@@ -315,6 +327,8 @@ export type ActionsUnion =
   | IDisableTypeInferenceAction
   | ISetProgramAction
   | ISetProgramExtensions
+  | IRegisterModuleAction
+  | ICreatePageModuleDependencyAction
 
 interface ISetBabelPluginAction {
   type: `SET_BABEL_PLUGIN`
@@ -407,6 +421,7 @@ export interface IDeleteComponentDependenciesAction {
   type: "DELETE_COMPONENTS_DEPENDENCIES"
   payload: {
     paths: string[]
+    modules: Set<string>
   }
 }
 
@@ -703,6 +718,24 @@ export interface IAddPageDataStatsAction {
 export interface ITouchNodeAction {
   type: `TOUCH_NODE`
   payload: Identifier
+}
+
+export interface IRegisterModuleAction {
+  type: `REGISTER_MODULE`
+  payload: {
+    moduleID: string
+    source: string
+    type: string
+    importName?: string
+  }
+}
+
+export interface ICreatePageModuleDependencyAction {
+  type: `CREATE_MODULE_DEPENDENCY`
+  payload: {
+    path: string
+    moduleID: string
+  }
 }
 
 interface IStartIncrementalInferenceAction {
