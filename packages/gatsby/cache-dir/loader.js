@@ -1,6 +1,7 @@
 import prefetchHelper from "./prefetch"
 import emitter from "./emitter"
 import { setMatchPaths, findPath, findMatchPath } from "./find-path"
+import { addModule, getModule } from "./modules"
 
 /**
  * Available resource loading statuses
@@ -199,8 +200,12 @@ export class BaseLoader {
         }
 
         let pageData = result.payload
-        const { componentChunkName } = pageData
-        return this.loadComponent(componentChunkName).then(component => {
+        const { componentChunkName, moduleDependencies = [] } = pageData
+
+        return Promise.all([
+          this.loadComponent(componentChunkName),
+          this.fetchModuleDependencies(moduleDependencies),
+        ]).then(([component]) => {
           const finalResult = { createdAt: new Date() }
           let pageResources
           if (!component) {
@@ -350,6 +355,20 @@ export class BaseLoader {
 
       return appData
     })
+  }
+
+  fetchModuleDependencies(moduleDependencies) {
+    return Promise.all(
+      moduleDependencies.map(moduleId => {
+        if (getModule(moduleId)) {
+          return Promise.resolve()
+        }
+
+        return this.loadComponent(moduleId, `modules`).then(module => {
+          addModule(moduleId, module)
+        })
+      })
+    )
   }
 }
 
