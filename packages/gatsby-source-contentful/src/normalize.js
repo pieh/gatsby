@@ -450,7 +450,9 @@ exports.createNodesForContentType = ({
         contentful_id: entryItem.sys.contentful_id,
         createdAt: entryItem.sys.createdAt,
         updatedAt: entryItem.sys.updatedAt,
-        parent: contentTypeItemId,
+        // parent: contentTypeItemId,
+        parent: null,
+        contentfulType___NODE: createNodeId(contentTypeItemId),
         children: [],
         internal: {
           type: `${makeTypeName(contentTypeItemId)}`,
@@ -623,6 +625,7 @@ exports.createAssetNodes = ({
       internal: {
         type: `${makeTypeName(`Asset`)}`,
       },
+      spaceId: space.sys.id,
     }
 
     // Get content digest of node.

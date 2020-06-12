@@ -51,3 +51,27 @@ module.exports.loadNodeContent = node => {
     })
   }
 }
+
+// would be nice to have `meta` in `internal`, but because of our joi schema
+// locking internal, plugins that would set `internal.meta` would break
+// in older gatsby versions :(
+module.exports.getNodeMeta = node =>
+  new Promise(resolve => {
+    // Load plugin's loader function
+    const plugin = store
+      .getState()
+      .flattenedPlugins.find(plug => plug.name === node.internal.owner)
+    const { getNodeMeta } = require(plugin.resolve)
+    if (!getNodeMeta) {
+      resolve(null)
+    }
+
+    const options = {
+      node,
+      getNode: nodesDb.getNode,
+    }
+
+    return Promise.resolve(getNodeMeta(options)).then(meta => {
+      resolve({ description: node.internal.description, ...(meta || {}) })
+    })
+  })

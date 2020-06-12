@@ -1,0 +1,11 @@
+{
+  "name": "preview-list",
+  "version": "1.0.0",
+  "description": "Internal plugin that enhances develop/preview views with links to edit content",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kyle Mathews <mathews.kyle@gmail.com>",
+  "license": "MIT"
+}

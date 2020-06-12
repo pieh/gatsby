@@ -5974,6 +5974,13 @@
   dependencies:
     wonka "^4.0.9"
 
+"@urql/core@^1.12.0":
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/@urql/core/-/core-1.12.0.tgz#8a41de01a1a1145e8bea736dfb0ba8574daad8ff"
+  integrity sha512-OyE1FClMz+r3j3v5MxNGzlpvFZya7PQxbSya5qa2lIJdyf9AtExJwjxpjmOf3crQGUvxatRVso4F9SNLT5MDjQ==
+  dependencies:
+    wonka "^4.0.14"
+
 "@verdaccio/commons-api@9.4.0", "@verdaccio/commons-api@^9.4.0":
   version "9.4.0"
   resolved "https://registry.yarnpkg.com/@verdaccio/commons-api/-/commons-api-9.4.0.tgz#74bb922d5d173a1c19cd2719db9f028e8909dac7"
@@ -27160,6 +27167,14 @@ urql@^1.9.7:
     "@urql/core" "^1.11.0"
     wonka "^4.0.9"
 
+urql@^1.9.8:
+  version "1.9.8"
+  resolved "https://registry.yarnpkg.com/urql/-/urql-1.9.8.tgz#07d76efdc698205a55724a2acd2640f7706a036d"
+  integrity sha512-AMikyJ9ldVvFVRND7AjgHJ3dBZXH2ygTM9bj4BwQzE9gfJfWA1wK+dXffV1WTOdOoCRngIxGWgZIzSkoLGBpbw==
+  dependencies:
+    "@urql/core" "^1.12.0"
+    wonka "^4.0.14"
+
 use-callback-ref@^1.2.1, use-callback-ref@^1.2.3:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/use-callback-ref/-/use-callback-ref-1.2.3.tgz#9f939dfb5740807bbf9dd79cdd4e99d27e827756"
@@ -27950,6 +27965,11 @@ wmf@~1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/wmf/-/wmf-1.0.1.tgz#f8690f185651bf88d39f0a21ae3e51bb1ec9fae9"
   integrity sha512-Mgopbef6qEsZvGss8ke/hMLg2XCCkt6emB/bZlCez9Zve9hrOj0lsrh0ncrN6Tnv6h/UCNn5nOd1UjjssezrtA==
+
+wonka@^4.0.14:
+  version "4.0.14"
+  resolved "https://registry.yarnpkg.com/wonka/-/wonka-4.0.14.tgz#77d680a84e575ed15a9f975eb87d6c530488f3a4"
+  integrity sha512-v9vmsTxpZjrA8CYfztbuoTQSHEsG3ZH+NCYfasHm0V3GqBupXrjuuz0RJyUaw2cRO7ouW2js0P6i853/qxlDcA==
 
 wonka@^4.0.9:
   version "4.0.9"

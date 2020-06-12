@@ -464,7 +464,11 @@ class LocalNodeModel {
     if (path) {
       if (connectionType) {
         this.createPageDependency({ path, connection: connectionType })
-      } else {
+      }
+
+      // still add individual nodes as dependency so we can get list of actually used nodes by the query
+      // else
+      {
         const nodes = Array.isArray(result) ? result : [result]
         for (const node of nodes) {
           if (node) {

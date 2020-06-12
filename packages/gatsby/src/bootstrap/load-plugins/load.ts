@@ -193,6 +193,8 @@ export function loadPlugins(
     }
   }
 
+  const program = store.getState().program
+
   // Add internal plugins
   const internalPlugins = [
     `../../internal-plugins/dev-404-page`,
@@ -201,6 +203,11 @@ export function loadPlugins(
     `../../internal-plugins/prod-404`,
     `../../internal-plugins/webpack-theme-component-shadowing`,
   ]
+
+  if (program._[0] === `develop`) {
+    internalPlugins.push(`../../internal-plugins/preview-list`)
+  }
+
   internalPlugins.forEach(relPath => {
     const absPath = path.join(__dirname, relPath)
     plugins.push(processPlugin(absPath))
@@ -240,8 +247,6 @@ export function loadPlugins(
       plugins: [],
     },
   })
-
-  const program = store.getState().program
 
   // default options for gatsby-plugin-page-creator
   let pageCreatorOptions: IPluginRefOptions | undefined = {
