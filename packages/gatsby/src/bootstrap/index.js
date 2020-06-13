@@ -16,7 +16,7 @@ import { createSchemaCustomization } from "../utils/create-schema-customization"
 import { startPluginRunner } from "../redux/plugin-runner"
 const { store, emitter } = require(`../redux`)
 import { internalActions } from "../redux/actions"
-const loadPlugins = require(`./load-plugins`)
+const { loadPlugins } = require(`./load-plugins`)
 const loadThemes = require(`./load-themes`)
 const reporter = require(`gatsby-cli/lib/reporter`)
 import { getConfigFile } from "./get-config-file"
@@ -32,7 +32,7 @@ process.on(`unhandledRejection`, (reason, p) => {
 
 import { createGraphQLRunner } from "./create-graphql-runner"
 const { extractQueries } = require(`../query/query-watcher`)
-// const requiresWriter = require(`./requires-writer`)
+// import * as requiresWriter from "./requires-writer"
 import { writeRedirects, startRedirectListener } from "./redirects-writer"
 
 // Override console.log to add the source file + line number.
@@ -231,10 +231,10 @@ module.exports = async (args: BootstrapArgs) => {
     !!process.env.GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES,
     md5File(`package.json`),
     Promise.resolve(
-      md5File(`${program.directory}/gatsby-config.js`).catch(() => { })
+      md5File(`${program.directory}/gatsby-config.js`).catch(() => {})
     ), // ignore as this file isn't required),
     Promise.resolve(
-      md5File(`${program.directory}/gatsby-node.js`).catch(() => { })
+      md5File(`${program.directory}/gatsby-node.js`).catch(() => {})
     ), // ignore as this file isn't required),
   ])
   const pluginsHash = crypto
@@ -429,7 +429,7 @@ module.exports = async (args: BootstrapArgs) => {
   await require(`../utils/source-nodes`).default({ parentSpan: activity.span })
   reporter.verbose(
     `Now have ${store.getState().nodes.size} nodes with ${
-    store.getState().nodesByType.size
+      store.getState().nodesByType.size
     } types: [${[...store.getState().nodesByType.entries()]
       .map(([type, nodes]) => type + `:` + nodes.size)
       .join(`, `)}]`
@@ -467,9 +467,9 @@ module.exports = async (args: BootstrapArgs) => {
 
   reporter.verbose(
     `Now have ${store.getState().nodes.size} nodes with ${
-    store.getState().nodesByType.size
+      store.getState().nodesByType.size
     } types, and ${
-    store.getState().nodesByType?.get(`SitePage`).size
+      store.getState().nodesByType?.get(`SitePage`).size
     } SitePage nodes`
   )
   activity.end()

@@ -7,8 +7,9 @@ import errorParser from "../query/error-parser"
 import { emitter, GatsbyReduxStore } from "../redux"
 import { Reporter } from "../.."
 import { ExecutionResult, Source } from "../../graphql"
+import { IMatch } from "../types"
 
-type Runner = (
+export type Runner = (
   query: string | Source,
   context: Record<string, any>
 ) => Promise<ExecutionResult<ExecutionResultDataDefault>>
@@ -20,9 +21,9 @@ export const createGraphQLRunner = (
     parentSpan,
     graphqlTracing,
   }: { parentSpan: Span | undefined; graphqlTracing?: boolean } = {
-      parentSpan: undefined,
-      graphqlTracing: false,
-    }
+    parentSpan: undefined,
+    graphqlTracing: false,
+  }
 ): Runner => {
   // TODO: Move tracking of changed state inside GraphQLRunner itself. https://github.com/gatsbyjs/gatsby/issues/20941
   let runner = new GraphQLRunner(store, { graphqlTracing })
@@ -79,7 +80,7 @@ export const createGraphQLRunner = (
 
               return null
             })
-            .filter(Boolean)
+            .filter((Boolean as unknown) as (match) => match is IMatch)
 
           if (structuredErrors.length) {
             // panic on build exits the process

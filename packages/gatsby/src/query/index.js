@@ -29,7 +29,7 @@ emitter.on(`DELETE_NODE`, action => {
   queuedDirtyActions.push({ payload: action.payload })
 })
 
-/////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////
 // Calculate dirty static/page queries
 
 const popExtractedQueries = () => {
@@ -172,7 +172,7 @@ const processQueries = async (
   { activity, graphqlRunner, graphqlTracing }
 ) => {
   const queue = queryQueue.createBuildQueue(graphqlRunner, { graphqlTracing })
-  await queryQueue.processBatch(queue, queryJobs, activity)
+  return queryQueue.processBatch(queue, queryJobs, activity)
 }
 
 const createStaticQueryJob = (state, queryId) => {
@@ -245,55 +245,6 @@ const processPageQueries = async (
   )
 }
 
-const getInitialQueryProcessors = ({
-  parentSpan,
-  graphqlRunner,
-  graphqlTracing,
-} = {}) => {
-  const state = store.getState()
-  const queryIds = calcInitialDirtyQueryIds(state)
-  const { staticQueryIds, pageQueryIds } = groupQueryIds(queryIds)
-
-  const queryjobsCount =
-    _.filter(pageQueryIds.map(id => state.pages.get(id))).length +
-    staticQueryIds.length
-
-  let activity = null
-  let processedQueuesCount = 0
-  const createProcessor = (fn, queryIds) => async () => {
-    if (!activity) {
-      activity = createQueryRunningActivity(queryjobsCount, parentSpan)
-    }
-
-    await fn(queryIds, { state, activity, graphqlRunner, graphqlTracing })
-
-    processedQueuesCount++
-    // if both page and static queries are done, finish activity
-    if (processedQueuesCount === 2) {
-      activity.done()
-    }
-  }
-
-  return {
-    processStaticQueries: createProcessor(processStaticQueries, staticQueryIds),
-    processPageQueries: createProcessor(processPageQueries, pageQueryIds),
-    pageQueryIds,
-  }
-}
-
-const initialProcessQueries = async ({ parentSpan, graphqlTracing } = {}) => {
-  const {
-    pageQueryIds,
-    processPageQueries,
-    processStaticQueries,
-  } = getInitialQueryProcessors({ parentSpan, graphqlTracing })
-
-  await processStaticQueries()
-  await processPageQueries()
-
-  return { pageQueryIds }
-}
-
 const createPageQueryJob = (state, page) => {
   const component = state.components.get(page.componentPath)
   const { path, componentPath, context } = page
@@ -310,7 +261,7 @@ const createPageQueryJob = (state, page) => {
   }
 }
 
-/////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////
 // Listener for gatsby develop
 
 // Initialized via `startListening`
@@ -423,8 +374,6 @@ module.exports = {
   processPageQueries,
   processStaticQueries,
   groupQueryIds,
-  initialProcessQueries,
-  getInitialQueryProcessors,
   startListeningToDevelopQueue,
   runQueuedQueries,
   enqueueExtractedQueryId,

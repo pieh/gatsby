@@ -1,5 +1,4 @@
 import crypto from "crypto"
-import v8 from "v8"
 import { Span } from "opentracing"
 import {
   parse,
@@ -155,13 +154,6 @@ export class GraphQLRunner {
       if (typeof statsQuery !== `string`) {
         statsQuery = statsQuery.body
       }
-      this.stats.uniqueOperations.add(
-        crypto
-          .createHash(`sha1`)
-          .update(statsQuery)
-          .update(v8.serialize(context))
-          .digest(`hex`)
-      )
 
       this.stats.uniqueQueries.add(
         crypto.createHash(`sha1`).update(statsQuery).digest(`hex`)
@@ -188,20 +180,20 @@ export class GraphQLRunner {
         errors.length > 0
           ? { errors }
           : execute({
-            schema,
-            document,
-            rootValue: context,
-            contextValue: withResolverContext({
               schema,
-              schemaComposer: schemaCustomization.composer,
-              context,
-              customContext: schemaCustomization.context,
-              nodeModel: this.nodeModel,
-              stats: this.stats,
-              tracer,
-            }),
-            variableValues: context,
-          })
+              document,
+              rootValue: context,
+              contextValue: withResolverContext({
+                schema,
+                schemaComposer: schemaCustomization.composer,
+                context,
+                customContext: schemaCustomization.context,
+                nodeModel: this.nodeModel,
+                stats: this.stats,
+                tracer,
+              }),
+              variableValues: context,
+            })
 
       // Queries are usually executed in batch. But after the batch is finished
       // cache just wastes memory without much benefits.
