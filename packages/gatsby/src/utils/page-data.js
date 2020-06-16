@@ -2,6 +2,7 @@ import { websocketManager } from "./websocket-manager"
 const fs = require(`fs-extra`)
 const path = require(`path`)
 const { store } = require(`../redux`)
+import { pageDataFlushLock } from "./develop-lock"
 
 const fixedPagePath = pagePath => (pagePath === `/` ? `index` : pagePath)
 
@@ -72,6 +73,7 @@ const writePageData = async (
 }
 
 const flush = async () => {
+  pageDataFlushLock.startRun()
   const {
     pendingPageDataWrites,
     components,
@@ -140,6 +142,7 @@ const flush = async () => {
     type: `CLEAR_PENDING_PAGE_DATA_WRITES`,
   })
 
+  pageDataFlushLock.endRun()
   return
 }
 

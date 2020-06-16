@@ -9,7 +9,8 @@ const report = require(`gatsby-cli/lib/reporter`)
 const queryQueue = require(`./queue`)
 const { GraphQLRunner } = require(`./graphql-runner`)
 const pageDataUtil = require(`../utils/page-data`)
-import * as webpackStatusUtil from "../utils/webpack-status"
+// import * as webpackStatusUtil from "../utils/webpack-status"
+import { graphqlRunningLock } from "../utils/develop-lock"
 
 const seenIdsWithoutDataDependencies = new Set()
 let queuedDirtyActions = []
@@ -273,16 +274,18 @@ let listenerQueue
  */
 const runQueuedQueries = () => {
   if (listenerQueue) {
-    const state = store.getState()
-    const { staticQueryIds, pageQueryIds } = groupQueryIds(
-      calcDirtyQueryIds(state)
-    )
-    const pages = _.filter(pageQueryIds.map(id => state.pages.get(id)))
-    const queryJobs = [
-      ...staticQueryIds.map(id => createStaticQueryJob(state, id)),
-      ...pages.map(page => createPageQueryJob(state, page)),
-    ]
-    listenerQueue.push(queryJobs)
+    graphqlRunningLock.runOrEnqueue(() => {
+      const state = store.getState()
+      const { staticQueryIds, pageQueryIds } = groupQueryIds(
+        calcDirtyQueryIds(state)
+      )
+      const pages = _.filter(pageQueryIds.map(id => state.pages.get(id)))
+      const queryJobs = [
+        ...staticQueryIds.map(id => createStaticQueryJob(state, id)),
+        ...pages.map(page => createPageQueryJob(state, page)),
+      ]
+      listenerQueue.push(queryJobs)
+    })
   }
 }
 
@@ -309,13 +312,21 @@ const startListeningToDevelopQueue = ({ graphqlTracing } = {}) => {
     return graphqlRunner
   })
   listenerQueue = new Queue((queryJobs, callback) => {
+    graphqlRunningLock.startRun()
+    // webpackStatusUtil.lock(WEBPACK_LOCK)
+    // webpackStatusUtil.consumePendingLock(WEBPACK_LOCK)
     const activity = createQueryRunningActivity(queryJobs.length)
 
     const onFinish = async (...arg) => {
-      if (!webpackStatusUtil.isPending()) {
-        await pageDataUtil.flush()
-      }
+      // if (!webpackStatusUtil.isPending()) {
+      // condition is just to avoid spam - functionally it doesn't matter much
+      // if (queryJobs.length > 0) {
+      //   await pageDataUtil.flush()
+      // }
+      // }
       activity.done()
+      graphqlRunningLock.endRun()
+      // webpackStatusUtil.unlock(WEBPACK_LOCK)
       return callback(...arg)
     }
 
@@ -326,6 +337,8 @@ const startListeningToDevelopQueue = ({ graphqlTracing } = {}) => {
   })
 
   emitter.on(`API_RUNNING_START`, () => {
+    graphqlRunningLock.markAsPending(`API_RUNNING_START`)
+    // webpackStatusUtil.pendingLock(WEBPACK_LOCK)
     report.pendingActivity({ id: `query-running` })
   })
 

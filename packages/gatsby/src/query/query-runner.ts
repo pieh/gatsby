@@ -13,6 +13,9 @@ import errorParser from "./error-parser"
 import { GraphQLRunner } from "./graphql-runner"
 import { ExecutionResult } from "graphql"
 
+import * as pageDataUtil from "../utils/page-data"
+import { pageDataFlushLock } from "../utils/develop-lock"
+
 const resultHashes = new Map()
 
 type PageContext = any
@@ -182,6 +185,10 @@ export const queryRunner = async (
           path: queryJob.id,
         },
       })
+      pageDataFlushLock.markAsPending(
+        `new page query results for "${queryJob.id}"`
+      )
+      pageDataFlushLock.runOrEnqueue(pageDataUtil.flush)
     } else {
       // The babel plugin is hard-coded to load static queries from
       // public/static/d/

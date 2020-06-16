@@ -9,9 +9,9 @@ import { apiRunner, apiRunnerAsync } from "./api-runner-browser"
 import { setLoader, publicLoader } from "./loader"
 import DevLoader from "./dev-loader"
 // import syncRequires from "./sync-requires"
-const syncRequires = require(`./sync-requires`)
+const syncRequires = require(`$virtual/sync-requires`)
 // Generated during bootstrap
-import matchPaths from "./match-paths.json"
+import matchPaths from "$virtual/match-paths.json"
 
 window.___emitter = emitter
 
@@ -31,7 +31,7 @@ module.hot.accept(() => {
 module.hot.addStatusHandler(status => {
   console.log(`[app.js] status`, status)
   if (status === `idle`) {
-    loader.syncRequires = require(`./sync-requires`)
+    loader.syncRequires = require(`$virtual/sync-requires`)
     // const newSyncReuires = require(`./sync-requires`)
     // loader = new DevLoader(syncRequires, matchPaths)
     // setLoader(loader)

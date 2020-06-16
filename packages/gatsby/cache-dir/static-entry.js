@@ -17,7 +17,7 @@ const {
 
 const { RouteAnnouncerProps } = require(`./route-announcer-props`)
 const apiRunner = require(`./api-runner-ssr`)
-const syncRequires = require(`./sync-requires`)
+const syncRequires = require(`$virtual/sync-requires`)
 const processPageData = require(`./process-page-data`).default
 const { version: gatsbyVersion } = require(`gatsby/package.json`)
 

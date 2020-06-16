@@ -6,9 +6,13 @@ import { slash } from "gatsby-core-utils"
 import reporter from "gatsby-cli/lib/reporter"
 import { match } from "@reach/router/lib/utils"
 import { joinPath } from "gatsby-core-utils"
-import * as webpackStatusUtil from "../utils/webpack-status"
+// import * as webpackStatusUtil from "../utils/webpack-status"
+import { requiresWriterLock } from "../utils/develop-lock"
 import { store, emitter } from "../redux/"
 import { IGatsbyState, IGatsbyPage } from "../redux/types"
+const {
+  gatsbyPageDepsPluginInstance,
+} = require(`../utils/webpack-gatsby-page-deps-plugin`)
 
 interface IGatsbyPageComponent {
   component: string
@@ -213,7 +217,7 @@ const preferDefault = m => m && m.default || m
         }": ${hotMethod}(preferDefault(require("${joinPath(c.component)}")))`
     )
     .join(`,\n`)}
-}\n\nexports.modules = require("./sync-modules.js").modules\n\n`
+}\n\nexports.modules = require("$virtual/sync-modules").modules\n\n`
 
   const modulesFile = `
   const preferDefault = m => m && m.default || m
@@ -221,7 +225,7 @@ const preferDefault = m => m && m.default || m
   exports.modules = {\n${modules
     .map(
       moduleID =>
-        `  "${moduleID}": preferDefault(require("GATSBY_MAGIC_${moduleID}.js"))`
+        `  "${moduleID}": preferDefault(require("$virtual/modules/${moduleID}.js"))`
     )
     .join(`,\n`)}}\n\n`
 
@@ -245,17 +249,32 @@ const preferDefault = m => m && m.default || m
 }\n\nexports.modules = {\n${modules
     .map(
       moduleID =>
-        `  "${moduleID}": () => import("GATSBY_MAGIC_${moduleID}.js" /* webpackChunkName: "${moduleID}" */)`
+        `  "${moduleID}": () => import("$virtual/modules/${moduleID}.js" /* webpackChunkName: "${moduleID}" */)`
     )
     .join(`,\n`)}}\n\n`
 
   const writeAndMove = (file: string, data: string): Promise<void> => {
     const destination = joinPath(program.directory, `.cache`, file)
     const tmp = `${destination}.${Date.now()}`
-    return fs
-      .writeFile(tmp, data)
-      .then(() => fs.move(tmp, destination, { overwrite: true }))
+    return (
+      fs
+        .writeFile(tmp, data)
+        .then(() => fs.move(tmp, destination, { overwrite: true }))
+        // .then(() => {
+        //   console.log(`[requires-writer] moved "${file}"`)
+        // })
+        .then(() => {
+          // console.log(`[requires-writer] creating virtual "${file}"`)
+          gatsbyPageDepsPluginInstance.writeModule(
+            `node_modules/$virtual/${file}`,
+            data
+          )
+          // console.log(`[requires-writer] created virtual "${file}"`)
+        })
+    )
   }
+
+  console.log(`[requires-writer] write things`, modules)
 
   await Promise.all([
     writeAndMove(`sync-requires.js`, syncRequires),
@@ -268,18 +287,28 @@ const preferDefault = m => m && m.default || m
   return true
 }
 
+const writeAllWithActivity = async (reason: string) => {
+  console.log(`[requires-writer] running ${reason}`)
+  requiresWriterLock.startRun()
+  const activity = reporter.activityTimer(`write out requires`, {
+    id: `requires-writer`,
+  })
+  activity.start()
+  const didRequiresChange = await writeAll(store.getState())
+  console.log(`requires-writer`, { didRequiresChange })
+  if (didRequiresChange) {
+    reporter.pendingActivity({ id: `webpack-develop` })
+    // webpackStatusUtil.markAsPending()
+  }
+  activity.end()
+  requiresWriterLock.endRun()
+}
+
 const debouncedWriteAll = _.debounce(
-  async (): Promise<void> => {
-    const activity = reporter.activityTimer(`write out requires`, {
-      id: `requires-writer`,
+  async (reason: string): Promise<void> => {
+    requiresWriterLock.runOrEnqueue(async () => {
+      await writeAllWithActivity(reason)
     })
-    activity.start()
-    const didRequiresChange = await writeAll(store.getState())
-    if (didRequiresChange) {
-      reporter.pendingActivity({ id: `webpack-develop` })
-      webpackStatusUtil.markAsPending()
-    }
-    activity.end()
   },
   500,
   {
@@ -289,6 +318,19 @@ const debouncedWriteAll = _.debounce(
   }
 )
 
+const controlledWriteAll = (reason: string) => {
+  requiresWriterLock.markAsPending(reason)
+
+  // if any of services that impact this one are running - queue run after those finish
+  // if none are running - debounce, because we might just receive random events we will need to react at some point
+  requiresWriterLock.runOrEnqueue({
+    run: () => debouncedWriteAll(reason),
+    enqueue: () => writeAllWithActivity(reason),
+  })
+}
+
+let counter = 0
+
 /**
  * Start listening to CREATE/DELETE_PAGE events so we can rewrite
  * files as required
@@ -296,33 +338,43 @@ const debouncedWriteAll = _.debounce(
 export const startListener = (): void => {
   emitter.on(`CREATE_PAGE`, (): void => {
     reporter.pendingActivity({ id: `requires-writer` })
-    debouncedWriteAll()
+    const reason = `CREATE_PAGE (#${++counter})`
+    // requiresWriterLock.markAsPending(reason)
+    controlledWriteAll(reason)
   })
 
   emitter.on(`CREATE_PAGE_END`, (): void => {
     reporter.pendingActivity({ id: `requires-writer` })
-    debouncedWriteAll()
+    const reason = `CREATE_PAGE_END (#${++counter})`
+    // requiresWriterLock.markAsPending(reason)
+    controlledWriteAll(reason)
   })
 
   emitter.on(`DELETE_PAGE`, (): void => {
     reporter.pendingActivity({ id: `requires-writer` })
-    debouncedWriteAll()
+    const reason = `DELETE_PAGE (#${++counter})`
+    // requiresWriterLock.markAsPending(reason)
+    controlledWriteAll(reason)
   })
 
   emitter.on(`REGISTER_MODULE`, (): void => {
-    // console.log(`REGISTER_MODULE`, action.payload.moduleID)
     reporter.pendingActivity({ id: `requires-writer` })
-    debouncedWriteAll()
+    const reason = `REGISTER_MODULE (#${++counter})`
+    // requiresWriterLock.markAsPending(reason)
+    controlledWriteAll(reason)
   })
 
   emitter.on(`UNREGISTER_MODULE`, (): void => {
-    // console.log(`UNREGISTER_MODULE`, action.payload.moduleID)
     reporter.pendingActivity({ id: `requires-writer` })
-    debouncedWriteAll()
+    const reason = `UNREGISTER_MODULE (#${++counter})`
+    // requiresWriterLock.markAsPending(reason)
+    controlledWriteAll(reason)
   })
 
   emitter.on(`DELETE_PAGE_BY_PATH`, (): void => {
     reporter.pendingActivity({ id: `requires-writer` })
-    debouncedWriteAll()
+    const reason = `DELETE_PAGE_BY_PATH (#${++counter})`
+
+    controlledWriteAll(reason)
   })
 }

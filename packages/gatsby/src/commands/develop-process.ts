@@ -68,7 +68,8 @@ import {
   mapTemplatesToStaticQueryHashes,
 } from "../utils/map-pages-to-static-query-hashes"
 import * as pageDataUtil from "../utils/page-data"
-import * as webpackStatusUtil from "../utils/webpack-status"
+// import * as webpackStatusUtil from "../utils/webpack-status"
+import { webpackLock, pageDataFlushLock } from "../utils/develop-lock"
 
 import { Stage, IProgram } from "./types"
 import {
@@ -115,6 +116,7 @@ interface IServer {
   compiler: webpack.Compiler
   listener: http.Server | https.Server
   webpackActivity: ActivityTracker
+  webpackWatching: webpack.Watching
 }
 
 async function startServer(program: IProgram): Promise<IServer> {
@@ -175,6 +177,8 @@ async function startServer(program: IProgram): Promise<IServer> {
     { parentSpan: webpackActivity.span }
   )
 
+  console.log(`[develop] init webpack`)
+  webpackLock.startRun()
   const compiler = webpack(devConfig)
 
   /**
@@ -303,9 +307,12 @@ async function startServer(program: IProgram): Promise<IServer> {
     stats: `errors-only`,
   })
 
-  const webpackWatching = webpackDevMiddlewareInstance.context.watching
+  const webpackWatching: webpack.Watching =
+    webpackDevMiddlewareInstance.context.watching
 
   app.use(webpackDevMiddlewareInstance)
+
+  // webpackStatusUtil.setResume(webpackWatching.resume.bind(webpackWatching))
 
   // Expose access to app for advanced use cases
   const { developMiddleware } = store.getState().config
@@ -417,7 +424,8 @@ module.exports = async (program: IProgram): Promise<void> => {
     )
   }
   initTracer(program.openTracingConfigFile)
-  webpackStatusUtil.markAsPending()
+  webpackLock.markAsPending(`initial run`)
+  // webpackStatusUtil.markAsPending()
   report.pendingActivity({ id: `webpack-develop` })
   telemetry.trackCli(`DEVELOP_START`)
   telemetry.startBackgroundUpdate()
@@ -455,7 +463,7 @@ module.exports = async (program: IProgram): Promise<void> => {
   await db.saveState()
 
   await waitUntilAllJobsComplete()
-  requiresWriter.writeAll(store.getState())
+  await requiresWriter.writeAll(store.getState())
   requiresWriter.startListener()
   db.startAutosave()
   queryUtil.startListeningToDevelopQueue({
@@ -638,18 +646,32 @@ module.exports = async (program: IProgram): Promise<void> => {
     })
   }
 
-  compiler.hooks.invalid.tap(`log compiling`, function (...args) {
-    // console.log(`set invalid`, args, this)
-    webpackStatusUtil.markAsPending()
+  compiler.hooks.invalid.tap(`log compiling`, function (modulePath) {
+    webpackLock.markAsPending(`invalidated ${modulePath}`)
+
+    // console.log(`invalid`, ...file)
+    // webpackStatusUtil.markAsPending()
+
+    webpackLock.runOrEnqueue(() => {
+      webpackLock.startRun()
+      webpackWatching.resume()
+    })
+    // if (!webpackStatusUtil.isLocked()) {
+    //   console.log("resume()")
+    //   webpackWatching.resume()
+    // }
   })
 
   compiler.hooks.watchRun.tapAsync(`log compiling`, function (_, done) {
-    if (webpackActivity) {
-      webpackActivity.end()
+    // if (webpackActivity) {
+    //   webpackActivity.end()
+    // }
+    if (!webpackActivity) {
+      webpackActivity = report.activityTimer(`Re-building development bundle`, {
+        id: `webpack-develop`,
+      })
+      webpackActivity.start()
     }
-    webpackActivity = report.activityTimer(`Re-building development bundle`, {
-      id: `webpack-develop`,
-    })
     // webpackActivity = {
     //   start: () => {
     //     console.log('webpack re-start')
@@ -658,7 +680,6 @@ module.exports = async (program: IProgram): Promise<void> => {
     //     console.log(`webpack end`)
     //   }
     // }
-    webpackActivity.start()
 
     done()
   })
@@ -755,7 +776,8 @@ module.exports = async (program: IProgram): Promise<void> => {
       webpackActivity = null
     }
 
-    // webpackWatching.suspend()
+    console.log(`suspend webpack`)
+    webpackWatching.suspend()
 
     // setTimeout(
     //   () => {
@@ -782,9 +804,15 @@ module.exports = async (program: IProgram): Promise<void> => {
           if (
             !isEqual(
               state.staticQueriesByTemplate.get(componentPath)?.sort(),
-              staticQueryHashes.map(toString)?.sort()
+              staticQueryHashes.sort()
             )
           ) {
+            // console.debug(`NOT EQUAL`, {
+            //   componentPath,
+            //   cached: state.staticQueriesByTemplate.get(componentPath)?.sort(),
+            //   new: staticQueryHashes.sort(),
+            // })
+
             store.dispatch({
               type: `ADD_PENDING_TEMPLATE_DATA_WRITE`,
               payload: {
@@ -798,14 +826,19 @@ module.exports = async (program: IProgram): Promise<void> => {
                 staticQueryHashes,
               },
             })
+            pageDataFlushLock.markAsPending(
+              `static queries for "${componentPath}" changed`
+            )
+            pageDataFlushLock.runOrEnqueue(pageDataUtil.flush)
           }
         }
       )
 
-      await pageDataUtil.flush()
-      webpackStatusUtil.markAsDone()
+      webpackLock.endRun()
+      // await pageDataUtil.flush()
+      // webpackStatusUtil.markAsDone()
 
-      console.log(store.getState().pendingPageDataWrites)
+      // console.log(store.getState().pendingPageDataWrites)
     }
 
     done()

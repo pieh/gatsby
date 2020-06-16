@@ -12,7 +12,9 @@ const debug = require(`debug`)(`gatsby:webpack-config`)
 const report = require(`gatsby-cli/lib/reporter`)
 import { withBasePath, withTrailingSlash } from "./path"
 import { getGatsbyDependents } from "./gatsby-dependents"
-const { GatsbyPageDepsPlugin } = require(`./webpack-gatsby-page-deps-plugin`)
+const {
+  gatsbyPageDepsPluginInstance,
+} = require(`./webpack-gatsby-page-deps-plugin`)
 
 const apiRunnerNode = require(`./api-runner-node`)
 import { createWebpackUtils } from "./webpack-utils"
@@ -201,7 +203,7 @@ module.exports = async (
           program.prefixPaths ? assetPrefix : ``
         ),
       }),
-      new GatsbyPageDepsPlugin(),
+      gatsbyPageDepsPluginInstance,
     ]
 
     switch (stage) {
@@ -383,6 +385,10 @@ module.exports = async (
       // 'resolvableExtensions' API hook).
       extensions: [...program.extensions],
       alias: {
+        // "$virtual/sync-requires": directoryPath(`.cache/sync-requires`),
+        // "$virtual/sync-modules": directoryPath(`.cache/sync-modules`),
+        // "$virtual/match-paths.json": directoryPath(`.cache/match-paths.json`),
+        // "$virtual/async-requires": directoryPath(`.cache/async-requires`),
         gatsby$: directoryPath(path.join(`.cache`, `gatsby-browser-entry.js`)),
         // Using directories for module resolution is mandatory because
         // relative path imports are used sometimes

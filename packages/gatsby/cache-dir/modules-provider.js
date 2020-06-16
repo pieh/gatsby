@@ -13,5 +13,5 @@ export function getModule(id) {
 
 // // for ssr only (should be tree shaken in browser)
 if (process.env.GATSBY_BUILD_STAGE === `build-html`) {
-  modules = require(`./sync-modules`).modules
+  modules = require(`$virtual/sync-modules`).modules
 }

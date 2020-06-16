@@ -32,7 +32,7 @@ import {
   // mapPagesToStaticQueryHashes,
   mapTemplatesToStaticQueryHashes,
 } from "../utils/map-pages-to-static-query-hashes"
-import * as webpackStatusUtil from "../utils/webpack-status"
+// import * as webpackStatusUtil from "../utils/webpack-status"
 import {
   calculateDirtyQueries,
   runStaticQueries,
@@ -66,7 +66,7 @@ module.exports = async function build(program: IBuildArgs): Promise<void> {
   }
 
   program.command = `build`
-  webpackStatusUtil.markAsPending()
+  // webpackStatusUtil.markAsPending()
 
   const publicDir = path.join(program.directory, `public`)
   initTracer(program.openTracingConfigFile)
