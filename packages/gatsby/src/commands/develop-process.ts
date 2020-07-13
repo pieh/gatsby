@@ -85,6 +85,8 @@ process.on(`message`, msg => {
 })
 
 module.exports = async (program: IProgram): Promise<void> => {
+  program.graphqlTracing = true
+
   const bootstrapSpan = tracer.startSpan(`bootstrap`)
 
   // We want to prompt the feedback request when users quit develop

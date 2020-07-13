@@ -487,6 +487,24 @@ It's likely that this has happened in a schemaCustomization with manually invoke
 `
 }
 
+const runningResolvers = new Set()
+
+const logRunningResolvers = (): void => {
+  if (runningResolvers.size === 0) {
+    console.log(`\nNo running resolvers\n`)
+    return
+  }
+
+  console.log(`\nRunning resolvers:\n`)
+  runningResolvers.forEach(meta => {
+    console.log(JSON.stringify(meta, null, 2) + `\n`)
+  })
+}
+
+global.DEBUG_logRunningResolvers = logRunningResolvers
+
+process.on(`SIGUSR2`, logRunningResolvers)
+
 export function wrappingResolver<TSource, TArgs>(
   resolver: GatsbyResolver<TSource, TArgs>
 ): GatsbyResolver<TSource, TArgs> {
@@ -506,6 +524,15 @@ export function wrappingResolver<TSource, TArgs>(
       }
     }
 
+    const meta = {
+      path: info.path,
+      parentType: info.parentType.name,
+      fieldName: info.fieldName,
+    }
+
+    // console.log(`wrapping resolver`)
+    runningResolvers.add(meta)
+
     let activity
     if (context?.tracer) {
       activity = context.tracer.createResolverActivity(
@@ -515,8 +542,9 @@ export function wrappingResolver<TSource, TArgs>(
       activity.start()
     }
     try {
-      return resolver(parent, args, context, info)
+      return await resolver(parent, args, context, info)
     } finally {
+      runningResolvers.delete(meta)
       if (activity) {
         activity.end()
       }
