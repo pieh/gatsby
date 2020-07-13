@@ -526,7 +526,7 @@ export function wrappingResolver<TSource, TArgs>(
 
     const meta = {
       path: info.path,
-      parentType: info.parentType.name,
+      parentType: info.parentType?.name,
       fieldName: info.fieldName,
     }
 
