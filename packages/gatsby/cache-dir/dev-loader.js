@@ -1,5 +1,6 @@
 import { BaseLoader, PageResourceStatus } from "./loader"
 import { findPath } from "./find-path"
+import { getPageData } from "./socketIo"
 
 class DevLoader extends BaseLoader {
   constructor(syncRequires, matchPaths) {
@@ -8,37 +9,58 @@ class DevLoader extends BaseLoader {
     super(loadComponent, matchPaths)
   }
 
-  loadPage(pagePath) {
-    const realPath = findPath(pagePath)
-    return super.loadPage(realPath).then(result =>
-      require(`./socketIo`)
-        .getPageData(realPath)
-        .then(() => result)
-    )
+  // Disable gatsby-link prefetch/preload
+  async doPrefetch(pagePath) {
+    // don't do anything
+  }
+  async hovering(rawPath) {
+    // don't do anything
   }
 
-  loadPageDataJson(rawPath) {
-    return super.loadPageDataJson(rawPath).then(data => {
-      // when we can't find a proper 404.html we fallback to dev-404-page
-      // we need to make sure to mark it as not found.
-      if (
-        data.status === PageResourceStatus.Error &&
-        rawPath !== `/dev-404-page/`
-      ) {
-        console.error(
-          `404 page could not be found. Checkout https://www.gatsbyjs.org/docs/add-404-page/`
-        )
-        return this.loadPageDataJson(`/dev-404-page/`).then(result =>
-          Object.assign({}, data, result)
-        )
+  async fetchPageDataJson(loadObj) {
+    const { pagePath } = loadObj
+
+    const pageData = await getPageData(pagePath)
+
+    console.log(`[dev-loader] got pageData`, { pageData, loadObj })
+
+    if (!pageData) {
+      if (pagePath === `/404.html`) {
+        return { ...loadObj, status: PageResourceStatus.Error }
       }
 
-      return data
-    })
+      return this.fetchPageDataJson({
+        ...loadObj,
+        pagePath: `/404.html`,
+        notFound: true,
+      })
+    }
+
+    return {
+      ...loadObj,
+      status: PageResourceStatus.Success,
+      payload: pageData,
+    }
   }
 
-  doPrefetch(pagePath) {
-    return Promise.resolve(require(`./socketIo`).getPageData(pagePath))
+  // this route all page-data request through websocket and not xhr/fetch
+  async loadPageDataJson(rawPath) {
+    const pagePath = findPath(rawPath)
+    const data = await this.fetchPageDataJson({ pagePath })
+
+    if (
+      data.status === PageResourceStatus.Error &&
+      rawPath !== `/dev-404-page/`
+    ) {
+      console.error(
+        `404 page could not be found. Checkout https://www.gatsbyjs.org/docs/add-404-page/`
+      )
+      return this.loadPageDataJson(`/dev-404-page/`).then(result =>
+        Object.assign({}, data, result)
+      )
+    }
+
+    return data
   }
 }
 

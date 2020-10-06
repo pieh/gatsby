@@ -20,5 +20,7 @@ export async function calculateDirtyQueries({
   const queryIds = firstRun
     ? calcInitialDirtyQueryIds(state)
     : calcDirtyQueryIds(state)
+
+  console.log(`[calculate-dirty-queries]`, { queryIds })
   return { queryIds: groupQueryIds(queryIds) }
 }

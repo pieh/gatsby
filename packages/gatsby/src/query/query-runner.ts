@@ -33,6 +33,7 @@ export const queryRunner = async (
   queryJob: IQueryJob,
   parentSpan: Span | undefined
 ): Promise<IExecutionResult> => {
+  report.verbose(`[query-runner] Running query ${queryJob.id}`)
   const { program } = store.getState()
 
   const graphql = (

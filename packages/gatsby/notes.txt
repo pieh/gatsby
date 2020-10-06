@@ -1,0 +1,4 @@
+- don't have proper API to determine if page-data is ready (we have results and they are not dirty)
+- routing:
+  - on client side match-paths are already handled nicely
+  - static paths are not - we don't have a nice way to massage path from browser to exact page path (things like trailing slashes)

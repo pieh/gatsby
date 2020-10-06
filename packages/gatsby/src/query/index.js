@@ -1,14 +1,12 @@
 // @flow
 
 const _ = require(`lodash`)
-const Queue = require(`better-queue`)
 // const convertHrtime = require(`convert-hrtime`)
 const { store, emitter } = require(`../redux`)
 const { boundActionCreators } = require(`../redux/actions`)
 const report = require(`gatsby-cli/lib/reporter`)
 const queryQueue = require(`./queue`)
-const { GraphQLRunner } = require(`./graphql-runner`)
-const pageDataUtil = require(`../utils/page-data`)
+const { websocketManager } = require(`../utils/websocket-manager`)
 
 const seenIdsWithoutDataDependencies = new Set()
 let queuedDirtyActions = []
@@ -36,6 +34,8 @@ const popExtractedQueries = () => {
   extractedQueryIds.clear()
   return queries
 }
+
+const dirtyQueries = new Set()
 
 const findIdsWithoutDataDependencies = state => {
   const allTrackedIds = new Set()
@@ -232,8 +232,46 @@ const processPageQueries = async (
   // `internal-data-bridge`, but the actual page object is only
   // created during `gatsby develop`.
   const pages = _.filter(queryIds.map(id => state.pages.get(id)))
+
+  // START HACK - this will only run queries for active pages
+  // it also removes page from seenIdsWithoutDataDependencies if it's
+  // not active one to keep the page as dirty (this is just fastest way to get this working)
+  // it's really bad from design perspective as it does break some abstraction barriers
+  // (code of this function shouldn't care about dependency tracking)
+
+  console.log(`processPageQueries before`, {
+    seenIdsWithoutDataDependencies,
+    pages: pages.map(p => p.path),
+    activePaths: websocketManager.activePaths,
+    pendingPaths: websocketManager.pendingPaths,
+  })
+  let activePages = []
+  pages.forEach(page => {
+    const pagePath = page.path
+    if (
+      websocketManager.activePaths.has(pagePath) ||
+      websocketManager.pendingPaths.has(pagePath) ||
+      [`/dev-404-page/`, `/404.html`].includes(pagePath) // app.js force load those :shrug:
+    ) {
+      // shortcut - it's not quite correct - query is still dirty at this point, but in-progress not implemented yet
+      dirtyQueries.delete(pagePath)
+      activePages.push(page)
+    } else {
+      seenIdsWithoutDataDependencies.delete(pagePath)
+      websocketManager.pageResults.delete(pagePath)
+      dirtyQueries.add(pagePath)
+    }
+  })
+  console.log(`processPageQueries after`, {
+    seenIdsWithoutDataDependencies,
+    activePages: activePages.map(p => p.path),
+    dirtyQueries,
+  })
+  // report.verbose(`[query/index] processPageQueries`)
+  // END HACK
+
   await processQueries(
-    pages.map(page => createPageQueryJob(state, page)),
+    activePages.map(page => createPageQueryJob(state, page)),
     {
       activity,
       graphqlRunner,
@@ -269,6 +307,9 @@ let listenerQueue
  * dirty query
  */
 const runQueuedQueries = () => {
+  // This is no-op function because `listenerQueue` is never set
+  // but this function is being called outside of this module by
+  // query-watcher and page-component machine
   if (listenerQueue) {
     const state = store.getState()
     const { staticQueryIds, pageQueryIds } = groupQueryIds(
@@ -307,6 +348,7 @@ const enqueueExtractedPageComponent = componentPath => {
 }
 
 module.exports = {
+  dirtyQueries,
   calcInitialDirtyQueryIds,
   calcDirtyQueryIds,
   processPageQueries,

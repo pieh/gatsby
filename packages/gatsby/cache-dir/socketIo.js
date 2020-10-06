@@ -98,6 +98,10 @@ function getPageData(pathname) {
         delete inFlightGetPageDataPromiseCache[pathname]
         resolve(pageQueryData[pathname])
       } else {
+        if (!socket) {
+          // hack - socket is not initiated yet
+          socketIo()
+        }
         const onPageDataCallback = msg => {
           if (
             msg.type === `pageQueryResult` &&

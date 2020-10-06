@@ -500,6 +500,7 @@ let instance
 
 export const setLoader = _loader => {
   instance = _loader
+  window.__loader = _loader
 }
 
 export const publicLoader = {

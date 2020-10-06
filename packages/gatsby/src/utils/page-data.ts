@@ -60,6 +60,16 @@ export function pageDataExists(publicDir: string, pagePath: string): boolean {
   return fs.existsSync(getFilePath(publicDir, pagePath))
 }
 
+function getPartialQueryResultPath(publicDir: string, pagePath: string) {
+  return path.join(
+    publicDir,
+    `..`,
+    `.cache`,
+    `json`,
+    `${pagePath.replace(/\//g, `_`)}.json`
+  )
+}
+
 export async function writePageData(
   publicDir: string,
   {
@@ -69,13 +79,7 @@ export async function writePageData(
     staticQueryHashes,
   }: IPageData
 ): Promise<IPageDataWithQueryResult> {
-  const inputFilePath = path.join(
-    publicDir,
-    `..`,
-    `.cache`,
-    `json`,
-    `${pagePath.replace(/\//g, `_`)}.json`
-  )
+  const inputFilePath = getPartialQueryResultPath(publicDir, pagePath)
   const outputFilePath = getFilePath(publicDir, pagePath)
   const result = await fs.readJSON(inputFilePath)
   const body = {
@@ -109,6 +113,7 @@ export function isFlushEnqueued(): boolean {
 }
 
 export async function flush(): Promise<void> {
+  console.log(`[page-data] flush`)
   if (isFlushing) {
     // We're already in the middle of a flush
     return
@@ -136,6 +141,10 @@ export async function flush(): Promise<void> {
     new Set(pagePaths.values())
   )
 
+  const publicDir = path.join(program.directory, `public`)
+
+  console.log({ pagesToWrite })
+
   for (const pagePath of pagesToWrite) {
     const page = pages.get(pagePath)
 
@@ -146,16 +155,30 @@ export async function flush(): Promise<void> {
     // them, a page might not exist anymore щ（ﾟДﾟщ）
     // This is why we need this check
     if (page) {
+      if (process.env.NODE_ENV !== `production`) {
+        const partialJSONFile = getPartialQueryResultPath(publicDir, page.path)
+        if (!(await fs.pathExists(partialJSONFile))) {
+          // we don't have query result so we skip trying to write page-data file
+          // NOTE: figure out if this needs to be tracked to ensure that
+          // we do write that file when we run query
+          // We also definitely don't want to skip like that for production builds
+          console.log(
+            `[page-data] skipping page-data file for "${page.path}"`,
+            {
+              partialJSONFile,
+            }
+          )
+          continue
+        }
+      }
+
       const staticQueryHashes =
         staticQueriesByTemplate.get(page.componentPath) || []
 
-      const result = await writePageData(
-        path.join(program.directory, `public`),
-        {
-          ...page,
-          staticQueryHashes,
-        }
-      )
+      const result = await writePageData(publicDir, {
+        ...page,
+        staticQueryHashes,
+      })
 
       if (program?._?.[0] === `develop`) {
         websocketManager.emitPageData({

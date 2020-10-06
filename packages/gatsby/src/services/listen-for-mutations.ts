@@ -14,13 +14,21 @@ export const listenForMutations: InvokeCallback = (callback: Sender<any>) => {
     callback({ type: `WEBHOOK_RECEIVED`, payload: event })
   }
 
+  const emitRunQueries = (event: unknown): void => {
+    // hack - this just seems like already existing event
+    // that should handle running queries from any state (either transition from waiting or queue if we are running already)
+    callback({ type: `SOURCE_FILE_CHANGED`, payload: event })
+  }
+
   emitter.on(`ENQUEUE_NODE_MUTATION`, emitMutation)
   emitter.on(`WEBHOOK_RECEIVED`, emitWebhook)
   emitter.on(`SOURCE_FILE_CHANGED`, emitSourceChange)
+  emitter.on(`RUN_QUERIES_FOR_PATH`, emitRunQueries)
 
   return function unsubscribeFromMutationListening(): void {
     emitter.off(`ENQUEUE_NODE_MUTATION`, emitMutation)
     emitter.off(`WEBHOOK_RECEIVED`, emitWebhook)
     emitter.off(`SOURCE_FILE_CHANGED`, emitSourceChange)
+    emitter.off(`RUN_QUERIES_FOR_PATH`, emitRunQueries)
   }
 }
