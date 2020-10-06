@@ -283,64 +283,6 @@ const runQueuedQueries = () => {
   }
 }
 
-/**
- * Starts a background process that processes any dirty queries
- * whenever one of the following occurs:
- *
- * 1. A node has changed (but only after the api call has finished
- * running)
- * 2. A component query (e.g. by editing a React Component) has
- * changed
- *
- * For what constitutes a dirty query, see `calcQueries`
- */
-
-const startListeningToDevelopQueue = ({ graphqlTracing } = {}) => {
-  // We use a queue to process batches of queries so that they are
-  // processed consecutively
-  let graphqlRunner = null
-  const developQueue = queryQueue.createDevelopQueue(() => {
-    if (!graphqlRunner) {
-      graphqlRunner = new GraphQLRunner(store, { graphqlTracing })
-    }
-    return graphqlRunner
-  })
-  listenerQueue = new Queue((queryJobs, callback) => {
-    const activity = createQueryRunningActivity(queryJobs.length)
-
-    const onFinish = (...arg) => {
-      pageDataUtil.enqueueFlush()
-      activity.done()
-      return callback(...arg)
-    }
-
-    return queryQueue
-      .processBatch(developQueue, queryJobs, activity)
-      .then(() => onFinish(null))
-      .catch(onFinish)
-  })
-
-  emitter.on(`API_RUNNING_START`, () => {
-    report.pendingActivity({ id: `query-running` })
-  })
-
-  emitter.on(`API_RUNNING_QUEUE_EMPTY`, runQueuedQueries)
-  ;[
-    `DELETE_CACHE`,
-    `CREATE_NODE`,
-    `DELETE_NODE`,
-    `DELETE_NODES`,
-    `SET_SCHEMA_COMPOSER`,
-    `SET_SCHEMA`,
-    `ADD_FIELD_TO_NODE`,
-    `ADD_CHILD_NODE_TO_PARENT_NODE`,
-  ].forEach(eventType => {
-    emitter.on(eventType, event => {
-      graphqlRunner = null
-    })
-  })
-}
-
 const enqueueExtractedQueryId = pathname => {
   extractedQueryIds.add(pathname)
 }
@@ -370,7 +312,6 @@ module.exports = {
   processPageQueries,
   processStaticQueries,
   groupQueryIds,
-  startListeningToDevelopQueue,
   runQueuedQueries,
   enqueueExtractedQueryId,
   enqueueExtractedPageComponent,
