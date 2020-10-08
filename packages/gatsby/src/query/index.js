@@ -246,30 +246,34 @@ const processPageQueries = async (
     pendingPaths: websocketManager.pendingPaths,
   })
   let activePages = []
-  websocketManager.invalidateQueries(pages.map(p => p.path))
-  pages.forEach(page => {
-    const pagePath = page.path
-    // we need to invalidate active sessions
+  if (process.env.NODE_ENV === `production`) {
+    activePages = pages
+  } else {
+    websocketManager.invalidateQueries(pages.map(p => p.path))
+    pages.forEach(page => {
+      const pagePath = page.path
+      // we need to invalidate active sessions
 
-    if (
-      websocketManager.activePaths.has(pagePath) ||
-      websocketManager.pendingPaths.has(pagePath) ||
-      [`/dev-404-page/`, `/404.html`].includes(pagePath) // app.js force load those :shrug:
-    ) {
-      // shortcut - it's not quite correct - query is still dirty at this point, but in-progress not implemented yet
-      dirtyQueries.delete(pagePath)
-      activePages.push(page)
-    } else {
-      seenIdsWithoutDataDependencies.delete(pagePath)
-      websocketManager.pageResults.delete(pagePath)
-      dirtyQueries.add(pagePath)
-    }
-  })
-  console.log(`processPageQueries after`, {
-    seenIdsWithoutDataDependencies,
-    activePages: activePages.map(p => p.path),
-    dirtyQueries,
-  })
+      if (
+        websocketManager.activePaths.has(pagePath) ||
+        websocketManager.pendingPaths.has(pagePath) ||
+        [`/dev-404-page/`, `/404.html`].includes(pagePath) // app.js force load those :shrug:
+      ) {
+        // shortcut - it's not quite correct - query is still dirty at this point, but in-progress not implemented yet
+        dirtyQueries.delete(pagePath)
+        activePages.push(page)
+      } else {
+        seenIdsWithoutDataDependencies.delete(pagePath)
+        websocketManager.pageResults.delete(pagePath)
+        dirtyQueries.add(pagePath)
+      }
+    })
+    console.log(`processPageQueries after`, {
+      seenIdsWithoutDataDependencies,
+      activePages: activePages.map(p => p.path),
+      dirtyQueries,
+    })
+  }
   // report.verbose(`[query/index] processPageQueries`)
   // END HACK
 

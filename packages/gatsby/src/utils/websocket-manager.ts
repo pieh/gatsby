@@ -284,7 +284,7 @@ export class WebsocketManager {
           }
         }
 
-        const staticQueryHashes = pageData.result?.staticQueryHashes ?? []
+        const staticQueryHashes = pageData?.result?.staticQueryHashes ?? []
         await Promise.all(
           staticQueryHashes.map(async queryId => {
             let staticQueryResult = this.staticQueryResults.get(queryId)

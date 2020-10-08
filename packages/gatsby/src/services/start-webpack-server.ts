@@ -107,6 +107,9 @@ export async function startWebpackServer({
             )
           }
         }
+        report.info(report.stripIndent`
+          server boot finished - ${process.uptime().toFixed(3)}s
+        `)
       }
 
       isFirstCompile = false
