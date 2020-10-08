@@ -275,7 +275,9 @@ export class WebsocketManager {
               }
             }
 
-            this.pageResults.set(page.path, pageData)
+            if (pageData) {
+              this.pageResults.set(page.path, pageData)
+            }
           } catch (err) {
             console.log(err.message)
             return
@@ -434,6 +436,15 @@ export class WebsocketManager {
       )
     } else {
       reporter.verbose(`[websocket-manager] No active dev server paths`)
+    }
+  }
+
+  invalidateQueries(queries: Array<string>) {
+    if (this.websocket) {
+      this.websocket.send({
+        type: `invalidateQueryResults`,
+        payload: queries,
+      })
     }
   }
 }

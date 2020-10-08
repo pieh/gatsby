@@ -1,6 +1,7 @@
 import io from "socket.io-client"
 import { reportError, clearError } from "./error-overlay-handler"
 import normalizePagePath from "./normalize-page-path"
+import { invalidatePageDb } from "./loader"
 
 let socket = null
 
@@ -11,6 +12,7 @@ let pageQueryData = {}
 export const getStaticQueryData = () => staticQueryData
 export const getPageQueryData = () => pageQueryData
 
+window.getPageQueryData = getPageQueryData
 export default function socketIo() {
   if (process.env.NODE_ENV !== `production`) {
     if (!socket) {
@@ -66,6 +68,24 @@ export default function socketIo() {
             } else {
               clearError(msg.payload.id)
             }
+          } else if (msg.type === `invalidateQueryResults`) {
+            console.log(`invalidate query results`, {
+              payload: msg.payload,
+              pageQueryData,
+              pageDb: window._pageDb,
+            })
+            pageQueryData = {
+              ...pageQueryData,
+            }
+            msg.payload.forEach(id => {
+              delete pageQueryData[id]
+            })
+            invalidatePageDb(msg.payload)
+
+            console.log(`invalidated query results`, {
+              pageQueryData,
+              pageDb: window._pageDb,
+            })
           }
 
           if (msg.type && msg.payload) {

@@ -2,3 +2,13 @@
 - routing:
   - on client side match-paths are already handled nicely
   - static paths are not - we don't have a nice way to massage path from browser to exact page path (things like trailing slashes)
+
+testing ...
+ - expand existing e2e tests:
+   - [query on demand specific] assert that page-data file doesn't exist -> navigate -> assert page renders correctly
+ 
+
+refactor ... (big maybe, probably not initially = not ever?)
+ - current structure of code makes it hard to test query system:
+   - make redux sole controller of query running state (i.e. right now some state is in redux (data dependencies), some in module scope (dirty nodes)) 
+     - only reason to this is to make proper testing without mocking / resetting scope half of gatsby

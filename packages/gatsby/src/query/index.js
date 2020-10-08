@@ -246,8 +246,11 @@ const processPageQueries = async (
     pendingPaths: websocketManager.pendingPaths,
   })
   let activePages = []
+  websocketManager.invalidateQueries(pages.map(p => p.path))
   pages.forEach(page => {
     const pagePath = page.path
+    // we need to invalidate active sessions
+
     if (
       websocketManager.activePaths.has(pagePath) ||
       websocketManager.pendingPaths.has(pagePath) ||

@@ -90,7 +90,7 @@ export class BaseLoader {
     //   },
     //   staticQueryResults
     // }
-    this.pageDb = new Map()
+    window._pageDb = this.pageDb = new Map()
     this.inFlightDb = new Map()
     this.staticQueryDb = {}
     this.pageDataDb = new Map()
@@ -207,6 +207,12 @@ export class BaseLoader {
   // TODO check all uses of this and whether they use undefined for page resources not exist
   loadPage(rawPath) {
     const pagePath = findPath(rawPath)
+    console.log(`calling loadPage`, {
+      rawPath,
+      pagePath,
+      db: this.pageDb.get(pagePath),
+      inFlight: this.inFlightDb.get(pagePath),
+    })
     if (this.pageDb.has(pagePath)) {
       const page = this.pageDb.get(pagePath)
       return Promise.resolve(page.payload)
@@ -536,4 +542,10 @@ export default publicLoader
 
 export function getStaticQueryResults() {
   return instance.staticQueryDb
+}
+
+export function invalidatePageDb(paths) {
+  paths.forEach(path => {
+    instance.pageDb.delete(path)
+  })
 }
