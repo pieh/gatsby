@@ -12,3 +12,28 @@ refactor ... (big maybe, probably not initially = not ever?)
  - current structure of code makes it hard to test query system:
    - make redux sole controller of query running state (i.e. right now some state is in redux (data dependencies), some in module scope (dirty nodes)) 
      - only reason to this is to make proper testing without mocking / resetting scope half of gatsby
+
+
+Tasks:
+ 1. adjust websocket-manager to no rely on path from `getPageData` requests to be exactly matching page path (i.e. trailing slashes cases).
+    - client-only-paths are handled already in our runtime due to match-paths.json, so we don't _need_ full routing support here
+ 2. (after 1) adjust DevLoader to use just websocket for page-data (currently it both fetch file and request data via websocket)
+ 3. refactor dirty query calculation and query running queueing, so it doesn't assume that all dirty queries will be scheduled to run ( we don't keep track of status of queries (not run yet/dirty/up to date), because we didn't need too yet as all not up-to-date queries would be queued for running ):
+    - keep track of dirty query (now when we call `calcDirtyQueries` we will get a list of queries that got dirty since last `calcDirtyQueries` call)
+    - separate dirty query calculation from query runs queueing (for builds and develop that wouldn't use query on demand - it would just pass through dirty queries to query queueing)
+ 4. (after 3.) add utility function to get result for particular query that would:
+    - if query is not dirty - return cached result,
+    - if query is dirty or not run yet:
+      - queue query running and wait for result
+      - have inFlight support to not queue same query multiple times (need to be careful for race conditions)
+    TBD which unit should do this
+ 5. (after 4.) use new function to get results in websocket handler for page-data results
+ 6. ensure we don't have stale query results in browser-side caches (loader.pageDb, socket.io page-data store). This can be done either by:
+     - getting rid of caches completely
+     - or adding invalidation mechanism (that would be triggered when queries are marked as dirty)
+ 7. remove assumption in page-data flush() function that expect all query results to be run and up to date
+ 8. (after all of above) - pass subset of dirty queries to query running queue
+
+Nice to haves (note those are not query-on-demand specific):
+ 9. don't commit data deps immediately to store as we execute queries - in case there is query error there can be situation where we already committed some dependencies that will trip any future dirty query calculations into thinking that query doesn't need to rerun
+ 10. express handler for in-progress gatsby-plugin-sharp processing

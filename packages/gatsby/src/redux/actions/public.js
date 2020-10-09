@@ -23,6 +23,7 @@ const {
 const apiRunnerNode = require(`../../utils/api-runner-node`)
 const { trackCli } = require(`gatsby-telemetry`)
 const { getNonGatsbyCodeFrame } = require(`../../utils/stack-trace-utils`)
+const fs = require(`fs-extra`)
 
 /**
  * Memoize function used to pick shadowed page components to avoid expensive I/O.
@@ -1154,6 +1155,35 @@ actions.createJob = (job: Job, plugin?: ?Plugin = null) => {
   }
 }
 
+console.log(`PID: ${process.pid}`)
+const jobsOverviewByInputPath: { [key: string]: any } = {}
+const jobsOverviewByType: { [key: string]: any } = {}
+function addToOverview(job: JobV2, type: string): void {
+  const entry = { job, type, stack: new Error().stack }
+  job.inputPaths.forEach(inputPath => {
+    // const inputPath = inputPathObj.path
+    if (!(inputPath in jobsOverviewByInputPath)) {
+      jobsOverviewByInputPath[inputPath] = []
+    }
+
+    jobsOverviewByInputPath[inputPath].push(entry)
+  })
+
+  if (!(type in jobsOverviewByType)) {
+    jobsOverviewByType[type] = []
+  }
+  jobsOverviewByType[type].push(entry)
+}
+function writeJobsOverviewToFile() {
+  console.log(`Writing ./jobs.json`)
+  fs.outputJSONSync(`./jobs.json`, {
+    byType: jobsOverviewByType,
+    byInputPath: jobsOverviewByInputPath,
+  })
+  console.log(`Written ./jobs.json`)
+}
+process.on(`SIGUSR2`, () => writeJobsOverviewToFile)
+
 /**
  * Create a "job". This is a long-running process that is generally
  * started as a side-effect to a GraphQL query.
@@ -1182,6 +1212,7 @@ actions.createJobV2 = (job: JobV2, plugin: Plugin) => (dispatch, getState) => {
     currentState.jobsV2 &&
     currentState.jobsV2.complete.has(jobContentDigest)
   ) {
+    addToOverview(internalJob, `cached`)
     return Promise.resolve(
       currentState.jobsV2.complete.get(jobContentDigest).result
     )
@@ -1189,9 +1220,11 @@ actions.createJobV2 = (job: JobV2, plugin: Plugin) => (dispatch, getState) => {
 
   const inProgressJobPromise = getInProcessJobPromise(jobContentDigest)
   if (inProgressJobPromise) {
+    addToOverview(internalJob, `in_progress`)
     return inProgressJobPromise
   }
 
+  addToOverview(internalJob, `new_job`)
   dispatch({
     type: `CREATE_JOB_V2`,
     plugin,
@@ -1391,4 +1424,4 @@ actions.removePageData = (id: PageDataRemove) => {
   }
 }
 
-module.exports = { actions }
+module.exports = { actions, writeJobsOverviewToFile }
