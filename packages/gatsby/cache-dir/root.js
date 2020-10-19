@@ -14,12 +14,69 @@ import EnsureResources from "./ensure-resources"
 
 import { reportError, clearError } from "./error-overlay-handler"
 
+let registeredReloadListeners = false
+function setupReloadListeners() {
+  // react runtime error
+  if (registeredReloadListeners) {
+    return
+  }
+
+  console.log(`setting up reload listeners`)
+
+  // Inspired by `react-dev-utils` HMR client:
+  // If there was unhandled error, reload browser
+  // on next HMR update
+  module.hot.addStatusHandler(status => {
+    if (status === `apply` || status === `idle`) {
+      window.location.reload()
+    }
+  })
+
+  // Additionally in Gatsby case query result updates can cause
+  // runtime error and also fix them, so reload on data updates
+  // as well
+  ___emitter.on(`pageQueryResult`, () => {
+    window.location.reload()
+  })
+  ___emitter.on(`staticQueryResult`, () => {
+    window.location.reload()
+  })
+
+  registeredReloadListeners = true
+}
+class RuntimeErrorBoundary extends React.Component {
+  // this is for errors that happen when not applying HMR
+  componentDidCatch(error, info) {
+    console.log(`[componentDidCatch] attaching reload listeners`, {
+      error,
+      info,
+    })
+    setupReloadListeners()
+  }
+
+  render() {
+    return this.props.children
+  }
+}
+
 // TODO: Remove entire block when we make fast-refresh the default
 // In fast-refresh, this logic is all moved into the `error-overlay-handler`
 if (
   window.__webpack_hot_middleware_reporter__ !== undefined &&
   process.env.GATSBY_HOT_LOADER !== `fast-refresh`
 ) {
+  const { setConfig } = require(`react-hot-loader`)
+  setConfig({
+    // this is for errors that happen when applying HMR
+    ErrorOverlay: props => {
+      console.log(`[ErrorOverlay] attaching reload listeners`, props)
+      if (props.errors && props.errors.length > 0) {
+        setupReloadListeners()
+      }
+      return null
+    },
+  })
+
   const overlayErrorID = `webpack`
   // Report build errors
   window.__webpack_hot_middleware_reporter__.useCustomOverlay({
@@ -135,4 +192,11 @@ const WrappedRoot = apiRunner(
   }
 ).pop()
 
-export default () => <StaticQueryStore>{WrappedRoot}</StaticQueryStore>
+export default () => {
+  let root = <StaticQueryStore>{WrappedRoot}</StaticQueryStore>
+
+  if (process.env.GATSBY_HOT_LOADER !== `fast-refresh`) {
+    return <RuntimeErrorBoundary>{root}</RuntimeErrorBoundary>
+  }
+  return root
+}
