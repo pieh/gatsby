@@ -17,7 +17,7 @@ export const listenForMutations: InvokeCallback = (callback: Sender<any>) => {
   const emitRunQueries = (event: unknown): void => {
     // hack - this just seems like already existing event
     // that should handle running queries from any state (either transition from waiting or queue if we are running already)
-    callback({ type: `SOURCE_FILE_CHANGED`, payload: event })
+    callback({ type: `ADD_NODE_MUTATION`, payload: event })
   }
 
   emitter.on(`ENQUEUE_NODE_MUTATION`, emitMutation)
