@@ -162,6 +162,13 @@ export async function initialize({
 
   activity.end()
 
+  if (
+    process.env.gatsby_executing_command === `develop` &&
+    store.getState().config.__experimentalQueryOnDemand
+  ) {
+    reporter.info(`Using experimental query on demand feature`)
+  }
+
   // run stale jobs
   store.dispatch(removeStaleJobs(store.getState()))
 

@@ -60,7 +60,10 @@ export function pageDataExists(publicDir: string, pagePath: string): boolean {
   return fs.existsSync(getFilePath(publicDir, pagePath))
 }
 
-function getPartialQueryResultPath(publicDir: string, pagePath: string) {
+function getPartialQueryResultPath(
+  publicDir: string,
+  pagePath: string
+): string {
   return path.join(
     publicDir,
     `..`,
@@ -125,6 +128,7 @@ export async function flush(): Promise<void> {
     pages,
     program,
     staticQueriesByTemplate,
+    queries,
   } = store.getState()
 
   const { pagePaths, templatePaths } = pendingPageDataWrites
@@ -156,7 +160,10 @@ export async function flush(): Promise<void> {
     if (page) {
       if (process.env.NODE_ENV !== `production`) {
         const partialJSONFile = getPartialQueryResultPath(publicDir, page.path)
-        if (!(await fs.pathExists(partialJSONFile))) {
+        if (
+          queries.trackedQueries.get(page.path)?.dirty !== 0 ||
+          !(await fs.pathExists(partialJSONFile))
+        ) {
           // we don't have query result so we skip trying to write page-data file
           // NOTE: figure out if this needs to be tracked to ensure that
           // we do write that file when we run query

@@ -59,6 +59,7 @@ export interface IGatsbyConfig {
   proxy?: any
   pathPrefix?: string
   mapping?: Record<string, string>
+  __experimentalQueryOnDemand?: boolean
 }
 
 export interface IGatsbyNode {

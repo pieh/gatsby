@@ -18,7 +18,10 @@ export async function calculateDirtyQueries({
 
   reporter.verbose(`Dirty queries: ${JSON.stringify(Array.from(queryIds))}`)
 
-  if (process.env.gatsby_executing_command === `develop`) {
+  if (
+    process.env.gatsby_executing_command === `develop` &&
+    state.config.__experimentalQueryOnDemand
+  ) {
     // 404 are special cases in our runtime that ideally use
     // generic things to work, but for now they have special handling
     const filter = new Set([`/404.html`, `/dev-404-page/`])
