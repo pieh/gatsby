@@ -67,11 +67,11 @@ export default function socketIo() {
               clearError(msg.payload.id)
             }
           } else if (msg.type === `invalidateQueryResults`) {
-            console.log(`invalidating query results`, {
-              payload: msg.payload,
-              pageQueryData,
-              pageDb: window._pageDb,
-            })
+            // console.log(`invalidating query results`, {
+            //   payload: msg.payload,
+            //   pageQueryData,
+            //   pageDb: window._pageDb,
+            // })
             pageQueryData = {
               ...pageQueryData,
             }
@@ -80,10 +80,10 @@ export default function socketIo() {
             })
             invalidatePageDb(msg.payload)
 
-            console.log(`invalidated query results`, {
-              pageQueryData,
-              pageDb: window._pageDb,
-            })
+            // console.log(`invalidated query results`, {
+            //   pageQueryData,
+            //   pageDb: window._pageDb,
+            // })
           }
 
           if (msg.type && msg.payload) {

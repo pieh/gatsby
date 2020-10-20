@@ -42,7 +42,7 @@ export class PageQueryStore extends React.Component {
 
   componentDidMount() {
     const newPath = getPathFromProps(this.props)
-    console.log(`componentDidMount, registerPath`, newPath)
+    // console.log(`componentDidMount, registerPath`, newPath)
     socketRegisterPath(newPath)
     ___emitter.on(`*`, this.handleMittEvent)
   }
@@ -56,7 +56,7 @@ export class PageQueryStore extends React.Component {
     const newPath = getPathFromProps(props)
     if (newPath !== state.path) {
       socketUnregisterPath(state.path)
-      console.log(`getDerivedStateFromProps, registerPath`, newPath)
+      // console.log(`getDerivedStateFromProps, registerPath`, newPath)
       socketRegisterPath(newPath)
       return {
         path: newPath,

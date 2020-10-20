@@ -22,7 +22,7 @@ class DevLoader extends BaseLoader {
 
     const pageData = await getPageData(pagePath)
 
-    console.log(`[dev-loader] got pageData`, { pageData, loadObj })
+    // console.log(`[dev-loader] got pageData`, { pageData, loadObj })
 
     if (!pageData) {
       if (pagePath === `/404.html`) {
