@@ -206,6 +206,7 @@ export class BaseLoader {
 
   // TODO check all uses of this and whether they use undefined for page resources not exist
   loadPage(rawPath) {
+    console.log(`[loader] Loading "${rawPath}"`)
     const pagePath = findPath(rawPath)
     console.log(`calling loadPage`, {
       rawPath,
