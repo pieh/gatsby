@@ -152,6 +152,17 @@ export interface IStateProgram extends IProgram {
   extensions: Array<string>
 }
 
+export interface IQueryState {
+  dirty: number
+}
+
+export interface IComponentState {
+  componentPath: string
+  query: string
+  pages: Set<Identifier>
+  errors: number
+}
+
 export interface IGatsbyState {
   program: IStateProgram
   nodes: GatsbyNodes
@@ -195,9 +206,11 @@ export interface IGatsbyState {
     plugins: Record<string, IGatsbyPlugin>
     PLUGINS_HASH: Identifier
   }
-  componentDataDependencies: {
-    nodes: Map<string, Set<string>>
-    connections: Map<string, Set<string>>
+  queries: {
+    byNode: Map<Identifier, Set<Identifier>>
+    byConnection: Map<string, Set<Identifier>>
+    trackedQueries: Map<Identifier, IQueryState>
+    trackedComponents: Map<string, IComponentState>
   }
   components: Map<
     SystemPath,
@@ -264,7 +277,6 @@ export interface IGatsbyState {
 export interface ICachedReduxState {
   nodes?: IGatsbyState["nodes"]
   status: IGatsbyState["status"]
-  componentDataDependencies: IGatsbyState["componentDataDependencies"]
   components: IGatsbyState["components"]
   jobsV2: IGatsbyState["jobsV2"]
   staticQueryComponents: IGatsbyState["staticQueryComponents"]
@@ -273,6 +285,7 @@ export interface ICachedReduxState {
   pageData: IGatsbyState["pageData"]
   staticQueriesByTemplate: IGatsbyState["staticQueriesByTemplate"]
   pendingPageDataWrites: IGatsbyState["pendingPageDataWrites"]
+  queries: IGatsbyState["queries"]
 }
 
 export type ActionsUnion =
@@ -287,7 +300,6 @@ export type ActionsUnion =
   | IDeleteCacheAction
   | IDeleteNodeAction
   | IDeleteNodesAction
-  | IDeleteComponentDependenciesAction
   | IDeletePageAction
   | IPageQueryRunAction
   | IPrintTypeDefinitions
@@ -295,6 +307,7 @@ export type ActionsUnion =
   | IQueryExtractedBabelSuccessAction
   | IQueryExtractionBabelErrorAction
   | IQueryExtractionGraphQLErrorAction
+  | IQueryStartAction
   | IRemoveStaticQuery
   | IReplaceComponentQueryAction
   | IReplaceStaticQueryAction
@@ -422,13 +435,6 @@ export interface ICreatePageDependencyAction {
   }
 }
 
-export interface IDeleteComponentDependenciesAction {
-  type: "DELETE_COMPONENTS_DEPENDENCIES"
-  payload: {
-    paths: Array<string>
-  }
-}
-
 export interface IReplaceComponentQueryAction {
   type: "REPLACE_COMPONENT_QUERY"
   payload: {
@@ -489,6 +495,17 @@ export interface ISetProgramStatusAction {
 
 export interface IPageQueryRunAction {
   type: `PAGE_QUERY_RUN`
+  plugin: IGatsbyPlugin
+  traceId: string | undefined
+  payload: {
+    path: string
+    componentPath: string
+    isPage: boolean
+  }
+}
+
+export interface IQueryStartAction {
+  type: `QUERY_START`
   plugin: IGatsbyPlugin
   traceId: string | undefined
   payload: { path: string; componentPath: string; isPage: boolean }

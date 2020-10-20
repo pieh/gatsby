@@ -1,6 +1,8 @@
-import { BaseValidationOptions, Schema } from "joi"
+import { ValidationOptions } from "joi"
+import { ObjectSchema } from "./joi"
+import { IPluginInfoOptions } from "gatsby"
 
-const validationOptions: BaseValidationOptions = {
+const validationOptions: ValidationOptions = {
   // Show all errors at once, rather than only the first one every time
   abortEarly: false,
   cache: true,
@@ -10,19 +12,19 @@ interface IOptions {
   validateExternalRules?: boolean
 }
 
-export async function validateOptionsSchema<PluginOptions = object>(
-  pluginSchema: Schema,
-  pluginOptions: PluginOptions,
-  options: IOptions = {}
-): Promise<PluginOptions> {
-  if (options.validateExternalRules === false) {
-    const result = pluginSchema.validate(pluginOptions, {
-      ...validationOptions,
-      externals: false,
-    })
-    if (result.error) throw result.error
-    return result.value
+export async function validateOptionsSchema(
+  pluginSchema: ObjectSchema,
+  pluginOptions: IPluginInfoOptions,
+  options: IOptions = {
+    validateExternalRules: true,
   }
+): Promise<IPluginInfoOptions> {
+  const { validateExternalRules } = options
 
-  return pluginSchema.validateAsync(pluginOptions, validationOptions)
+  const value = await pluginSchema.validateAsync(pluginOptions, {
+    ...validationOptions,
+    externals: validateExternalRules,
+  })
+
+  return value
 }

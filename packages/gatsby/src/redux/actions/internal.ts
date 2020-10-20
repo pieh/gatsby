@@ -5,7 +5,6 @@ import {
   IGatsbyPlugin,
   ProgramStatus,
   ICreatePageDependencyAction,
-  IDeleteComponentDependenciesAction,
   IReplaceComponentQueryAction,
   IReplaceStaticQueryAction,
   IQueryExtractedAction,
@@ -18,6 +17,7 @@ import {
   ISetSiteConfig,
   IDefinitionMeta,
   ISetGraphQLDefinitionsAction,
+  IQueryStartAction,
 } from "../types"
 
 import { gatsbyConfigSchema } from "../../joi-schemas/joi"
@@ -43,22 +43,6 @@ export const createPageDependency = (
       path,
       nodeId,
       connection,
-    },
-  }
-}
-
-/**
- * Delete dependencies between an array of pages and data. Probably for
- * internal use only. Used when deleting pages.
- * @private
- */
-export const deleteComponentsDependencies = (
-  paths: Array<string>
-): IDeleteComponentDependenciesAction => {
-  return {
-    type: `DELETE_COMPONENTS_DEPENDENCIES`,
-    payload: {
-      paths,
     },
   }
 }
@@ -219,6 +203,19 @@ export const pageQueryRun = (
 ): IPageQueryRunAction => {
   return {
     type: `PAGE_QUERY_RUN`,
+    plugin,
+    traceId,
+    payload: { path, componentPath, isPage },
+  }
+}
+
+export const queryStart = (
+  { path, componentPath, isPage },
+  plugin: IGatsbyPlugin,
+  traceId?: string
+): IQueryStartAction => {
+  return {
+    type: `QUERY_START`,
     plugin,
     traceId,
     payload: { path, componentPath, isPage },

@@ -1,152 +1,33 @@
-// @flow
-
 const _ = require(`lodash`)
-// const convertHrtime = require(`convert-hrtime`)
-const { store, emitter } = require(`../redux`)
-const { boundActionCreators } = require(`../redux/actions`)
-const report = require(`gatsby-cli/lib/reporter`)
+const { store } = require(`../redux`)
+const { hasFlag, FLAG_ERROR_BABEL } = require(`../redux/reducers/queries`)
 const queryQueue = require(`./queue`)
-const { websocketManager } = require(`../utils/websocket-manager`)
 
-const seenIdsWithoutDataDependencies = new Set()
-let queuedDirtyActions = []
-const extractedQueryIds = new Set()
+/**
+ * Calculates the set of dirty query IDs (page.paths, or staticQuery.id's).
+ *
+ * Dirty state is tracked in `queries` reducer, here we simply filter
+ * them from all tracked queries.
+ */
+const calcDirtyQueryIds = state => {
+  const { trackedQueries, trackedComponents } = state.queries
 
-// Remove pages from seenIdsWithoutDataDependencies when they're deleted
-// so their query will be run again if they're created again.
-emitter.on(`DELETE_PAGE`, action => {
-  seenIdsWithoutDataDependencies.delete(action.payload.path)
-})
-
-emitter.on(`CREATE_NODE`, action => {
-  queuedDirtyActions.push(action)
-})
-
-emitter.on(`DELETE_NODE`, action => {
-  queuedDirtyActions.push({ payload: action.payload })
-})
-
-// ///////////////////////////////////////////////////////////////////
-// Calculate dirty static/page queries
-
-const popExtractedQueries = () => {
-  const queries = [...extractedQueryIds]
-  extractedQueryIds.clear()
-  return queries
-}
-
-const dirtyQueries = new Set()
-
-const findIdsWithoutDataDependencies = state => {
-  const allTrackedIds = new Set()
-  const boundAddToTrackedIds = allTrackedIds.add.bind(allTrackedIds)
-  state.componentDataDependencies.nodes.forEach(dependenciesOnNode => {
-    dependenciesOnNode.forEach(boundAddToTrackedIds)
-  })
-  state.componentDataDependencies.connections.forEach(
-    dependenciesOnConnection => {
-      dependenciesOnConnection.forEach(boundAddToTrackedIds)
+  const queriesWithBabelErrors = new Set()
+  for (const component of trackedComponents.values()) {
+    if (hasFlag(component.errors, FLAG_ERROR_BABEL)) {
+      for (const queryId of component.pages) {
+        queriesWithBabelErrors.add(queryId)
+      }
     }
-  )
-
-  // Get list of paths not already tracked and run the queries for these
-  // paths.
-  const notTrackedIds = new Set(
-    [
-      ...Array.from(state.pages.values(), p => p.path),
-      ...[...state.staticQueryComponents.values()].map(c => c.id),
-    ].filter(
-      x => !allTrackedIds.has(x) && !seenIdsWithoutDataDependencies.has(x)
-    )
-  )
-
-  // Add new IDs to our seen array so we don't keep trying to run queries for them.
-  // Pages without queries can't be tracked.
-  for (const notTrackedId of notTrackedIds) {
-    seenIdsWithoutDataDependencies.add(notTrackedId)
   }
-
-  return notTrackedIds
-}
-
-const popNodeQueries = state => {
-  const actions = _.uniq(queuedDirtyActions, a => a.payload.id)
-  const uniqDirties = actions.reduce((dirtyIds, action) => {
-    const node = action.payload
-
-    if (!node || !node.id || !node.internal.type) return dirtyIds
-
-    // Find components that depend on this node so are now dirty.
-    if (state.componentDataDependencies.nodes.has(node.id)) {
-      state.componentDataDependencies.nodes.get(node.id).forEach(n => {
-        if (n) {
-          dirtyIds.add(n)
-        }
-      })
+  // Note: trackedQueries contains both - page and static query ids
+  const dirtyQueryIds = []
+  for (const [queryId, query] of trackedQueries) {
+    if (query.dirty > 0 && !queriesWithBabelErrors.has(queryId)) {
+      dirtyQueryIds.push(queryId)
     }
-
-    // Find connections that depend on this node so are now invalid.
-    if (state.componentDataDependencies.connections.has(node.internal.type)) {
-      state.componentDataDependencies.connections
-        .get(node.internal.type)
-        .forEach(n => {
-          if (n) {
-            dirtyIds.add(n)
-          }
-        })
-    }
-
-    return dirtyIds
-  }, new Set())
-
-  boundActionCreators.deleteComponentsDependencies([...uniqDirties])
-
-  queuedDirtyActions = []
-  return uniqDirties
-}
-
-const popNodeAndDepQueries = state => {
-  const nodeQueries = popNodeQueries(state)
-
-  const noDepQueries = findIdsWithoutDataDependencies(state)
-
-  return _.uniq([...nodeQueries, ...noDepQueries])
-}
-
-/**
- * Calculates the set of dirty query IDs (page.paths, or
- * staticQuery.hash's). These are queries that:
- *
- * - depend on nodes or node collections (via
- *   `actions.createPageDependency`) that have changed.
- * - do NOT have node dependencies. Since all queries should return
- *   data, then this implies that node dependencies have not been
- *   tracked, and therefore these queries haven't been run before
- * - have been recently extracted (see `./query-watcher.js`)
- *
- * Note, this function pops queries off internal queues, so it's up
- * to the caller to reference the results
- */
-
-const calcDirtyQueryIds = state =>
-  _.union(popNodeAndDepQueries(state), popExtractedQueries())
-
-/**
- * Same as `calcDirtyQueryIds`, except that we only include extracted
- * queries that depend on nodes or haven't been run yet. We do this
- * because the page component reducer/machine always enqueues
- * extractedQueryIds but during bootstrap we may not want to run those
- * page queries if their data hasn't changed since the last time we
- * ran Gatsby.
- */
-const calcInitialDirtyQueryIds = state => {
-  const nodeAndNoDepQueries = popNodeAndDepQueries(state)
-
-  const extractedQueriesThatNeedRunning = _.intersection(
-    popExtractedQueries(),
-    nodeAndNoDepQueries
-  )
-  return _.union(extractedQueriesThatNeedRunning, nodeAndNoDepQueries)
+  }
+  return dirtyQueryIds
 }
 
 /**
@@ -176,34 +57,11 @@ const createStaticQueryJob = (state, queryId) => {
   const component = state.staticQueryComponents.get(queryId)
   const { hash, id, query, componentPath } = component
   return {
-    id: hash,
+    id: queryId,
     hash,
     query,
     componentPath,
     context: { path: id },
-  }
-}
-
-/**
- * Creates activity object which:
- *  - creates actual progress activity if there are any queries that need to be run
- *  - creates activity-like object that just cancels pending activity if there are no queries to run
- */
-const createQueryRunningActivity = (queryJobsCount, parentSpan) => {
-  if (queryJobsCount) {
-    const activity = report.createProgress(`run queries`, queryJobsCount, 0, {
-      id: `query-running`,
-      parentSpan,
-    })
-    activity.start()
-    return activity
-  } else {
-    return {
-      done: () => {
-        report.completeActivity(`query-running`)
-      },
-      tick: () => {},
-    }
   }
 }
 
@@ -232,53 +90,8 @@ const processPageQueries = async (
   // `internal-data-bridge`, but the actual page object is only
   // created during `gatsby develop`.
   const pages = _.filter(queryIds.map(id => state.pages.get(id)))
-
-  // START HACK - this will only run queries for active pages
-  // it also removes page from seenIdsWithoutDataDependencies if it's
-  // not active one to keep the page as dirty (this is just fastest way to get this working)
-  // it's really bad from design perspective as it does break some abstraction barriers
-  // (code of this function shouldn't care about dependency tracking)
-
-  console.log(`processPageQueries before`, {
-    seenIdsWithoutDataDependencies,
-    pages: pages.map(p => p.path),
-    activePaths: websocketManager.activePaths,
-    pendingPaths: websocketManager.pendingPaths,
-  })
-  let activePages = []
-  if (process.env.NODE_ENV === `production`) {
-    activePages = pages
-  } else {
-    websocketManager.invalidateQueries(pages.map(p => p.path))
-    pages.forEach(page => {
-      const pagePath = page.path
-      // we need to invalidate active sessions
-
-      if (
-        websocketManager.activePaths.has(pagePath) ||
-        websocketManager.pendingPaths.has(pagePath) ||
-        [`/dev-404-page/`, `/404.html`].includes(pagePath) // app.js force load those :shrug:
-      ) {
-        // shortcut - it's not quite correct - query is still dirty at this point, but in-progress not implemented yet
-        dirtyQueries.delete(pagePath)
-        activePages.push(page)
-      } else {
-        seenIdsWithoutDataDependencies.delete(pagePath)
-        websocketManager.pageResults.delete(pagePath)
-        dirtyQueries.add(pagePath)
-      }
-    })
-    console.log(`processPageQueries after`, {
-      seenIdsWithoutDataDependencies,
-      activePages: activePages.map(p => p.path),
-      dirtyQueries,
-    })
-  }
-  // report.verbose(`[query/index] processPageQueries`)
-  // END HACK
-
   await processQueries(
-    activePages.map(page => createPageQueryJob(state, page)),
+    pages.map(page => createPageQueryJob(state, page)),
     {
       activity,
       graphqlRunner,
@@ -303,65 +116,10 @@ const createPageQueryJob = (state, page) => {
   }
 }
 
-// ///////////////////////////////////////////////////////////////////
-// Listener for gatsby develop
-
-// Initialized via `startListening`
-let listenerQueue
-
-/**
- * Run any dirty queries. See `calcQueries` for what constitutes a
- * dirty query
- */
-const runQueuedQueries = () => {
-  // This is no-op function because `listenerQueue` is never set
-  // but this function is being called outside of this module by
-  // query-watcher and page-component machine
-  if (listenerQueue) {
-    const state = store.getState()
-    const { staticQueryIds, pageQueryIds } = groupQueryIds(
-      calcDirtyQueryIds(state)
-    )
-    const pages = _.filter(pageQueryIds.map(id => state.pages.get(id)))
-    const queryJobs = [
-      ...staticQueryIds.map(id => createStaticQueryJob(state, id)),
-      ...pages.map(page => createPageQueryJob(state, page)),
-    ]
-    listenerQueue.push(queryJobs)
-  }
-}
-
-const enqueueExtractedQueryId = pathname => {
-  extractedQueryIds.add(pathname)
-}
-
-const getPagesForComponent = componentPath => {
-  const state = store.getState()
-  return [...state.pages.values()].filter(
-    p => p.componentPath === componentPath
-  )
-}
-
-const enqueueExtractedPageComponent = componentPath => {
-  const pages = getPagesForComponent(componentPath)
-  // Remove page data dependencies before re-running queries because
-  // the changing of the query could have changed the data dependencies.
-  // Re-running the queries will add back data dependencies.
-  boundActionCreators.deleteComponentsDependencies(
-    pages.map(p => p.path || p.id)
-  )
-  pages.forEach(page => enqueueExtractedQueryId(page.path))
-  runQueuedQueries()
-}
-
 module.exports = {
-  dirtyQueries,
-  calcInitialDirtyQueryIds,
+  calcInitialDirtyQueryIds: calcDirtyQueryIds,
   calcDirtyQueryIds,
   processPageQueries,
   processStaticQueries,
   groupQueryIds,
-  runQueuedQueries,
-  enqueueExtractedQueryId,
-  enqueueExtractedPageComponent,
 }
