@@ -113,7 +113,6 @@ export function isFlushEnqueued(): boolean {
 }
 
 export async function flush(): Promise<void> {
-  console.log(`[page-data] flush`)
   if (isFlushing) {
     // We're already in the middle of a flush
     return
@@ -143,7 +142,7 @@ export async function flush(): Promise<void> {
 
   const publicDir = path.join(program.directory, `public`)
 
-  console.log({ pagesToWrite })
+  // console.log({ pagesToWrite })
 
   for (const pagePath of pagesToWrite) {
     const page = pages.get(pagePath)
@@ -162,12 +161,12 @@ export async function flush(): Promise<void> {
           // NOTE: figure out if this needs to be tracked to ensure that
           // we do write that file when we run query
           // We also definitely don't want to skip like that for production builds
-          console.log(
-            `[page-data] skipping page-data file for "${page.path}"`,
-            {
-              partialJSONFile,
-            }
-          )
+          // console.log(
+          //   `[page-data] skipping page-data file for "${page.path}"`,
+          //   {
+          //     partialJSONFile,
+          //   }
+          // )
           continue
         }
       }

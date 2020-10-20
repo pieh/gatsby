@@ -547,6 +547,6 @@ export function getStaticQueryResults() {
 
 export function invalidatePageDb(paths) {
   paths.forEach(path => {
-    instance.pageDb.delete(path)
+    instance.pageDb.delete(findPath(path))
   })
 }

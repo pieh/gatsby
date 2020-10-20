@@ -22,7 +22,7 @@ if (process.env.NODE_ENV === `production`) {
 
 const getPathFromProps = props =>
   props.pageResources && props.pageResources.page
-    ? normalizePagePath(props.pageResources.page.path)
+    ? props.pageResources.page.path
     : undefined
 
 export class PageQueryStore extends React.Component {
@@ -70,12 +70,21 @@ export class PageQueryStore extends React.Component {
     // We want to update this component when:
     // - location changed
     // - page data for path changed
+    if (
+      this.state.path === nextState.path &&
+      !nextState.pageQueryData[nextState.path]
+    ) {
+      // don't update component if we don't have new data yet
+      // this keep stale results around for current page
+      // until update comes in to prevent flash of blank page (no data)
+      return false
+    }
 
     return (
       this.props.location !== nextProps.location ||
       this.state.path !== nextState.path ||
-      this.state.pageQueryData[normalizePagePath(nextState.path)] !==
-        nextState.pageQueryData[normalizePagePath(nextState.path)]
+      this.state.pageQueryData[nextState.path] !==
+        nextState.pageQueryData[nextState.path]
     )
   }
 

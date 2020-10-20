@@ -1155,7 +1155,6 @@ actions.createJob = (job: Job, plugin?: ?Plugin = null) => {
   }
 }
 
-console.log(`PID: ${process.pid}`)
 const jobsOverviewByInputPath: { [key: string]: any } = {}
 const jobsOverviewByType: { [key: string]: any } = {}
 function addToOverview(job: JobV2, type: string): void {

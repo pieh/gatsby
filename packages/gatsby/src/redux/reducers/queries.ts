@@ -41,6 +41,13 @@ const initialComponentState = (): IComponentState => {
   }
 }
 
+function hackInvalidateRuntimeQueryStore(path) {
+  // this is absolutely wrong thing to do, but to avoid refactors
+  // that would be discarded this is just easiest way for canary
+  const { websocketManager } = require(`../../utils/websocket-manager`)
+  websocketManager.invalidateQueries([path])
+}
+
 /**
  * Tracks query dirtiness. Dirty queries are queries that:
  *
@@ -63,6 +70,7 @@ export function queriesReducer(
       if (!state.trackedQueries.has(path) || action.contextModified) {
         const query = registerQuery(state, path)
         query.dirty = setFlag(query.dirty, FLAG_DIRTY_PAGE)
+        hackInvalidateRuntimeQueryStore(path)
       }
       registerComponent(state, componentPath).pages.add(path)
       return state
@@ -74,6 +82,7 @@ export function queriesReducer(
         component.pages.delete(path)
       }
       state.trackedQueries.delete(path)
+      hackInvalidateRuntimeQueryStore(path)
       return state
     }
     case `QUERY_EXTRACTED`: {
@@ -88,6 +97,7 @@ export function queriesReducer(
           const query = state.trackedQueries.get(queryId)
           if (query) {
             query.dirty = setFlag(query.dirty, FLAG_DIRTY_TEXT)
+            hackInvalidateRuntimeQueryStore(queryId)
           }
         })
         component.query = query
@@ -108,10 +118,12 @@ export function queriesReducer(
       // TODO: unify the behavior?
       const query = registerQuery(state, action.payload.id)
       query.dirty = setFlag(query.dirty, FLAG_DIRTY_TEXT)
+      hackInvalidateRuntimeQueryStore(action.payload.id)
       return state
     }
     case `REMOVE_STATIC_QUERY`: {
       state.trackedQueries.delete(action.payload)
+      hackInvalidateRuntimeQueryStore(action.payload)
       return state
     }
     case `CREATE_COMPONENT_DEPENDENCY`: {
@@ -138,6 +150,7 @@ export function queriesReducer(
       state.byConnection.forEach(queryIds => {
         queryIds.delete(path)
       })
+      hackInvalidateRuntimeQueryStore(path)
       return state
     }
     case `CREATE_NODE`:
@@ -151,12 +164,14 @@ export function queriesReducer(
         const query = state.trackedQueries.get(queryId)
         if (query) {
           query.dirty = setFlag(query.dirty, FLAG_DIRTY_DATA)
+          hackInvalidateRuntimeQueryStore(queryId)
         }
       })
       queriesByConnection.forEach(queryId => {
         const query = state.trackedQueries.get(queryId)
         if (query) {
           query.dirty = setFlag(query.dirty, FLAG_DIRTY_DATA)
+          hackInvalidateRuntimeQueryStore(queryId)
         }
       })
       return state

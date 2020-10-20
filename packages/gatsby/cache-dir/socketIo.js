@@ -1,6 +1,6 @@
 import io from "socket.io-client"
 import { reportError, clearError } from "./error-overlay-handler"
-import normalizePagePath from "./normalize-page-path"
+// import normalizePagePath from "./normalize-page-path"
 import { invalidatePageDb } from "./loader"
 
 let socket = null
@@ -13,6 +13,7 @@ export const getStaticQueryData = () => staticQueryData
 export const getPageQueryData = () => pageQueryData
 
 window.getPageQueryData = getPageQueryData
+window.inFlightGetPageDataPromiseCache = inFlightGetPageDataPromiseCache
 export default function socketIo() {
   if (process.env.NODE_ENV !== `production`) {
     if (!socket) {
@@ -29,10 +30,7 @@ export default function socketIo() {
         })
 
         const didDataChange = (msg, queryData) => {
-          const id =
-            msg.type === `staticQueryResult`
-              ? msg.payload.id
-              : normalizePagePath(msg.payload.id)
+          const id = msg.type === msg.payload.id
           return (
             !(id in queryData) ||
             JSON.stringify(msg.payload.result) !== JSON.stringify(queryData[id])
@@ -59,7 +57,7 @@ export default function socketIo() {
             if (didDataChange(msg, pageQueryData)) {
               pageQueryData = {
                 ...pageQueryData,
-                [normalizePagePath(msg.payload.id)]: msg.payload.result,
+                [msg.payload.id]: msg.payload.result,
               }
             }
           } else if (msg.type === `overlayError`) {
@@ -69,7 +67,7 @@ export default function socketIo() {
               clearError(msg.payload.id)
             }
           } else if (msg.type === `invalidateQueryResults`) {
-            console.log(`invalidate query results`, {
+            console.log(`invalidating query results`, {
               payload: msg.payload,
               pageQueryData,
               pageDb: window._pageDb,
@@ -108,13 +106,30 @@ export default function socketIo() {
   }
 }
 
+// window.printCaches = () => {
+//   console.log(`Caches`, {
+//     pageQueryData,
+//     inFlightGetPageDataPromiseCache,
+//     pageDb: window._pageDb,
+//   })
+// }
+
 function getPageData(pathname) {
-  pathname = normalizePagePath(pathname)
+  // console.log(`calling getPageData`, pathname)
+  // pathname = normalizePagePath(pathname)
   if (inFlightGetPageDataPromiseCache[pathname]) {
+    // console.log(`calling getPageData - returning inflight`, {
+    //   pathname,
+    //   promise: inFlightGetPageDataPromiseCache[pathname],
+    // })
     return inFlightGetPageDataPromiseCache[pathname]
   } else {
     inFlightGetPageDataPromiseCache[pathname] = new Promise(resolve => {
       if (pageQueryData[pathname]) {
+        // console.log(`calling getPageData - returning from cache`, {
+        //   pathname,
+        //   promise: pageQueryData[pathname],
+        // })
         delete inFlightGetPageDataPromiseCache[pathname]
         resolve(pageQueryData[pathname])
       } else {
@@ -125,15 +140,22 @@ function getPageData(pathname) {
         const onPageDataCallback = msg => {
           if (
             msg.type === `pageQueryResult` &&
-            normalizePagePath(msg.payload.id) === pathname
+            msg.requestedPath === pathname
           ) {
             socket.off(`message`, onPageDataCallback)
             delete inFlightGetPageDataPromiseCache[pathname]
-            resolve(pageQueryData[pathname])
+            // console.log(`calling getPageData - response from websocket`, {
+            //   pathname,
+            //   resolved: pageQueryData[msg.payload.id],
+            // })
+            resolve(pageQueryData[msg.payload.id])
           }
         }
         socket.on(`message`, onPageDataCallback)
 
+        // console.log(`calling getPageData - asking websocket`, {
+        //   pathname,
+        // })
         socket.emit(`getDataForPath`, pathname)
       }
     })

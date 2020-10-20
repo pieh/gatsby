@@ -1,6 +1,6 @@
 /* eslint-disable no-invalid-this */
 import path from "path"
-import { store } from "../redux"
+import { emitter, store } from "../redux"
 import { Server as HTTPSServer } from "https"
 import { Server as HTTPServer } from "http"
 import fs from "fs-extra"
@@ -10,6 +10,8 @@ import url from "url"
 import { createHash } from "crypto"
 import { findPageByPath } from "./find-page-by-path"
 import socketIO from "socket.io"
+import reporter from "gatsby-cli/lib/reporter"
+import pDefer from "p-defer"
 
 export interface IPageQueryResult {
   id: string
@@ -24,38 +26,7 @@ export interface IStaticQueryResult {
 type PageResultsMap = Map<string, IPageQueryResult>
 type QueryResultsMap = Map<string, IStaticQueryResult>
 
-/**
- * Get page query result for given page path.
- * @param {string} pagePath Path to a page.
- */
-async function getPageData(pagePath: string): Promise<IPageQueryResult> {
-  const state = store.getState()
-  const publicDir = path.join(state.program.directory, `public`)
-
-  const result: IPageQueryResult = {
-    id: pagePath,
-    result: undefined,
-  }
-
-  const page = findPageByPath(state, pagePath)
-  if (page) {
-    result.id = page.path
-    try {
-      const pageData: IPageDataWithQueryResult = await readPageData(
-        publicDir,
-        page.path
-      )
-
-      result.result = pageData
-    } catch (err) {
-      throw new Error(
-        `Error loading a result for the page query in "${pagePath}". Query was not run and no cached result was found.`
-      )
-    }
-  }
-
-  return result
-}
+type PageDataPromiseReturn = IPageQueryResult | PromiseLike<IPageQueryResult>
 
 /**
  * Get page query result for given page path.
@@ -101,6 +72,8 @@ interface IClientInfo {
   socket: socketIO.Socket
 }
 
+let counter = 1
+
 export class WebsocketManager {
   activePaths: Set<string> = new Set()
   clients: Set<IClientInfo> = new Set()
@@ -109,6 +82,10 @@ export class WebsocketManager {
   pageResults: PageResultsMap = new Map()
   staticQueryResults: QueryResultsMap = new Map()
   websocket: socketIO.Server | undefined
+  pendingPathPromises: Map<
+    string,
+    pDefer.DeferredPromise<PageDataPromiseReturn>
+  > = new Map()
 
   init = ({
     server,
@@ -116,6 +93,84 @@ export class WebsocketManager {
     directory: string
     server: HTTPSServer | HTTPServer
   }): socketIO.Server => {
+    /**
+     * Get page query result for given page path.
+     * @param {string} pagePath Path to a page.
+     */
+    const getPageData = async (pagePath: string): Promise<IPageQueryResult> => {
+      const state = store.getState()
+      const publicDir = path.join(state.program.directory, `public`)
+
+      const result: IPageQueryResult = {
+        id: pagePath,
+        result: undefined,
+      }
+
+      const page = findPageByPath(state, pagePath)
+
+      reporter.verbose(
+        `websocket getPageData: "${pagePath}" / ${JSON.stringify(
+          page,
+          null,
+          2
+        )}`
+      )
+      if (page) {
+        const pendingDefer = this.pendingPathPromises.get(page.path)
+        if (pendingDefer) {
+          reporter.verbose(`there is pending promise for "${page.path}"`)
+          return pendingDefer.promise
+        } else {
+          const trackedQuery = state.queries.trackedQueries.get(page.path)
+          reporter.verbose(JSON.stringify(trackedQuery, null, 2))
+          if (!trackedQuery || trackedQuery.dirty) {
+            const currentPromise = counter
+            counter++
+            reporter.verbose(
+              `query not ready or dirty "${page.path}" (#${currentPromise})`
+            )
+            // we need to get result
+            emitter.emit(`QUERY_RUN_REQUESTED`, {
+              pagePath: page.path,
+            })
+
+            const deferred = pDefer<
+              IPageQueryResult | PromiseLike<IPageQueryResult>
+            >()
+
+            this.pendingPathPromises.set(page.path, {
+              ...deferred,
+              resolve: (pageData: PageDataPromiseReturn): void => {
+                reporter.verbose(
+                  `RESOLVING in flight "${page.path}" (#${currentPromise})`
+                )
+                deferred.resolve(pageData)
+                this.pendingPathPromises.delete(page.path)
+              },
+            })
+            return deferred.promise
+          } else {
+            // query is there and is not dirty - let's serve it
+            try {
+              const pageData: IPageDataWithQueryResult = await readPageData(
+                publicDir,
+                page.path
+              )
+
+              result.id = page.path
+              result.result = pageData
+            } catch (err) {
+              throw new Error(
+                `Error loading a result for the page query in "${pagePath}". Query was not run and no cached result was found.`
+              )
+            }
+          }
+        }
+      }
+
+      return result
+    }
+
     this.websocket = socketIO(server, {
       // we see ping-pong timeouts on gatsby-cloud when socket.io is running for a while
       // increasing it should help
@@ -151,11 +206,17 @@ export class WebsocketManager {
             activePagePath = page.path
           }
         }
-        console.log(`Set active path`, {
-          newActivePath,
-          activePagePath,
-          reason,
-        })
+        reporter.verbose(
+          `Set active path: ${JSON.stringify(
+            {
+              newActivePath,
+              activePagePath,
+              reason,
+            },
+            null,
+            2
+          )}`
+        )
         clientInfo.activePath = activePagePath
         updateServerActivePaths()
       }
@@ -177,11 +238,13 @@ export class WebsocketManager {
       })
 
       const getDataForPath = async (path: string): Promise<void> => {
+        const requestedPath = path
         const page = findPageByPath(store.getState(), path)
         if (!page) {
           socket.send({
             type: `pageQueryResult`,
             why: `getDataForPath-notfound`,
+            requestedPath,
             payload: {
               id: path,
               result: undefined,
@@ -224,6 +287,7 @@ export class WebsocketManager {
           type: `pageQueryResult`,
           why: `getDataForPath`,
           payload: pageData,
+          requestedPath,
         })
 
         if (this.connectedClients > 0) {
@@ -284,8 +348,22 @@ export class WebsocketManager {
   }
 
   emitPageData = (data: IPageQueryResult): void => {
-    // data.id = normalizePagePath(data.id)
-    this.pageResults.set(data.id, data)
+    const page = findPageByPath(store.getState(), data.id)
+    if (!page) {
+      console.error(
+        `Can't find a page for which we want to emit data: "${data.id}"`
+      )
+      // wat?
+      return
+    }
+
+    this.pageResults.set(page.path, data)
+
+    const pendingResolve = this.pendingPathPromises.get(page.path)
+    if (pendingResolve) {
+      reporter.verbose(`resolving pending promise for "${page.path}"`)
+      pendingResolve.resolve(data)
+    }
 
     if (this.websocket) {
       this.websocket.send({ type: `pageQueryResult`, payload: data })
@@ -316,6 +394,20 @@ export class WebsocketManager {
       this.websocket.send({
         type: `overlayError`,
         payload: { id, message },
+      })
+    }
+  }
+
+  invalidateQueries(queries: Array<string>) {
+    queries.forEach(queryId => {
+      this.pageResults.delete(queryId)
+      this.staticQueryResults.delete(queryId)
+    })
+
+    if (this.websocket) {
+      this.websocket.send({
+        type: `invalidateQueryResults`,
+        payload: queries,
       })
     }
   }

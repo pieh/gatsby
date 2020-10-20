@@ -23,12 +23,12 @@ export const listenForMutations: InvokeCallback = (callback: Sender<any>) => {
   emitter.on(`ENQUEUE_NODE_MUTATION`, emitMutation)
   emitter.on(`WEBHOOK_RECEIVED`, emitWebhook)
   emitter.on(`SOURCE_FILE_CHANGED`, emitSourceChange)
-  emitter.on(`RUN_QUERIES_FOR_PATH`, emitRunQueries)
+  emitter.on(`QUERY_RUN_REQUESTED`, emitRunQueries)
 
   return function unsubscribeFromMutationListening(): void {
     emitter.off(`ENQUEUE_NODE_MUTATION`, emitMutation)
     emitter.off(`WEBHOOK_RECEIVED`, emitWebhook)
     emitter.off(`SOURCE_FILE_CHANGED`, emitSourceChange)
-    emitter.off(`RUN_QUERIES_FOR_PATH`, emitRunQueries)
+    emitter.off(`QUERY_RUN_REQUESTED`, emitRunQueries)
   }
 }
