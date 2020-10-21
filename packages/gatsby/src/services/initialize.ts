@@ -167,6 +167,7 @@ export async function initialize({
     store.getState().config.__experimentalQueryOnDemand
   ) {
     reporter.info(`Using experimental query on demand feature`)
+    telemetry.trackFeatureIsUsed(`QueryOnDemand`)
   }
 
   // run stale jobs
