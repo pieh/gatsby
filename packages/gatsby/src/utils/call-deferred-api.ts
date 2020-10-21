@@ -2,7 +2,7 @@ import { assertStore } from "./assert-store"
 import { Store } from "redux"
 import { IMutationAction } from "../services"
 import { actions } from "../redux/actions"
-import reporter from "gatsby-cli/lib/reporter"
+// import reporter from "gatsby-cli/lib/reporter"
 /**
  * These are the deferred redux actions sent from api-runner-node
  * They may include a `resolve` prop (if they are createNode actions).
@@ -21,6 +21,6 @@ export const callRealApi = (event: IMutationAction, store?: Store): void => {
       resolve(result)
     }
   } else {
-    reporter.log(`Could not dispatch unknown action "${type}`)
+    // reporter.log(`Could not dispatch unknown action "${type}`)
   }
 }
