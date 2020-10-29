@@ -46,7 +46,8 @@ class DevLoader extends BaseLoader {
   }
 
   doPrefetch(pagePath) {
-    return Promise.resolve(require(`./socketIo`).getPageData(pagePath))
+    return Promise.resolve()
+    // return Promise.resolve(require(`./socketIo`).getPageData(pagePath))
   }
 }
 

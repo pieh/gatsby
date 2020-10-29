@@ -14,6 +14,9 @@ let pageQueryData = {}
 export const getStaticQueryData = () => staticQueryData
 export const getPageQueryData = () => pageQueryData
 
+window.getStaticQueryData = getStaticQueryData
+window.getPageQueryData = getPageQueryData
+
 const didDataChange = (id, queryData, exisitingQueryData) =>
   !(id in exisitingQueryData) || !isEqual(queryData, exisitingQueryData[id])
 

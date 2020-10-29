@@ -90,10 +90,10 @@ export class BaseLoader {
     //   },
     //   staticQueryResults
     // }
-    this.pageDb = new Map()
+    window.pageDb = this.pageDb = new Map()
     this.inFlightDb = new Map()
-    this.staticQueryDb = {}
-    this.pageDataDb = new Map()
+    window.staticQueryDb = this.staticQueryDb = {}
+    window.pageDataDb = this.pageDataDb = new Map()
     this.prefetchTriggered = new Set()
     this.prefetchCompleted = new Set()
     this.loadComponent = loadComponent
