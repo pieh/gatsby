@@ -249,7 +249,7 @@ module.exports = async (
       case `develop`:
         return process.env.GATSBY_HOT_LOADER !== `fast-refresh`
           ? `cheap-module-source-map`
-          : `eval-cheap-module-source-map`
+          : `cheap-module-source-map`
       // use a normal `source-map` for the html phases since
       // it gives better line and column numbers
       case `develop-html`:

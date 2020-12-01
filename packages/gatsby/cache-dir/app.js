@@ -14,6 +14,12 @@ import matchPaths from "$virtual/match-paths.json"
 
 if (process.env.GATSBY_HOT_LOADER === `fast-refresh` && module.hot) {
   module.hot.accept(`$virtual/sync-requires`, () => {
+    // const Refresh = require("react-refresh/runtime")
+    // Refresh.performReactRefresh()
+    // debugger
+    // __react_refresh_utils__.enqueueUpdate(() => {
+    //   console.log("callback from enqueueUpdate")
+    // })
     // Reload for unnamed components and other things that 'fast-refresh' can't handle
   })
 }

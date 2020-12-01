@@ -212,15 +212,36 @@ export const writeAll = async (state: IGatsbyState): Promise<boolean> => {
   const hotImport =
     process.env.GATSBY_HOT_LOADER !== `fast-refresh`
       ? `const { hot } = require("react-hot-loader/root")`
-      : `const React = require("react")
-         function FastRefreshHoc(PageTemplate) {
-           const Component = props => {
-             return <PageTemplate {...props} />
-           }
-           return Component
-         }`
+      : `const { FastRefreshHoc } = require("${joinPath(
+          program.directory,
+          `.cache`,
+          `fast-refresh-hoc`
+        )}")
+   `
   const hotMethod =
-    process.env.GATSBY_HOT_LOADER !== `fast-refresh` ? `hot` : `FastRefreshHoc`
+    process.env.GATSBY_HOT_LOADER !== `fast-refresh` ? `hot` : `FastRefreshHoc` // `FastRefreshHoc`
+
+  let fastRefreshHack = ``
+  if (process.env.GATSBY_HOT_LOADER === `fast-refresh`) {
+    fastRefreshHack = `
+    import React from "react"
+
+    ${components
+      .map(
+        (c: IGatsbyPageComponent): string => `import "${joinPath(c.component)}"`
+      )
+      .join(`\n`)}
+
+    function FastRefreshHoc(PageTemplate) {
+      const Component = props => {
+        return <PageTemplate {...props} />
+      }
+      return Component
+    }
+
+    export { FastRefreshHoc}
+    `
+  }
 
   if (process.env.GATSBY_EXPERIMENTAL_DEV_SSR) {
     // Create file with sync requires of visited page components files.
@@ -305,6 +326,13 @@ const preferDefault = m => (m && m.default) || m
       `match-paths.json`,
       JSON.stringify(matchPaths, null, 4)
     ),
+    fastRefreshHack
+      ? writeAndMove(
+          `$virtual/fast-refresh-hoc.js`,
+          `fast-refresh-hoc.js`,
+          fastRefreshHack
+        )
+      : Promise.resolve(),
   ])
 
   return true
