@@ -53,11 +53,21 @@ const runWebpack = (
       stage === `develop-html`
     ) {
       devssrWebpackCompilier = webpack(compilerConfig)
+      devssrWebpackCompilier.hooks.invalid.tap(
+        `ssr file invalidation`,
+        file => {
+          console.log(`SSR Webpack file changed: ${file}`)
+        }
+      )
+      devssrWebpackCompilier.hooks.watchRun.tap(`ssr watch run`, file => {
+        console.log(`SSR Webpack watch run`, new Date())
+      })
       devssrWebpackWatcher = devssrWebpackCompilier.watch(
         {
           ignored: /node_modules/,
         },
         (err, stats) => {
+          console.log(`watch callback`, new Date())
           emitter.emit(`DEV_SSR_COMPILATION_DONE`)
           devssrWebpackWatcher.suspend()
 

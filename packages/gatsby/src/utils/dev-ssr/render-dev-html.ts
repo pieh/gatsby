@@ -151,6 +151,7 @@ export const renderDevHTML = ({
     //
     // We pause and resume so there's no excess webpack activity during normal development.
     const { devssrWebpackCompilier, devssrWebpackWatcher } = getDevSSRWebpack()
+
     if (devssrWebpackWatcher && devssrWebpackCompilier) {
       let isResolved = false
       await new Promise(resolve => {
