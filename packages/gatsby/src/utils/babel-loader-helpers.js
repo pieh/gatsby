@@ -21,6 +21,45 @@ const getCustomOptions = stage => {
   return pluginBabelConfig.stages[stage].options
 }
 
+const lookup = new Map()
+
+let cacheStats = {
+  babel: { hit: 0, miss: 0 },
+  stage: { hit: 0, miss: 0 },
+  id: { hit: 0, miss: 0 },
+}
+
+const getCached = (id, babel, stage, factory) => {
+  // return factory()
+  if (!lookup.has(babel)) {
+    cacheStats.babel.miss++
+    lookup.set(babel, new Map())
+  } else {
+    cacheStats.babel.hit++
+  }
+
+  const cachedForBabel = lookup.get(babel)
+
+  if (!cachedForBabel.has(stage)) {
+    cacheStats.stage.miss++
+    cachedForBabel.set(stage, new Map())
+  } else {
+    cacheStats.stage.hit++
+  }
+
+  const cachedForStage = cachedForBabel.get(stage)
+
+  if (!cachedForStage.has(id)) {
+    cacheStats.id.miss++
+    let toReturn = factory()
+    cachedForStage.set(id, toReturn)
+    return toReturn
+  } else {
+    cacheStats.id.hit++
+    return cachedForStage.get(id)
+  }
+}
+
 const prepareOptions = (babel, options = {}, resolve = require.resolve) => {
   const pluginBabelConfig = loadCachedConfig()
 
@@ -28,14 +67,16 @@ const prepareOptions = (babel, options = {}, resolve = require.resolve) => {
 
   // Required plugins/presets
   const requiredPlugins = [
-    babel.createConfigItem(
-      [
-        resolve(`babel-plugin-remove-graphql-queries`),
-        { stage, staticQueryDir: `page-data/sq/d` },
-      ],
-      {
-        type: `plugin`,
-      }
+    getCached(`remove-graphql-queries`, babel, stage, () =>
+      babel.createConfigItem(
+        [
+          resolve(`babel-plugin-remove-graphql-queries`),
+          { stage, staticQueryDir: `page-data/sq/d` },
+        ],
+        {
+          type: `plugin`,
+        }
+      )
     ),
   ]
   const requiredPresets = []
@@ -43,26 +84,32 @@ const prepareOptions = (babel, options = {}, resolve = require.resolve) => {
   // Stage specific plugins to add
   if (stage === `build-html` || stage === `develop-html`) {
     requiredPlugins.push(
-      babel.createConfigItem([resolve(`babel-plugin-dynamic-import-node`)], {
-        type: `plugin`,
-      })
+      getCached(`babel-plugin-dynamic-import-node`, babel, stage, () =>
+        babel.createConfigItem([resolve(`babel-plugin-dynamic-import-node`)], {
+          type: `plugin`,
+        })
+      )
     )
   }
 
   if (stage === `develop`) {
     if (process.env.GATSBY_HOT_LOADER === `fast-refresh`) {
       requiredPlugins.push(
-        babel.createConfigItem([resolve(`react-refresh/babel`)], {
-          type: `plugin`,
-        })
+        getCached(`react-refresh/babel`, babel, stage, () =>
+          babel.createConfigItem([resolve(`react-refresh/babel`)], {
+            type: `plugin`,
+          })
+        )
       )
     }
     // TODO: Remove entire block when we make fast-refresh the default
     else {
       requiredPlugins.push(
-        babel.createConfigItem([resolve(`react-hot-loader/babel`)], {
-          type: `plugin`,
-        })
+        getCached(`react-hot-loader/babel`, babel, stage, () =>
+          babel.createConfigItem([resolve(`react-hot-loader/babel`)], {
+            type: `plugin`,
+          })
+        )
       )
     }
   }
@@ -71,17 +118,19 @@ const prepareOptions = (babel, options = {}, resolve = require.resolve) => {
   const fallbackPresets = []
 
   fallbackPresets.push(
-    babel.createConfigItem(
-      [
-        resolve(`babel-preset-gatsby`),
+    getCached(`babel-preset-gatsby`, babel, stage, () =>
+      babel.createConfigItem(
+        [
+          resolve(`babel-preset-gatsby`),
+          {
+            stage,
+            reactRuntime,
+          },
+        ],
         {
-          stage,
-          reactRuntime,
-        },
-      ],
-      {
-        type: `preset`,
-      }
+          type: `preset`,
+        }
+      )
     )
   )
 
@@ -90,18 +139,22 @@ const prepareOptions = (babel, options = {}, resolve = require.resolve) => {
   const reduxPresets = []
   pluginBabelConfig.stages[stage].plugins.forEach(plugin => {
     reduxPlugins.push(
-      babel.createConfigItem([resolve(plugin.name), plugin.options], {
-        name: plugin.name,
-        type: `plugin`,
-      })
+      getCached(resolve(plugin.name), babel, stage, () =>
+        babel.createConfigItem([resolve(plugin.name), plugin.options], {
+          name: plugin.name,
+          type: `plugin`,
+        })
+      )
     )
   })
   pluginBabelConfig.stages[stage].presets.forEach(preset => {
     reduxPresets.push(
-      babel.createConfigItem([resolve(preset.name), preset.options], {
-        name: preset.name,
-        type: `preset`,
-      })
+      getCached(resolve(preset.name), babel, stage, () =>
+        babel.createConfigItem([resolve(preset.name), preset.options], {
+          name: preset.name,
+          type: `preset`,
+        })
+      )
     )
   })
 
@@ -143,3 +196,7 @@ exports.getCustomOptions = getCustomOptions
 // Export helper functions for testing
 exports.prepareOptions = prepareOptions
 exports.mergeConfigItemOptions = mergeConfigItemOptions
+
+exports.wat = () => {
+  console.log({ cacheStats })
+}

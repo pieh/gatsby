@@ -113,6 +113,8 @@ export async function startWebpackServer({
 
       counter++
 
+      require(`../utils/babel-loader-helpers`).wat()
+
       // "done" event fires when Webpack has finished recompiling the bundle.
       // Whether or not you have warnings or errors, you will get this event.
 
