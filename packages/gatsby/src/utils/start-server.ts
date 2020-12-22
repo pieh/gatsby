@@ -160,7 +160,7 @@ module.exports = {
     { parentSpan: webpackActivity.span }
   )
 
-  const compiler = webpack(devConfig)
+  const compiler = webpack({ ...devConfig, profile: true, parallelism: 1 })
 
   /**
    * Set up the express app.
@@ -330,6 +330,16 @@ module.exports = {
   //
   // We serve by default an empty index.html that sets up the dev environment.
   app.use(developStatic(`public`, { index: false }))
+
+  process.prof_session = new (require(`inspector`).Session)()
+  process.prof_session.connect()
+  await new Promise(resolve => {
+    process.prof_session.post(`Profiler.enable`, () => {
+      console.info(`[profiler] start`)
+      process.prof_session.post(`Profiler.start`)
+      resolve()
+    })
+  })
 
   const webpackDevMiddlewareInstance = (webpackDevMiddleware(compiler, {
     logLevel: `silent`,

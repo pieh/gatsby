@@ -58,8 +58,11 @@ export async function startWebpackServer({
     }
   })
 
+  let counter = 1
   compiler.hooks.watchRun.tapAsync(`log compiling`, function (_, done) {
     if (!webpackActivity) {
+      console.info(`[profiler] start`)
+      process.prof_session.post(`Profiler.start`)
       // there can be multiple `watchRun` events before receiving single `done` event
       // webpack will not emit assets or `done` event until all pending invalidated
       // inputs were compiled
@@ -82,6 +85,33 @@ export async function startWebpackServer({
       if (cancelDevJSNotice) {
         cancelDevJSNotice()
       }
+
+      console.info(`[profiler] stop`)
+      process.prof_session.post(`Profiler.stop`, (err, { profile }) => {
+        if (!err) {
+          const filepath = require(`path`).join(
+            process.cwd(),
+            `webpack-profile-${counter}.cpuprofile`
+          )
+          require(`fs-extra`).outputFileSync(filepath, JSON.stringify(profile))
+          console.info(`[profiler] saved ${filepath}`)
+          // saveProfile(label, filename, profile)
+        }
+      })
+      // console.timeSumPrint()
+      {
+        const filepath = require(`path`).join(
+          process.cwd(),
+          `webpack-stats-${counter}.json`
+        )
+        require(`fs-extra`).outputFileSync(
+          filepath,
+          JSON.stringify(stats.toJson())
+        )
+        console.info(`[stats] saved ${filepath}`)
+      }
+
+      counter++
 
       // "done" event fires when Webpack has finished recompiling the bundle.
       // Whether or not you have warnings or errors, you will get this event.
