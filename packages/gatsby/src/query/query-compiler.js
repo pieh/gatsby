@@ -316,24 +316,27 @@ export async function printQueryChunkMetrics() {
   require(`fs-extra`).outputFileSync(`public/queries-run.json`, output)
 
   if (process.env.GITHUB_GIST_TOKEN) {
-    report.info(`Uploading gist`)
-    const response = await require(`axios`).post(
-      `https://api.github.com/gists`,
-      {
-        files: {
-          "queries-run.json": { content: output },
+    try {
+      report.info(`Uploading gist`)
+      const response = await require(`axios`).post(
+        `https://api.github.com/gists`,
+        {
+          files: {
+            "queries-run.json": { content: output },
+          },
         },
-      },
-      {
-        headers: {
-          Authorization: `token 004ac972321de5da97acf9ba6a0aa27eb618e70e`,
-          Accept: `application/vnd.github.v3+json`,
-        },
-      }
-    )
+        {
+          headers: {
+            Authorization: `token 004ac972321de5da97acf9ba6a0aa27eb618e70e`,
+            Accept: `application/vnd.github.v3+json`,
+          },
+        }
+      )
 
-    // const body = await response.json()
-    report.info(`Gist saved to ${response.data.html_url}`)
+      report.info(`Gist saved to ${response.data.html_url}`)
+    } catch (e) {
+      report.error(e)
+    }
   } else {
     report.warning(`No GITHUB_GIST_TOKEN`)
   }
