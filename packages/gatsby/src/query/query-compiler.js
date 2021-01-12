@@ -298,15 +298,18 @@ export function printQueryChunkMetrics() {
 
   require(`fs-extra`).outputJSONSync(
     `queries-run.json`,
-    Array.from(allChunksGlobal.values()).map(chunk => {
-      return {
-        ...chunk,
-        uniqueRunCount: Object.keys(chunk.runCounts).length,
-        usedBy: chunk.usedBy.map(usedBy => {
-          return { ...usedBy, chunk: undefined }
-        }),
-      }
-    }),
+    Array.from(allChunksGlobal.values())
+      .map(chunk => {
+        return {
+          ...chunk,
+          uniqueRunCount: Object.keys(chunk.runCounts).length,
+          delta: chunk.runCount - Object.keys(chunk.runCounts).length,
+          usedBy: chunk.usedBy.map(usedBy => {
+            return { ...usedBy, chunk: undefined }
+          }),
+        }
+      })
+      .sort((a, b) => b.delta - a.delta),
     { spaces: 2 }
     // require(`util`).inspect({ allChunksGlobal }, { depth: Infinity })
   )
