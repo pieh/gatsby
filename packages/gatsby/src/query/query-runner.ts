@@ -14,6 +14,7 @@ import errorParser from "./error-parser"
 import { GraphQLRunner } from "./graphql-runner"
 import { IExecutionResult, PageContext } from "./types"
 import { pageDataExists } from "../utils/page-data"
+import { createContentDigest } from "gatsby-core-utils"
 
 const resultHashes = new Map()
 
@@ -117,6 +118,63 @@ export async function queryRunner(
 ): Promise<IExecutionResult> {
   const { program } = store.getState()
 
+  // console.log(`run`, queryJob.id, queryJob.chunks)
+
+  queryJob.chunks.forEach(usedByEntry => {
+    const actuallyUsedParams = {}
+    usedByEntry.usedArgumentLeafs.forEach(usedArgumentLeaf => {
+      if (usedArgumentLeaf.type === `literal`) {
+        actuallyUsedParams[usedArgumentLeaf.argPath] = usedArgumentLeaf.value
+      } else if (usedArgumentLeaf.type === `variable`) {
+        actuallyUsedParams[usedArgumentLeaf.argPath] =
+          queryJob.context[usedArgumentLeaf.name]
+      } else {
+        console.log(`what type`, usedArgumentLeaf)
+        process.exit(1)
+      }
+    })
+
+    const contentDigest = createContentDigest(actuallyUsedParams)
+
+    let runCountsMap = usedByEntry.chunk.runCounts[contentDigest]
+    if (!runCountsMap) {
+      runCountsMap = {
+        count: 0,
+        actuallyUsedParams,
+        contentDigest,
+      }
+      usedByEntry.chunk.runCounts[contentDigest] = runCountsMap
+    }
+
+    runCountsMap.count++
+    usedByEntry.chunk.runCount++
+  })
+
+  // queryJob.chunks.forEach(chunk => {
+  //   const usedVarsByThisQuery = Object.values(chunk.usedArguments).reduce(
+  //     (acc, argName: string) => {
+  //       acc[argName] = queryJob.context[argName]
+  //       return acc
+  //     },
+  //     {}
+  //   )
+
+  //   const contentDigest = createContentDigest(usedVarsByThisQuery)
+
+  //   let runCountsMap = chunk.runCount.get(contentDigest)
+  //   if (!runCountsMap) {
+  //     runCountsMap = {
+  //       count: 0,
+  //       usedVarsByThisQuery,
+  //       contentDigest,
+  //     }
+  //     chunk.runCounts.set(contentDigest, runCountsMap)
+  //   }
+
+  //   runCountsMap.count++
+  //   chunk.runCount++
+  // })
+
   boundActionCreators.queryStart({
     path: queryJob.id,
     componentPath: queryJob.componentPath,
@@ -129,7 +187,8 @@ export async function queryRunner(
   if (!queryJob.query || queryJob.query === ``) {
     result = {}
   } else {
-    result = await startQueryJob(graphqlRunner, queryJob, parentSpan)
+    // result = await startQueryJob(graphqlRunner, queryJob, parentSpan)
+    result = {}
   }
 
   if (result.errors) {

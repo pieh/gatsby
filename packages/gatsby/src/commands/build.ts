@@ -34,6 +34,7 @@ import {
   runPageQueries,
   writeOutRequires,
 } from "../services"
+import { printQueryChunkMetrics } from "../query/query-compiler"
 import {
   markWebpackStatusAsPending,
   markWebpackStatusAsDone,
@@ -116,6 +117,9 @@ module.exports = async function build(program: IBuildArgs): Promise<void> {
     parentSpan: buildSpan,
     store,
   })
+
+  printQueryChunkMetrics()
+  process.exit(1)
 
   await writeOutRequires({
     store,

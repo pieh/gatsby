@@ -11,6 +11,8 @@ const path = require(`path`)
 const normalize = require(`normalize-path`)
 const glob = require(`glob`)
 
+import { createContentDigest } from "gatsby-core-utils"
+
 const {
   validate,
   print,
@@ -289,6 +291,29 @@ const extractOperations = (schema, parsedQueries, addError, parentSpan) => {
   }
 }
 
+export function printQueryChunkMetrics() {
+  if (!allChunksGlobal) {
+    throw new Error(`it's to early for chunks info`)
+  }
+
+  require(`fs-extra`).outputJSONSync(
+    `queries-run.json`,
+    Array.from(allChunksGlobal.values()).map(chunk => {
+      return {
+        ...chunk,
+        uniqueRunCount: Object.keys(chunk.runCounts).length,
+        usedBy: chunk.usedBy.map(usedBy => {
+          return { ...usedBy, chunk: undefined }
+        }),
+      }
+    }),
+    { spaces: 2 }
+    // require(`util`).inspect({ allChunksGlobal }, { depth: Infinity })
+  )
+}
+
+let allChunksGlobal
+
 const processDefinitions = ({
   schema,
   operations,
@@ -303,6 +328,8 @@ const processDefinitions = ({
   const fragmentNames = Array.from(definitionsByName.entries())
     .filter(([_, def]) => def.isFragment)
     .map(([name, _]) => name)
+
+  const allChunks = (allChunksGlobal = new Map())
 
   for (const operation of operations) {
     const name = operation.name.value
@@ -398,6 +425,120 @@ const processDefinitions = ({
 
     document = addExtraFields(document, schema)
 
+    const chunks = [],
+      chunksUseByEntry = []
+
+    visit(operation, {
+      [Kind.FIELD]: function fieldVisitor(node) {
+        const usedArgumentLeafs = []
+        const usedArguments = {}
+
+        const LiteralAndVariableVisitor = (
+          argNode,
+          key,
+          parent,
+          path,
+          ancestors
+        ) => {
+          const normalizedPath = []
+
+          ancestors.forEach(step => {
+            if (step.kind === Kind.ARGUMENT) {
+              normalizedPath.push(step.name.value)
+            } else if (step.kind === Kind.OBJECT_FIELD) {
+              normalizedPath.push(step.name.value)
+            }
+          })
+
+          // hmm, but why direct one doesn't show up in ancestors ? :(((()))
+          if (parent.name) {
+            normalizedPath.push(parent.name.value)
+          } else {
+            console.log({ parent })
+          }
+          const argPath = normalizedPath.join(`.`)
+
+          if (argNode.kind === Kind.VARIABLE) {
+            usedArgumentLeafs.push({
+              argPath,
+              type: `variable`,
+              name: argNode.name.value,
+            })
+            usedArguments[argPath] = argNode.name.value
+          } else {
+            usedArgumentLeafs.push({
+              argPath,
+              type: `literal`,
+              value: argNode.value,
+            })
+            // usedArguments[argPath] = `literal`
+          }
+
+          return {
+            ...argNode,
+            kind: Kind.VARIABLE,
+            name: {
+              kind: Kind.NAME,
+              value: `PLACEHOLDER`,
+            },
+          }
+        }
+
+        // eslint-disable-next-line no-unused-vars
+        const { selectionSet, ...nodeWithoutSelectionSet } = node
+
+        const nodeWithPlaceholderArgs = visit(nodeWithoutSelectionSet, {
+          [Kind.VARIABLE]: LiteralAndVariableVisitor,
+          // TO-DO: add more literals
+          [Kind.STRING]: LiteralAndVariableVisitor,
+        })
+
+        const extractedRootFieldWithArgsAndSelectionSet = print({
+          selectionSet: node.selectionSet,
+          name: nodeWithPlaceholderArgs.name,
+          kind: nodeWithPlaceholderArgs.kind,
+          arguments: nodeWithPlaceholderArgs.arguments,
+        })
+
+        const hash = createContentDigest(
+          extractedRootFieldWithArgsAndSelectionSet
+        )
+
+        let chunk = allChunks.get(hash)
+        if (!chunk) {
+          chunk = {
+            extractedRootFieldWithArgsAndSelectionSet,
+            usedArguments,
+            hash,
+            usedBy: [],
+            runCounts: {},
+            runCount: 0,
+            uniqueRunCount: 0,
+          }
+          allChunks.set(hash, chunk)
+        }
+
+        const usedByEntry = {
+          filePath,
+          operationName: operation.name.value,
+          fieldName: node.alias?.value ?? node.name.value,
+          usedArgumentLeafs,
+          chunk,
+        }
+
+        chunk.usedBy.push(usedByEntry)
+
+        // chunks.push(chunk)
+        // chunksUseByEntry.push(usedByEntry)
+        chunks.push(usedByEntry)
+        console.log(`filePath 2`, filePath, chunks)
+        // return false cause traversal stop for subtree - we only care about top level fields - because that's our potential "chunks"
+        return false
+      },
+    })
+
+    console.log(`filePath 1`, filePath, chunks)
+
     const query = {
       name,
       text: print(document),
@@ -407,6 +548,8 @@ const processDefinitions = ({
       isStaticQuery: originalDefinition.isStaticQuery,
       // ensure hash should be a string and not a number
       hash: String(originalDefinition.hash),
+      chunks,
+      chunksUseByEntry,
     }
 
     if (query.isStaticQuery) {
@@ -430,6 +573,14 @@ const processDefinitions = ({
 
     processedQueries.set(filePath, query)
   }
+
+  require(`fs-extra`).outputFileSync(
+    `queries.json`,
+    require(`util`).inspect(
+      { allChunks, processedQueries },
+      { depth: Infinity }
+    )
+  )
 
   return processedQueries
 }

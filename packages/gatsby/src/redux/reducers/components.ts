@@ -24,6 +24,7 @@ export const componentsReducer = (
           componentPath: action.payload.componentPath,
           query: ``,
           pages: new Set(),
+          chunks: [],
           isInBootstrap: true,
         }
       }
@@ -36,6 +37,13 @@ export const componentsReducer = (
       action.payload.componentPath = normalize(action.payload.componentPath)
       const component = state.get(action.payload.componentPath)!
       component.query = action.payload.query
+      // process.stdout.write(
+      //   `writing chunks ${action.payload.componentPath} = ${
+      //     action.payload?.chunks?.length ?? `N/A`
+      //   }\n`
+      // )
+      component.chunks = action.payload.chunks
+
       state.set(action.payload.componentPath, component)
       return state
     }

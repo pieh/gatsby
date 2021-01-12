@@ -103,6 +103,7 @@ const handleQuery = (
         id: query.id,
         query: query.text,
         hash: query.hash,
+        chunks: query.chunks,
       })
 
       debug(
@@ -230,12 +231,13 @@ export const updateStateAndRunQueries = async (
   // Run action for each component
   const { components } = snapshot
   components.forEach(c => {
-    const { isStaticQuery = false, text = `` } =
+    const { isStaticQuery = false, text = ``, chunks = [] } =
       queries.get(c.componentPath) || {}
 
     boundActionCreators.queryExtracted({
       componentPath: c.componentPath,
       query: isStaticQuery ? `` : text,
+      chunks,
     })
   })
 

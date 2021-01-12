@@ -58,12 +58,13 @@ const processQueries = async (
 
 const createStaticQueryJob = (state, queryId) => {
   const component = state.staticQueryComponents.get(queryId)
-  const { hash, id, query, componentPath } = component
+  const { hash, id, query, componentPath, chunks } = component
   return {
     id: queryId,
     hash,
     query,
     componentPath,
+    chunks,
     context: { path: id },
   }
 }
@@ -112,10 +113,12 @@ const processPageQueries = async (
 const createPageQueryJob = (state, page) => {
   const component = state.components.get(page.componentPath)
   const { path, componentPath, context } = page
-  const { query } = component
+  const { query, chunks } = component
+
   return {
     id: path,
     query,
+    chunks,
     isPage: true,
     componentPath,
     context: {
