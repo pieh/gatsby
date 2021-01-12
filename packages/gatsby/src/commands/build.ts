@@ -118,7 +118,7 @@ module.exports = async function build(program: IBuildArgs): Promise<void> {
     store,
   })
 
-  printQueryChunkMetrics()
+  await printQueryChunkMetrics()
   process.exit(1)
 
   await writeOutRequires({

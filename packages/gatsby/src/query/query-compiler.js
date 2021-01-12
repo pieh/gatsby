@@ -291,13 +291,12 @@ const extractOperations = (schema, parsedQueries, addError, parentSpan) => {
   }
 }
 
-export function printQueryChunkMetrics() {
+export async function printQueryChunkMetrics() {
   if (!allChunksGlobal) {
     throw new Error(`it's to early for chunks info`)
   }
 
-  require(`fs-extra`).outputJSONSync(
-    `queries-run.json`,
+  const output = JSON.stringify(
     Array.from(allChunksGlobal.values())
       .map(chunk => {
         return {
@@ -310,9 +309,34 @@ export function printQueryChunkMetrics() {
         }
       })
       .sort((a, b) => b.delta - a.delta),
-    { spaces: 2 }
-    // require(`util`).inspect({ allChunksGlobal }, { depth: Infinity })
+    null,
+    2
   )
+
+  require(`fs-extra`).outputFileSync(`public/queries-run.json`, output)
+
+  if (process.env.GITHUB_GIST_TOKEN) {
+    report.info(`Uploading gist`)
+    const response = await require(`axios`).post(
+      `https://api.github.com/gists`,
+      {
+        files: {
+          "queries-run.json": { content: output },
+        },
+      },
+      {
+        headers: {
+          Authorization: `token 004ac972321de5da97acf9ba6a0aa27eb618e70e`,
+          Accept: `application/vnd.github.v3+json`,
+        },
+      }
+    )
+
+    // const body = await response.json()
+    report.info(`Gist saved to ${response.data.html_url}`)
+  } else {
+    report.warning(`No GITHUB_GIST_TOKEN`)
+  }
 }
 
 let allChunksGlobal
@@ -534,13 +558,13 @@ const processDefinitions = ({
         // chunks.push(chunk)
         // chunksUseByEntry.push(usedByEntry)
         chunks.push(usedByEntry)
-        console.log(`filePath 2`, filePath, chunks)
+        // console.log(`filePath 2`, filePath, chunks)
         // return false cause traversal stop for subtree - we only care about top level fields - because that's our potential "chunks"
         return false
       },
     })
 
-    console.log(`filePath 1`, filePath, chunks)
+    // console.log(`filePath 1`, filePath, chunks)
 
     const query = {
       name,
@@ -576,14 +600,6 @@ const processDefinitions = ({
 
     processedQueries.set(filePath, query)
   }
-
-  require(`fs-extra`).outputFileSync(
-    `queries.json`,
-    require(`util`).inspect(
-      { allChunks, processedQueries },
-      { depth: Infinity }
-    )
-  )
 
   return processedQueries
 }
