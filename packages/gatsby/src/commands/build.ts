@@ -119,7 +119,7 @@ module.exports = async function build(program: IBuildArgs): Promise<void> {
   })
 
   await printQueryChunkMetrics()
-  process.exit(0)
+  // process.exit(0)
 
   await writeOutRequires({
     store,

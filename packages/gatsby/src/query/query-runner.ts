@@ -28,6 +28,12 @@ interface IQueryJob {
   pluginCreatorId: string
 }
 
+const orig = process.exit
+process.exit = (...args) => {
+  console.trace()
+  orig.apply(process, args)
+}
+
 function reportLongRunningQueryJob(queryJob): void {
   const messageParts = [
     `Query takes too long:`,
@@ -86,6 +92,8 @@ function panicQueryJobError(
   report.panicOnBuild(structuredErrors)
 }
 
+const queryChunkCache = new Map()
+
 async function startQueryJob(
   graphqlRunner: GraphQLRunner,
   queryJob: IQueryJob,
@@ -119,35 +127,10 @@ export async function queryRunner(
   const { program } = store.getState()
 
   // console.log(`run`, queryJob.id, queryJob.chunks)
-
-  queryJob.chunks.forEach(usedByEntry => {
-    const actuallyUsedParams = {}
-    usedByEntry.usedArgumentLeafs.forEach(usedArgumentLeaf => {
-      if (usedArgumentLeaf.type === `literal`) {
-        actuallyUsedParams[usedArgumentLeaf.argPath] = usedArgumentLeaf.value
-      } else if (usedArgumentLeaf.type === `variable`) {
-        actuallyUsedParams[usedArgumentLeaf.argPath] =
-          queryJob.context[usedArgumentLeaf.name]
-      } else {
-        console.log(`what type`, usedArgumentLeaf)
-        process.exit(1)
-      }
-    })
-
-    const contentDigest = createContentDigest(actuallyUsedParams)
-
-    let runCountsMap = usedByEntry.chunk.runCounts[contentDigest]
-    if (!runCountsMap) {
-      runCountsMap = {
-        count: 0,
-        actuallyUsedParams,
-        contentDigest,
-      }
-      usedByEntry.chunk.runCounts[contentDigest] = runCountsMap
-    }
-
-    runCountsMap.count++
-    usedByEntry.chunk.runCount++
+  boundActionCreators.queryStart({
+    path: queryJob.id,
+    componentPath: queryJob.componentPath,
+    isPage: queryJob.isPage,
   })
 
   // queryJob.chunks.forEach(chunk => {
@@ -175,20 +158,109 @@ export async function queryRunner(
   //   chunk.runCount++
   // })
 
-  boundActionCreators.queryStart({
-    path: queryJob.id,
-    componentPath: queryJob.componentPath,
-    isPage: queryJob.isPage,
-  })
-
   // Run query
   let result: IExecutionResult
   // Nothing to do if the query doesn't exist.
   if (!queryJob.query || queryJob.query === ``) {
     result = {}
   } else {
+    const resultsToStitch = await Promise.all(
+      queryJob.chunks.map(async usedByEntry => {
+        const actuallyUsedParams = {}
+        usedByEntry.usedArgumentLeafs.forEach(usedArgumentLeaf => {
+          if (usedArgumentLeaf.type === `literal`) {
+            actuallyUsedParams[usedArgumentLeaf.argPath] =
+              usedArgumentLeaf.value
+          } else if (usedArgumentLeaf.type === `variable`) {
+            actuallyUsedParams[usedArgumentLeaf.argPath] =
+              queryJob.context[usedArgumentLeaf.name]
+          } else {
+            console.log(`what type`, usedArgumentLeaf)
+            // process.exit(1)
+          }
+        })
+
+        const contentDigest = createContentDigest(actuallyUsedParams)
+        const queryHash = usedByEntry.chunk.hash
+
+        const queryRunHash = `${queryHash}/${contentDigest}`
+
+        let runCountsMap = usedByEntry.chunk.runCounts[contentDigest]
+
+        usedByEntry.chunk.runCount++
+
+        if (!runCountsMap) {
+          runCountsMap = {
+            count: 1,
+            realExecutions: 1,
+            actuallyUsedParams,
+            contentDigest,
+          }
+
+          usedByEntry.chunk.runCounts[contentDigest] = runCountsMap
+
+          const tmpQueryJob = {
+            ...queryJob,
+            query: usedByEntry.chunk.queryChunkWithFragment,
+          }
+
+          const executionPromise = startQueryJob(
+            graphqlRunner,
+            tmpQueryJob,
+            parentSpan
+          )
+          queryChunkCache.set(queryRunHash, executionPromise)
+          return executionPromise.then(result => {
+            return {
+              ...result,
+              selectionKind: usedByEntry.selectionKind,
+              fieldName: usedByEntry.fieldName,
+              alias: usedByEntry.alias,
+            }
+          })
+        } else {
+          runCountsMap.count++
+          console.log(`reusing inflight or done query`, {
+            query: usedByEntry.chunk.queryChunkWithFragment,
+            actuallyUsedParams,
+          })
+          return queryChunkCache.get(queryRunHash).then(result => {
+            return {
+              ...result,
+              selectionKind: usedByEntry.selectionKind,
+              fieldName: usedByEntry.fieldName,
+              alias: usedByEntry.alias,
+            }
+          })
+        }
+      })
+    )
+
+    result = resultsToStitch.reduce(
+      (acc, resultToStitch) => {
+        if (resultToStitch.selectionKind === `FragmentSpread`) {
+          for (const [key, val] of Object.entries(resultToStitch.data)) {
+            acc.data[key] = val
+          }
+        } else {
+          acc.data[resultToStitch.alias] =
+            resultToStitch.data[resultToStitch.fieldName]
+        }
+        acc.errors.push(...(resultToStitch.errors ?? []))
+        return acc
+      },
+      { data: {}, errors: [] }
+    )
+
+    if (result.errors.length === 0) {
+      delete result.errors
+    }
+
+    // if (resultsToStitch.length > 1) {
+    //   debugger
+    // }
     // result = await startQueryJob(graphqlRunner, queryJob, parentSpan)
-    result = {}
+    // result = { data: {}}
   }
 
   if (result.errors) {

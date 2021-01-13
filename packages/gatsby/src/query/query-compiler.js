@@ -338,7 +338,7 @@ export async function printQueryChunkMetrics() {
       report.error(e)
     }
   } else {
-    report.warning(`No GITHUB_GIST_TOKEN`)
+    report.warn(`No GITHUB_GIST_TOKEN`)
   }
 }
 
@@ -458,116 +458,155 @@ const processDefinitions = ({
     const chunks = [],
       chunksUseByEntry = []
 
-    visit(operation, {
-      [Kind.FIELD]: function fieldVisitor(node) {
-        const usedArgumentLeafs = []
-        const usedArguments = {}
+    for (const selectionIndex in operation.selectionSet.selections) {
+      const selection = operation.selectionSet.selections[selectionIndex]
 
-        const LiteralAndVariableVisitor = (
-          argNode,
-          key,
-          parent,
-          path,
-          ancestors
-        ) => {
-          const normalizedPath = []
+      const usedArgumentLeafs = []
+      const usedArguments = {}
 
-          ancestors.forEach(step => {
-            if (step.kind === Kind.ARGUMENT) {
-              normalizedPath.push(step.name.value)
-            } else if (step.kind === Kind.OBJECT_FIELD) {
-              normalizedPath.push(step.name.value)
-            }
+      const LiteralAndVariableVisitor = (
+        argNode,
+        key,
+        parent,
+        path,
+        ancestors
+      ) => {
+        const normalizedPath = []
+
+        ancestors.forEach(step => {
+          if (step.kind === Kind.ARGUMENT) {
+            normalizedPath.push(step.name.value)
+          } else if (step.kind === Kind.OBJECT_FIELD) {
+            normalizedPath.push(step.name.value)
+          }
+        })
+
+        // hmm, but why direct one doesn't show up in ancestors ? :(((()))
+        if (parent.name) {
+          normalizedPath.push(parent.name.value)
+        }
+        const argPath = normalizedPath.join(`.`)
+
+        if (argNode.kind === Kind.VARIABLE) {
+          usedArgumentLeafs.push({
+            argPath,
+            type: `variable`,
+            name: argNode.name.value,
+          })
+          usedArguments[argPath] = argNode.name.value
+        } else {
+          usedArgumentLeafs.push({
+            argPath,
+            type: `literal`,
+            value: argNode.value,
+          })
+          // usedArguments[argPath] = `literal`
+        }
+
+        return {
+          ...argNode,
+          kind: Kind.VARIABLE,
+          name: {
+            kind: Kind.NAME,
+            value: `PLACEHOLDER`,
+          },
+        }
+      }
+
+      const { selectionSet, ...nodeWithoutSelectionSet } = selection
+
+      const nodeWithPlaceholderArgs = visit(nodeWithoutSelectionSet, {
+        [Kind.VARIABLE]: LiteralAndVariableVisitor,
+        // TO-DO: add more literals
+        [Kind.STRING]: LiteralAndVariableVisitor,
+      })
+
+      const extractedRootFieldWithArgsAndSelectionSet = print({
+        selectionSet,
+        name: nodeWithPlaceholderArgs.name,
+        kind: nodeWithPlaceholderArgs.kind,
+        arguments: nodeWithPlaceholderArgs.arguments,
+      })
+
+      const operationChunk = {
+        kind: Kind.OPERATION_DEFINITION,
+        operation: `query`,
+        name: {
+          kind: Kind.NAME,
+          value: operation.name.value + `_${selectionIndex}`,
+        },
+        selectionSet: {
+          kind: Kind.SELECTION_SET,
+          selections: [selection],
+        },
+        variableDefinitions: Object.values(usedArguments).map(argumentName => {
+          if (!operation.variableDefinitions) {
+            return
+          }
+          const foundVarDef = operation.variableDefinitions.find(varDef => {
+            return varDef?.variable?.name?.value === argumentName
           })
 
-          // hmm, but why direct one doesn't show up in ancestors ? :(((()))
-          if (parent.name) {
-            normalizedPath.push(parent.name.value)
-          } else {
-            console.log({ parent })
-          }
-          const argPath = normalizedPath.join(`.`)
-
-          if (argNode.kind === Kind.VARIABLE) {
-            usedArgumentLeafs.push({
-              argPath,
-              type: `variable`,
-              name: argNode.name.value,
-            })
-            usedArguments[argPath] = argNode.name.value
-          } else {
-            usedArgumentLeafs.push({
-              argPath,
-              type: `literal`,
-              value: argNode.value,
-            })
-            // usedArguments[argPath] = `literal`
+          if (!foundVarDef) {
+            console.log(`can't find variable ${foundVarDef}`)
           }
 
-          return {
-            ...argNode,
-            kind: Kind.VARIABLE,
-            name: {
-              kind: Kind.NAME,
-              value: `PLACEHOLDER`,
-            },
-          }
-        }
+          return foundVarDef
+        }),
+      }
 
-        // eslint-disable-next-line no-unused-vars
-        const { selectionSet, ...nodeWithoutSelectionSet } = node
-
-        const nodeWithPlaceholderArgs = visit(nodeWithoutSelectionSet, {
-          [Kind.VARIABLE]: LiteralAndVariableVisitor,
-          // TO-DO: add more literals
-          [Kind.STRING]: LiteralAndVariableVisitor,
-        })
-
-        const extractedRootFieldWithArgsAndSelectionSet = print({
-          selectionSet: node.selectionSet,
-          name: nodeWithPlaceholderArgs.name,
-          kind: nodeWithPlaceholderArgs.kind,
-          arguments: nodeWithPlaceholderArgs.arguments,
-        })
-
-        const hash = createContentDigest(
-          extractedRootFieldWithArgsAndSelectionSet
-        )
-
-        let chunk = allChunks.get(hash)
-        if (!chunk) {
-          chunk = {
-            extractedRootFieldWithArgsAndSelectionSet,
-            usedArguments,
-            hash,
-            usedBy: [],
-            runCounts: {},
-            runCount: 0,
-            uniqueRunCount: 0,
-          }
-          allChunks.set(hash, chunk)
-        }
-
-        const usedByEntry = {
+      const { usedFragments } = determineUsedFragmentsForDefinition(
+        {
+          def: operationChunk,
+          name: operationChunk.name.value,
+          isFragment: false,
           filePath,
-          operationName: operation.name.value,
-          fieldName: node.alias?.value ?? node.name.value,
-          usedArgumentLeafs,
-          chunk,
+        },
+        definitionsByName,
+        fragmentsUsedByFragment
+      )
+
+      let chunkDocument = {
+        kind: Kind.DOCUMENT,
+        definitions: Array.from(usedFragments.values())
+          .map(name => definitionsByName.get(name).def)
+          .concat([operationChunk]),
+      }
+
+      const queryChunkWithFragment = print(chunkDocument)
+
+      const hash = createContentDigest(queryChunkWithFragment)
+
+      let chunk = allChunks.get(hash)
+      if (!chunk) {
+        chunk = {
+          extractedRootFieldWithArgsAndSelectionSet,
+          usedArguments,
+          queryChunkWithFragment,
+          chunkDocument,
+          operationChunk,
+          hash,
+          usedBy: [],
+          runCounts: {},
+          runCount: 0,
+          uniqueRunCount: 0,
         }
+        allChunks.set(hash, chunk)
+      }
 
-        chunk.usedBy.push(usedByEntry)
+      const usedByEntry = {
+        filePath,
+        operationName: operation.name.value,
+        selectionKind: selection.kind,
+        alias: selection.alias?.value ?? selection.name.value,
+        fieldName: selection.name.value,
+        usedArgumentLeafs,
+        chunk,
+      }
 
-        // chunks.push(chunk)
-        // chunksUseByEntry.push(usedByEntry)
-        chunks.push(usedByEntry)
-        // console.log(`filePath 2`, filePath, chunks)
-        // return false cause traversal stop for subtree - we only care about top level fields - because that's our potential "chunks"
-        return false
-      },
-    })
-
-    // console.log(`filePath 1`, filePath, chunks)
+      chunk.usedBy.push(usedByEntry)
+      chunks.push(usedByEntry)
+    }
 
     const query = {
       name,
