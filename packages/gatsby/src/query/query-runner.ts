@@ -209,6 +209,7 @@ export async function queryRunner(
             tmpQueryJob,
             parentSpan
           )
+
           queryChunkCache.set(queryRunHash, executionPromise)
           return executionPromise.then(result => {
             return {
@@ -220,10 +221,10 @@ export async function queryRunner(
           })
         } else {
           runCountsMap.count++
-          console.log(`reusing inflight or done query`, {
-            query: usedByEntry.chunk.queryChunkWithFragment,
-            actuallyUsedParams,
-          })
+          // console.log(`reusing inflight or done query`, {
+          //   query: usedByEntry.chunk.queryChunkWithFragment,
+          //   actuallyUsedParams,
+          // })
           return queryChunkCache.get(queryRunHash).then(result => {
             return {
               ...result,
@@ -238,13 +239,17 @@ export async function queryRunner(
 
     result = resultsToStitch.reduce(
       (acc, resultToStitch) => {
-        if (resultToStitch.selectionKind === `FragmentSpread`) {
-          for (const [key, val] of Object.entries(resultToStitch.data)) {
-            acc.data[key] = val
+        if (resultToStitch.data) {
+          if (resultToStitch.selectionKind === `FragmentSpread`) {
+            for (const [key, val] of Object.entries(resultToStitch.data)) {
+              acc.data[key] = val
+            }
+          } else {
+            acc.data[resultToStitch.alias] =
+              resultToStitch.data[resultToStitch.fieldName]
           }
         } else {
-          acc.data[resultToStitch.alias] =
-            resultToStitch.data[resultToStitch.fieldName]
+          console.error(resultToStitch.errors)
         }
         acc.errors.push(...(resultToStitch.errors ?? []))
         return acc

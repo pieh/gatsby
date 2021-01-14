@@ -484,7 +484,10 @@ const processDefinitions = ({
         // hmm, but why direct one doesn't show up in ancestors ? :(((()))
         if (parent.name) {
           normalizedPath.push(parent.name.value)
+        } else if (Array.isArray(parent)) {
+          normalizedPath.push(parent.indexOf(argNode))
         }
+
         const argPath = normalizedPath.join(`.`)
 
         if (argNode.kind === Kind.VARIABLE) {
