@@ -453,32 +453,35 @@ exports.createNodesForContentType = ({
                 ? `${conflictFieldPrefix}${f.id}`
                 : f.id) === entryItemFieldKey
           ).type
-          if (fieldType === `Text`) {
-            const textNodeId = createNodeId(
-              `${entryNodeId}${entryItemFieldKey}TextNode`
-            )
 
-            // The Contentful model has `.sys.updatedAt` leading for an entry. If the updatedAt value
-            // of an entry did not change, then we can trust that none of its children were changed either.
-            // (That's why child nodes use the updatedAt of the parent node as their digest, too)
-            const existingNode = getNode(textNodeId)
-            if (
-              existingNode?.internal?.contentDigest !== entryItem.sys.updatedAt
-            ) {
-              const textNode = prepareTextNode(
-                textNodeId,
-                entryNode,
-                entryItemFieldKey,
-                entryItemFields[entryItemFieldKey],
-                createNodeId
-              )
+          // if (fieldType === `Text`) {
+          //   const textNodeId = createNodeId(
+          //     `${entryNodeId}${entryItemFieldKey}TextNode`
+          //   )
 
-              childrenNodes.push(textNode)
-            }
+          //   // The Contentful model has `.sys.updatedAt` leading for an entry. If the updatedAt value
+          //   // of an entry did not change, then we can trust that none of its children were changed either.
+          //   // (That's why child nodes use the updatedAt of the parent node as their digest, too)
+          //   const existingNode = getNode(textNodeId)
+          //   if (
+          //     existingNode?.internal?.contentDigest !== entryItem.sys.updatedAt
+          //   ) {
+          //     const textNode = prepareTextNode(
+          //       textNodeId,
+          //       entryNode,
+          //       entryItemFieldKey,
+          //       entryItemFields[entryItemFieldKey],
+          //       createNodeId
+          //     )
 
-            entryItemFields[`${entryItemFieldKey}___NODE`] = textNodeId
-            delete entryItemFields[entryItemFieldKey]
-          } else if (
+          //     childrenNodes.push(textNode)
+          //   }
+
+          //   entryItemFields[`${entryItemFieldKey}___NODE`] = textNodeId
+          //   delete entryItemFields[entryItemFieldKey]
+          // } else
+
+          if (
             fieldType === `RichText` &&
             _.isPlainObject(entryItemFields[entryItemFieldKey])
           ) {

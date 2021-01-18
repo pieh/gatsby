@@ -26,6 +26,9 @@ const restrictedNodeFields = [
 
 exports.setFieldsOnGraphQLNodeType = require(`./extend-node-type`).extendNodeType
 
+const typePrefix = `Contentful`
+const makeTypeName = type => _.upperFirst(_.camelCase(`${typePrefix} ${type}`))
+
 const validateContentfulAccess = async pluginOptions => {
   if (process.env.NODE_ENV === `test`) return undefined
 
@@ -159,6 +162,7 @@ exports.sourceNodes = async (
     reporter,
     schema,
     parentSpan,
+    createContentDigest,
   },
   pluginOptions
 ) => {
@@ -274,6 +278,66 @@ exports.sourceNodes = async (
       pluginConfig,
       parentSpan,
     }))
+
+    let markdownProxyCounter = 0
+    for (const contentTypeItem of contentTypeItems) {
+      let fields = {}
+      let shouldCreateType = false
+      for (const contentTypeItemField of contentTypeItem.fields) {
+        if (contentTypeItemField.type === `Text`) {
+          shouldCreateType = true
+
+          const proxyName = `MarkdownProxy_${++markdownProxyCounter}`
+
+          fields[contentTypeItemField.id] = {
+            type: proxyName,
+            resolve(source, args, context, info) {
+              const content = source[info.fieldName]
+              if (content) {
+                const contentDigest = createContentDigest(content)
+                return {
+                  id: contentDigest,
+                  internal: {
+                    content,
+                    contentDigest,
+                  },
+                }
+              } else {
+                return null
+              }
+            },
+          }
+
+          actions.createTypes(
+            schema.buildObjectType({
+              name: proxyName,
+              fields: {
+                [contentTypeItemField.id]: {
+                  type: `String`,
+                  resolve(source, args, context, info) {
+                    return source.internal.content
+                  },
+                },
+                childMarkdownRemark: {
+                  type: `MarkdownRemark`,
+                  resolve(source) {
+                    return source
+                  },
+                },
+              },
+            })
+          )
+        }
+      }
+      if (shouldCreateType) {
+        actions.createTypes(
+          schema.buildObjectType({
+            name: makeTypeName(contentTypeItem.name),
+            fields,
+          })
+        )
+      }
+    }
 
     if (process.env.GATSBY_CONTENTFUL_EXPERIMENTAL_FORCE_CACHE) {
       reporter.info(
