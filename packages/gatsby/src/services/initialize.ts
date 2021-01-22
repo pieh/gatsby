@@ -327,7 +327,6 @@ export async function initialize({
   // logic in there e.g. generating slugs for custom pages.
   const pluginVersions = flattenedPlugins.map(p => p.version)
   const hashes: any = await Promise.all([
-    !!process.env.GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES,
     md5File(`package.json`),
     md5File(`${program.directory}/gatsby-config.js`).catch(() => {}), // ignore as this file isn't required),
     md5File(`${program.directory}/gatsby-node.js`).catch(() => {}), // ignore as this file isn't required),

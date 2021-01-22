@@ -1,6 +1,8 @@
 import fs from "fs-extra"
 import path from "path"
 
+import { IGatsbyState } from "../redux/types"
+
 const checkForHtmlSuffix = (pagePath: string): boolean =>
   !/\.(html?)$/i.test(pagePath)
 
@@ -27,4 +29,26 @@ export const remove = async (
     return await fs.remove(filePath)
   }
   return Promise.resolve()
+}
+
+export function calcDirtyHtmlFiles(
+  state: IGatsbyState
+): { toRegenerate: Array<string>; toDelete: Array<string> } {
+  const toRegenerate: Array<string> = []
+  const toDelete: Array<string> = []
+
+  state.html.trackedHtmlFiles.forEach(function (htmlFile, path) {
+    if (htmlFile.isDeleted || !state.pages.has(path)) {
+      // FIXME: checking pages state here because pages are not persisted
+      // and because of that `isDeleted` might not be set ...
+      toDelete.push(path)
+    } else if (htmlFile.dirty) {
+      toRegenerate.push(path)
+    }
+  })
+
+  return {
+    toRegenerate,
+    toDelete,
+  }
 }

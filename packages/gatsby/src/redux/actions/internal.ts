@@ -231,7 +231,17 @@ export const setProgramStatus = (
  * @private
  */
 export const pageQueryRun = (
-  { path, componentPath, isPage },
+  {
+    path,
+    componentPath,
+    isPage,
+    resultHash,
+  }: {
+    path: string
+    componentPath: string
+    isPage: boolean
+    resultHash: string
+  },
   plugin: IGatsbyPlugin,
   traceId?: string
 ): IPageQueryRunAction => {
@@ -239,7 +249,7 @@ export const pageQueryRun = (
     type: `PAGE_QUERY_RUN`,
     plugin,
     traceId,
-    payload: { path, componentPath, isPage },
+    payload: { path, componentPath, isPage, resultHash },
   }
 }
 
