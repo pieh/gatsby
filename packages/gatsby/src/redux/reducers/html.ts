@@ -1,9 +1,11 @@
 import { ActionsUnion, IGatsbyState, IHtmlFileState } from "../types"
 
-const FLAG_DIRTY_NEW_PAGE = 0b0001
-const FLAG_DIRTY_PAGE_QUERY = 0b0010 // TODO: this need to be PAGE_DATA and not PAGE_QUERY, but requires some shuffling
-const FLAG_DIRTY_BROWSER_COMPILATION_HASH = 0b0100
-const FLAG_DIRTY_CLEARED_CACHE = 0b1000
+// TODO: once all cases for marking as dirty are implemented - reorder flags and their values to tidy them up
+const FLAG_DIRTY_NEW_PAGE = 0b00001
+const FLAG_DIRTY_PAGE_QUERY = 0b00010 // TODO: this need to be PAGE_DATA and not PAGE_QUERY, but requires some shuffling
+const FLAG_DIRTY_BROWSER_COMPILATION_HASH = 0b00100
+const FLAG_DIRTY_SSR_COMPILATION_HASH = 0b10000
+const FLAG_DIRTY_CLEARED_CACHE = 0b01000
 
 type PagePath = string
 
@@ -11,6 +13,7 @@ function initialState(): IGatsbyState["html"] {
   return {
     trackedHtmlFiles: new Map<PagePath, IHtmlFileState>(),
     browserCompilationHash: ``,
+    ssrCompilationHash: ``,
   }
 }
 
@@ -97,6 +100,16 @@ export function htmlReducer(
         state.browserCompilationHash = action.payload
         state.trackedHtmlFiles.forEach(htmlFile => {
           htmlFile.dirty |= FLAG_DIRTY_BROWSER_COMPILATION_HASH
+        })
+      }
+      return state
+    }
+
+    case `SET_SSR_WEBPACK_COMPILATION_HASH`: {
+      if (state.ssrCompilationHash !== action.payload) {
+        state.ssrCompilationHash = action.payload
+        state.trackedHtmlFiles.forEach(htmlFile => {
+          htmlFile.dirty |= FLAG_DIRTY_SSR_COMPILATION_HASH
         })
       }
       return state
