@@ -5,8 +5,19 @@ const runNumber = parseInt(process.env.ARTIFACTS_RUN_SETUP, 10) || 1
 
 const isFirstRun = runNumber === 1
 
-exports.onPreInit = ({ reporter }) => {
+let changedSsrCompilationHash = `not-changed`
+let changedBrowserCompilationHash = `not-changed`
+
+exports.onPreInit = ({ reporter, emitter }) => {
   reporter.info(`Using test setup #${runNumber}`)
+
+  emitter.on(`SET_SSR_WEBPACK_COMPILATION_HASH`, action => {
+    changedSsrCompilationHash = action.payload
+  })
+
+  emitter.on(`SET_WEBPACK_COMPILATION_HASH`, action => {
+    changedBrowserCompilationHash = action.payload
+  })
 }
 
 exports.sourceNodes = ({ actions, createContentDigest }) => {
@@ -79,7 +90,11 @@ exports.onPostBuild = async ({ graphql }) => {
   `)
 
   fs.writeJSONSync(
-    path.join(process.cwd(), `.cache`, `test-pages.json`),
-    data.allSitePage.nodes.map(node => node.path)
+    path.join(process.cwd(), `.cache`, `build-manifest-for-test.json`),
+    {
+      allPages: data.allSitePage.nodes.map(node => node.path),
+      changedSsrCompilationHash,
+      changedBrowserCompilationHash,
+    }
   )
 }
