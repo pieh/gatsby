@@ -463,3 +463,82 @@ describe(`Third run (js change, all pages are recreated)`, () => {
     })
   })
 })
+
+describe(`Fourth run (gatsby-browser change - cache get invalidated)`, () => {
+  const expectedPages = [
+    `/stale-pages/only-not-in-first`,
+    `/page-query-dynamic-4/`,
+  ]
+
+  const unexpectedPages = [
+    `/stale-pages/only-in-first/`,
+    `/page-query-dynamic-1/`,
+    `/page-query-dynamic-2/`,
+    `/page-query-dynamic-3/`,
+  ]
+
+  let changedFileOriginalContent
+  const changedFileAbspath = path.join(process.cwd(), `gatsby-browser.js`)
+
+  beforeAll(async () => {
+    // make change to some .js
+    changedFileOriginalContent = fs.readFileSync(changedFileAbspath, `utf-8`)
+
+    const newContent = changedFileOriginalContent.replace(/h1>/g, `h2>`)
+
+    if (newContent === changedFileOriginalContent) {
+      throw new Error(`Test setup failed`)
+    }
+
+    fs.writeFileSync(changedFileAbspath, newContent)
+    await runGatsbyWithRunTestSetup(4)()
+  })
+
+  afterAll(() => {
+    fs.writeFileSync(changedFileAbspath, changedFileOriginalContent)
+  })
+
+  describe(`html files`, () => {
+    const type = `html`
+
+    describe(`should have expected html files`, () => {
+      assertFileExistenceForPagePaths({
+        pagePaths: expectedPages,
+        type,
+        shouldExist: true,
+      })
+    })
+
+    describe(`shouldn't have unexpected html files`, () => {
+      assertFileExistenceForPagePaths({
+        pagePaths: unexpectedPages,
+        type,
+        shouldExist: false,
+      })
+    })
+
+    it(`should recreate all html files`, () => {
+      expect(manifest[4].generated.sort()).toEqual(manifest[4].allPages.sort())
+    })
+  })
+
+  describe(`page-data files`, () => {
+    const type = `page-data`
+
+    describe(`should have expected page-data files`, () => {
+      assertFileExistenceForPagePaths({
+        pagePaths: expectedPages,
+        type,
+        shouldExist: true,
+      })
+    })
+
+    describe(`shouldn't have unexpected page-data files`, () => {
+      assertFileExistenceForPagePaths({
+        pagePaths: unexpectedPages,
+        type,
+        shouldExist: false,
+      })
+    })
+  })
+})

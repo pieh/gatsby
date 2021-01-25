@@ -3,6 +3,7 @@ import { ActionsUnion, IGatsbyState, IHtmlFileState } from "../types"
 const FLAG_DIRTY_NEW_PAGE = 0b0001
 const FLAG_DIRTY_PAGE_QUERY = 0b0010 // TODO: this need to be PAGE_DATA and not PAGE_QUERY, but requires some shuffling
 const FLAG_DIRTY_BROWSER_COMPILATION_HASH = 0b0100
+const FLAG_DIRTY_CLEARED_CACHE = 0b1000
 
 type PagePath = string
 
@@ -18,8 +19,21 @@ export function htmlReducer(
   action: ActionsUnion
 ): IGatsbyState["html"] {
   switch (action.type) {
-    case `DELETE_CACHE`:
-      return initialState()
+    case `DELETE_CACHE`: {
+      if (action.cacheIsCorrupt) {
+        // `public` doesn't exist so we can start fresh
+        return initialState()
+      } else {
+        // we can't just clear the cache here - we want to keep track of pages, so we mark them all as "deleted"
+        // if they are recreated "isDeleted" flag will be removed
+        state.trackedHtmlFiles.forEach(htmlFile => {
+          htmlFile.isDeleted = true
+          // there was a change somewhere, so just in case we mark those files are dirty as well
+          htmlFile.dirty |= FLAG_DIRTY_CLEARED_CACHE
+        })
+        return state
+      }
+    }
 
     case `CREATE_PAGE`: {
       // CREATE_PAGE can be called even if page already exist, so we only want to do anything
