@@ -21,7 +21,6 @@ exports.onPreInit = ({ reporter, emitter }) => {
 }
 
 exports.sourceNodes = ({ actions, createContentDigest }) => {
-  // used to create pages and queried by them
   function createNodeHelper(type, nodePartial) {
     actions.createNode({
       ...nodePartial,
@@ -32,6 +31,7 @@ exports.sourceNodes = ({ actions, createContentDigest }) => {
     })
   }
 
+  // used to create pages and queried by them
   createNodeHelper(`DepPageQuery`, {
     id: `page-query-stable`,
     label: `Stable (always created)`,
@@ -51,6 +51,23 @@ exports.sourceNodes = ({ actions, createContentDigest }) => {
   createNodeHelper(`DepPageQuery`, {
     id: `page-query-dynamic-${runNumber}`, // this should cause different page path
     label: `This is run number {$runNumber}`,
+  })
+
+  // used by static queries
+  createNodeHelper(`DepStaticQuery`, {
+    id: `static-query-stable`,
+    label: `Stable (always created)`,
+  })
+
+  createNodeHelper(`DepStaticQuery`, {
+    id: `static-query-changing-but-not-invalidating-html`,
+    label: `Stable (always created)`,
+    buildRun: runNumber, // important for test setup - this will invalidate static query, but shouldn't invalidate html (if it's not queried)
+  })
+
+  createNodeHelper(`DepStaticQuery`, {
+    id: `static-query-changing-data-but-not-id`,
+    label: `This is${isFirstRun ? `` : ` not`} a first run`, // this will be queried - we want to invalidate html here
   })
 }
 

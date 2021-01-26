@@ -207,6 +207,7 @@ export async function queryRunner(
       componentPath: queryJob.componentPath,
       isPage: queryJob.isPage,
       resultHash,
+      queryHash: queryJob.hash,
     })
   )
 

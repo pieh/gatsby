@@ -5,7 +5,10 @@ import fs from "fs-extra"
 import telemetry from "gatsby-telemetry"
 
 import { doBuildPages, buildRenderer, deleteRenderer } from "./build-html"
-import { calcDirtyHtmlFiles } from "../utils/page-html"
+import {
+  calcDirtyHtmlFiles,
+  markHtmlDirtyIfResultOfUsedStaticQueryChanged,
+} from "../utils/page-html"
 import { buildProductionBundle } from "./build-javascript"
 import { bootstrap } from "../bootstrap"
 import apiRunnerNode from "../utils/api-runner-node"
@@ -202,6 +205,8 @@ module.exports = async function build(program: IBuildArgs): Promise<void> {
   } finally {
     buildSSRBundleActivityProgress.end()
   }
+
+  markHtmlDirtyIfResultOfUsedStaticQueryChanged()
 
   const { toRegenerate, toDelete } = process.env
     .GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES

@@ -1,4 +1,9 @@
-import { ActionsUnion, IGatsbyState, IHtmlFileState } from "../types"
+import {
+  ActionsUnion,
+  IGatsbyState,
+  IHtmlFileState,
+  IStaticQueryResultState,
+} from "../types"
 
 // TODO: once all cases for marking as dirty are implemented - reorder flags and their values to tidy them up
 const FLAG_DIRTY_NEW_PAGE = 0b00001
@@ -7,6 +12,9 @@ const FLAG_DIRTY_BROWSER_COMPILATION_HASH = 0b00100
 const FLAG_DIRTY_SSR_COMPILATION_HASH = 0b10000
 const FLAG_DIRTY_CLEARED_CACHE = 0b01000
 
+const FLAG_DIRTY_STATIC_QUERY_FIRST_RUN = 0b100000
+const FLAG_DIRTY_STATIC_QUERY_RESULT_CHANGED = 0b1000000
+
 type PagePath = string
 
 function initialState(): IGatsbyState["html"] {
@@ -14,6 +22,7 @@ function initialState(): IGatsbyState["html"] {
     trackedHtmlFiles: new Map<PagePath, IHtmlFileState>(),
     browserCompilationHash: ``,
     ssrCompilationHash: ``,
+    trackedStaticQueryResults: new Map<string, IStaticQueryResultState>(),
   }
 }
 
@@ -90,6 +99,25 @@ export function htmlReducer(
           htmlFile.pageQueryHash = action.payload.resultHash
           htmlFile.dirty |= FLAG_DIRTY_PAGE_QUERY
         }
+      } else {
+        // static query case
+        let staticQueryResult = state.trackedStaticQueryResults.get(
+          action.payload.queryHash
+        )
+        if (!staticQueryResult) {
+          staticQueryResult = {
+            dirty: FLAG_DIRTY_STATIC_QUERY_FIRST_RUN,
+            staticQueryResultHash: action.payload.resultHash,
+          }
+          state.trackedStaticQueryResults.set(
+            action.payload.queryHash,
+            staticQueryResult
+          )
+        } else if (
+          staticQueryResult.staticQueryResultHash !== action.payload.resultHash
+        ) {
+          staticQueryResult.dirty |= FLAG_DIRTY_STATIC_QUERY_RESULT_CHANGED
+        }
       }
 
       return state
@@ -128,6 +156,27 @@ export function htmlReducer(
         }
       }
 
+      return state
+    }
+
+    case `HTML_MARK_DIRTY_BECAUSE_STATIC_QUERY_RESULT_CHANGED`: {
+      // mark pages as dirty
+      for (const path of action.payload.pages) {
+        const htmlFile = state.trackedHtmlFiles.get(path)
+        if (htmlFile) {
+          htmlFile.dirty |= FLAG_DIRTY_STATIC_QUERY_RESULT_CHANGED
+        }
+      }
+
+      // mark static queries as not dirty anymore (we flushed their dirtiness into pages)
+      for (const staticQueryHash of action.payload.staticQueryHashes) {
+        const staticQueryResult = state.trackedStaticQueryResults.get(
+          staticQueryHash
+        )
+        if (staticQueryResult) {
+          staticQueryResult.dirty = 0
+        }
+      }
       return state
     }
   }
