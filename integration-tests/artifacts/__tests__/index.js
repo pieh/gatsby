@@ -48,6 +48,24 @@ function runGatsbyWithRunTestSetup(runNumber = 1) {
           ),
         }
 
+        fs.outputJSONSync(
+          path.join(__dirname, `__debug__`, `manifest-${runNumber}.json`),
+          manifest[runNumber],
+          {
+            spaces: 2,
+          }
+        )
+
+        fs.copySync(
+          path.join(process.cwd(), `public`, `chunk-map.json`),
+          path.join(__dirname, `__debug__`, `chunk-map-${runNumber}.json`)
+        )
+
+        fs.copySync(
+          path.join(process.cwd(), `public`, `webpack.stats.json`),
+          path.join(__dirname, `__debug__`, `webpack.stats-${runNumber}.json`)
+        )
+
         resolve()
       })
     })
@@ -162,6 +180,8 @@ function assertWebpackBundleChanges({ browser, ssr, runNumber }) {
 }
 
 beforeAll(done => {
+  fs.removeSync(path.join(__dirname, `__debug__`))
+
   const gatsbyCleanProcess = spawn(gatsbyBin, [`clean`], {
     stdio: [`inherit`, `inherit`, `inherit`, `inherit`],
     env: {
