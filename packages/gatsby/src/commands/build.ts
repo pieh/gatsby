@@ -204,13 +204,9 @@ module.exports = async function build(program: IBuildArgs): Promise<void> {
 
   buildUtils.markHtmlDirtyIfResultOfUsedStaticQueryChanged()
 
-  const { toRegenerate, toDelete } = process.env
-    .GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES
-    ? buildUtils.calcDirtyHtmlFiles(store.getState())
-    : {
-        toRegenerate: [...store.getState().pages.keys()],
-        toDelete: [],
-      }
+  const { toRegenerate, toDelete } = buildUtils.calcDirtyHtmlFiles(
+    store.getState()
+  )
 
   telemetry.addSiteMeasurement(`BUILD_END`, {
     pagesCount: toRegenerate.length, // number of html files that will be written
@@ -299,10 +295,7 @@ module.exports = async function build(program: IBuildArgs): Promise<void> {
   workerPool.end()
   buildActivity.end()
 
-  if (
-    process.env.GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES &&
-    process.argv.includes(`--log-pages`)
-  ) {
+  if (process.argv.includes(`--log-pages`)) {
     if (toRegenerate.length) {
       report.info(
         `Built pages:\n${toRegenerate
@@ -320,10 +313,7 @@ module.exports = async function build(program: IBuildArgs): Promise<void> {
     }
   }
 
-  if (
-    process.env.GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES &&
-    process.argv.includes(`--write-to-file`)
-  ) {
+  if (process.argv.includes(`--write-to-file`)) {
     const createdFilesPath = path.resolve(
       `${program.directory}/.cache`,
       `newPages.txt`

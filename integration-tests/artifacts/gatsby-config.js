@@ -7,4 +7,7 @@ module.exports = {
     moreInfo: `Sid is amazing`,
   },
   plugins: [],
+  flags: {
+    DEV_SSR: true,
+  },
 }

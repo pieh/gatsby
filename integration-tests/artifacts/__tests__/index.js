@@ -712,3 +712,76 @@ describe(`Fifth run (ssr-only change - only ssr compilation hash changes)`, () =
   // Fifth run - only ssr bundle should change as only file used by ssr was changed
   assertWebpackBundleChanges({ browser: false, ssr: true, runNumber })
 })
+
+describe(`Sixth run (.cache is deleted but public isn't)`, () => {
+  const runNumber = 6
+
+  const expectedPages = [
+    `/stale-pages/only-not-in-first`,
+    `/page-query-dynamic-6/`,
+  ]
+
+  const unexpectedPages = [
+    `/stale-pages/only-in-first/`,
+    `/page-query-dynamic-1/`,
+    `/page-query-dynamic-2/`,
+    `/page-query-dynamic-3/`,
+    `/page-query-dynamic-4/`,
+    `/page-query-dynamic-5/`,
+  ]
+
+  beforeAll(async () => {
+    // delete .cache, but keep public
+    fs.removeSync(path.join(process.cwd(), `.cache`))
+    await runGatsbyWithRunTestSetup(runNumber)()
+  })
+
+  describe(`html files`, () => {
+    const type = `html`
+
+    describe(`should have expected html files`, () => {
+      assertFileExistenceForPagePaths({
+        pagePaths: expectedPages,
+        type,
+        shouldExist: true,
+      })
+    })
+
+    describe(`shouldn't have unexpected html files`, () => {
+      assertFileExistenceForPagePaths({
+        pagePaths: unexpectedPages,
+        type,
+        shouldExist: false,
+      })
+    })
+
+    it(`should recreate all html files`, () => {
+      expect(manifest[runNumber].generated.sort()).toEqual(
+        manifest[runNumber].allPages.sort()
+      )
+    })
+  })
+
+  describe(`page-data files`, () => {
+    const type = `page-data`
+
+    describe(`should have expected page-data files`, () => {
+      assertFileExistenceForPagePaths({
+        pagePaths: expectedPages,
+        type,
+        shouldExist: true,
+      })
+    })
+
+    describe(`shouldn't have unexpected page-data files`, () => {
+      assertFileExistenceForPagePaths({
+        pagePaths: unexpectedPages,
+        type,
+        shouldExist: false,
+      })
+    })
+  })
+
+  // Sixth run - because cache was deleted before run - both browser and ssr bundle was "invalidated" (because there was nothing before)
+  assertWebpackBundleChanges({ browser: true, ssr: true, runNumber })
+})

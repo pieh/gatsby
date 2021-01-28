@@ -291,12 +291,23 @@ export async function initialize({
   await apiRunnerNode(`onPreInit`, { parentSpan: activity.span })
   activity.end()
 
-  // During builds, delete html and css files from the public directory as we don't want
-  // deleted pages and styles from previous builds to stick around.
+  const cacheDirectory = `${program.directory}/.cache`
+  const publicDirectory = `${program.directory}/public`
+
+  const cacheJsonDirExists = fs.existsSync(`${cacheDirectory}/json`)
+  const publicDirExists = fs.existsSync(publicDirectory)
+
+  // During builds, if public directory exists, but `.cache` doesn't - we need to
+  // prune `public` directory from potentially stale files
   if (
-    !process.env.GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES &&
-    process.env.NODE_ENV === `production`
+    process.env.NODE_ENV === `production` &&
+    publicDirExists &&
+    !cacheJsonDirExists
   ) {
+    reporter.info(reporter.stripIndent`
+      "public" directory exists, but cache seems to be deleted. Gatsby will clean up a lot of build artifacts from
+      "public" directory and recreate them. This results in longer builds.
+    `)
     activity = reporter.activityTimer(
       `delete html and css files from previous builds`,
       {
@@ -349,13 +360,10 @@ export async function initialize({
       a precaution, we're deleting your site's cache to ensure there's no stale data.
     `)
   }
-  const cacheDirectory = `${program.directory}/.cache`
-  const publicDirectory = `${program.directory}/public`
 
   // .cache directory exists in develop at this point
   // so checking for .cache/json as a heuristic (could be any expected file)
-  const cacheIsCorrupt =
-    fs.existsSync(`${cacheDirectory}/json`) && !fs.existsSync(publicDirectory)
+  const cacheIsCorrupt = cacheJsonDirExists && !publicDirExists
 
   if (cacheIsCorrupt) {
     reporter.info(reporter.stripIndent`
