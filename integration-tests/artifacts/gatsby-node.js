@@ -1,16 +1,14 @@
 const path = require(`path`)
 const fs = require(`fs-extra`)
 
-const runNumber = parseInt(process.env.ARTIFACTS_RUN_SETUP, 10) || 1
+let runNumber = parseInt(process.env.ARTIFACTS_RUN_SETUP, 10) || 1
 
-const isFirstRun = runNumber === 1
+let isFirstRun = runNumber === 1
 
-let changedSsrCompilationHash = `not-changed`
-let changedBrowserCompilationHash = `not-changed`
+let changedSsrCompilationHash
+let changedBrowserCompilationHash
 
-exports.onPreInit = ({ reporter, emitter }) => {
-  reporter.info(`Using test setup #${runNumber}`)
-
+exports.onPreInit = ({ emitter }) => {
   emitter.on(`SET_SSR_WEBPACK_COMPILATION_HASH`, action => {
     changedSsrCompilationHash = action.payload
   })
@@ -20,15 +18,33 @@ exports.onPreInit = ({ reporter, emitter }) => {
   })
 }
 
-exports.sourceNodes = ({ actions, createContentDigest }) => {
+let previouslyCreatedNodes = new Map()
+
+exports.sourceNodes = ({
+  actions,
+  createContentDigest,
+  webhookBody,
+  reporter,
+}) => {
+  if (webhookBody && webhookBody.runNumber) {
+    runNumber = webhookBody.runNumber
+    isFirstRun = runNumber === 1
+  }
+
+  reporter.info(`Using test setup #${runNumber}`)
+
+  const currentlyCreatedNodes = new Map()
+
   function createNodeHelper(type, nodePartial) {
-    actions.createNode({
+    const node = {
       ...nodePartial,
       internal: {
         type,
         contentDigest: createContentDigest(nodePartial),
       },
-    })
+    }
+    actions.createNode(node)
+    currentlyCreatedNodes.set(node.id, node)
   }
 
   // used to create pages and queried by them
@@ -69,6 +85,13 @@ exports.sourceNodes = ({ actions, createContentDigest }) => {
     id: `static-query-changing-data-but-not-id`,
     label: `This is${isFirstRun ? `` : ` not`} a first run`, // this will be queried - we want to invalidate html here
   })
+
+  for (const prevNode of previouslyCreatedNodes.values()) {
+    if (!currentlyCreatedNodes.has(prevNode.id)) {
+      actions.deleteNode({ node: prevNode })
+    }
+  }
+  previouslyCreatedNodes = currentlyCreatedNodes
 }
 
 exports.createPages = ({ actions }) => {
@@ -95,7 +118,15 @@ exports.createPages = ({ actions }) => {
   }
 }
 
+exports.onPreBuild = () => {
+  console.log(`[test] onPreBuild`)
+  changedSsrCompilationHash = `not-changed`
+  changedBrowserCompilationHash = `not-changed`
+}
+
+let counter = 1
 exports.onPostBuild = async ({ graphql }) => {
+  console.log(`[test] onPostBuild`)
   const { data } = await graphql(`
     {
       allSitePage(filter: { path: { ne: "/dev-404-page/" } }) {
@@ -107,7 +138,11 @@ exports.onPostBuild = async ({ graphql }) => {
   `)
 
   fs.writeJSONSync(
-    path.join(process.cwd(), `.cache`, `build-manifest-for-test.json`),
+    path.join(
+      process.cwd(),
+      `.cache`,
+      `build-manifest-for-test-${counter++}.json`
+    ),
     {
       allPages: data.allSitePage.nodes.map(node => node.path),
       changedSsrCompilationHash,

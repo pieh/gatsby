@@ -44,7 +44,7 @@ function runGatsbyWithRunTestSetup(runNumber = 1) {
             .split(`\n`)
             .filter(Boolean),
           ...fs.readJSONSync(
-            path.join(process.cwd(), `.cache`, `build-manifest-for-test.json`)
+            path.join(process.cwd(), `.cache`, `build-manifest-for-test-1.json`)
           ),
         }
 
