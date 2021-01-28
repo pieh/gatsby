@@ -94,7 +94,7 @@ exports.sourceNodes = ({
   previouslyCreatedNodes = currentlyCreatedNodes
 }
 
-exports.createPages = ({ actions }) => {
+exports.createPages = async ({ actions, graphql }) => {
   // testing if expected html/page-data files exist OR don't exist (if stale artifacts are removed)
   function createPageHelper(dummyId) {
     actions.createPage({
@@ -115,6 +115,26 @@ exports.createPages = ({ actions }) => {
   } else {
     // page exists in any run other than first
     createPageHelper(`only-not-in-first`)
+  }
+
+  const { data } = await graphql(`
+    {
+      allDepPageQuery {
+        nodes {
+          id
+        }
+      }
+    }
+  `)
+
+  for (const depPageQueryNode of data.allDepPageQuery.nodes) {
+    actions.createPage({
+      path: `/${depPageQueryNode.id}/`,
+      component: require.resolve(`./src/templates/deps-page-query`),
+      context: {
+        id: depPageQueryNode.id,
+      },
+    })
   }
 }
 
