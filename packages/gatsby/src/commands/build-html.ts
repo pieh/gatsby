@@ -4,12 +4,16 @@ import reporter from "gatsby-cli/lib/reporter"
 import { createErrorFromString } from "gatsby-cli/lib/reporter/errors"
 import { chunk } from "lodash"
 import webpack from "webpack"
+import * as path from "path"
 
 import { emitter, store } from "../redux"
 import webpackConfig from "../utils/webpack.config"
 import { structureWebpackErrors } from "../utils/webpack-error-utils"
+import * as buildUtils from "./build-utils"
 
+import { Span } from "opentracing"
 import { IProgram, Stage } from "./types"
+import { PackageJson } from "../.."
 
 type IActivity = any // TODO
 type IWorkerPool = any // TODO
@@ -17,6 +21,17 @@ type IWorkerPool = any // TODO
 export interface IWebpackWatchingPauseResume extends webpack.Watching {
   suspend: () => void
   resume: () => void
+}
+
+export interface IBuildArgs extends IProgram {
+  directory: string
+  sitePackageJson: PackageJson
+  prefixPaths: boolean
+  noUglify: boolean
+  profile: boolean
+  graphqlTracing: boolean
+  openTracingConfigFile: string
+  keepPageRenderer: boolean
 }
 
 let devssrWebpackCompiler: webpack.Compiler
@@ -237,4 +252,85 @@ export const buildHTML = async ({
   const rendererPath = await buildRenderer(program, stage, activity.span)
   await doBuildPages(rendererPath, pagePaths, activity, workerPool, stage)
   await deleteRenderer(rendererPath)
+}
+
+export async function buildDirtyPagesAndDeleteStaleArtifacts({
+  rendererPath,
+  workerPool,
+  buildSpan,
+  program,
+}: {
+  rendererPath: string
+  workerPool: IWorkerPool
+  buildSpan?: Span
+  program: IBuildArgs
+}): Promise<{
+  toRegenerate: Array<string>
+  toDelete: Array<string>
+}> {
+  buildUtils.markHtmlDirtyIfResultOfUsedStaticQueryChanged()
+
+  const { toRegenerate, toDelete } = buildUtils.calcDirtyHtmlFiles(
+    store.getState()
+  )
+
+  const buildHTMLActivityProgress = reporter.createProgress(
+    `Building static HTML for pages`,
+    toRegenerate.length,
+    0,
+    {
+      parentSpan: buildSpan,
+    }
+  )
+  buildHTMLActivityProgress.start()
+  try {
+    await doBuildPages(
+      rendererPath,
+      toRegenerate,
+      buildHTMLActivityProgress,
+      workerPool
+    )
+  } catch (err) {
+    let id = `95313` // TODO: verify error IDs exist
+    const context = {
+      errorPath: err.context && err.context.path,
+      ref: ``,
+    }
+
+    const match = err.message.match(
+      /ReferenceError: (window|document|localStorage|navigator|alert|location) is not defined/i
+    )
+    if (match && match[1]) {
+      id = `95312`
+      context.ref = match[1]
+    }
+
+    buildHTMLActivityProgress.panic({
+      id,
+      context,
+      error: err,
+    })
+  }
+  buildHTMLActivityProgress.end()
+
+  if (!program.keepPageRenderer) {
+    try {
+      await deleteRenderer(rendererPath)
+    } catch (err) {
+      // pass through
+    }
+  }
+
+  if (toDelete.length > 0) {
+    const publicDir = path.join(program.directory, `public`)
+    const deletePageDataActivityTimer = reporter.activityTimer(
+      `Delete previous page data`
+    )
+    deletePageDataActivityTimer.start()
+    await buildUtils.removePageFiles(publicDir, toDelete)
+
+    deletePageDataActivityTimer.end()
+  }
+
+  return { toRegenerate, toDelete }
 }
