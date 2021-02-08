@@ -186,11 +186,12 @@ const renderHTMLQueue = async (
       sessionId,
     })
 
-    // is this code path used for dev ssr?
-    store.dispatch({
-      type: `HTML_GENERATED`,
-      payload: pageSegment,
-    })
+    if (stage === `build-html`) {
+      store.dispatch({
+        type: `HTML_GENERATED`,
+        payload: pageSegment,
+      })
+    }
 
     if (activity && activity.tick) {
       activity.tick(pageSegment.length)
@@ -288,7 +289,8 @@ export async function buildDirtyPagesAndDeleteStaleArtifacts({
       rendererPath,
       toRegenerate,
       buildHTMLActivityProgress,
-      workerPool
+      workerPool,
+      Stage.BuildHTML
     )
   } catch (err) {
     let id = `95313` // TODO: verify error IDs exist
