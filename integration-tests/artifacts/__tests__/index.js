@@ -617,8 +617,9 @@ describe(`Fourth run (gatsby-browser change - cache get invalidated)`, () => {
     })
   })
 
-  // Fourth run - we change gatsby-browser, so only browser bundle should change
-  assertWebpackBundleChanges({ browser: true, ssr: false, runNumber })
+  // Fourth run - we change gatsby-browser, so browser bundle change,
+  // but ssr bundle also change because chunk-map file is changed due to browser bundle change
+  assertWebpackBundleChanges({ browser: true, ssr: true, runNumber })
 })
 
 describe(`Fifth run (ssr-only change - only ssr compilation hash changes)`, () => {
