@@ -640,8 +640,71 @@ module.exports = async (
     // removes node internals from bundle
     // https://webpack.js.org/configuration/externals/#externalspresets
     config.externalsPresets = {
-      node: true,
+      node: false,
     }
+
+    const builtins = [
+      `assert`,
+      `async_hooks`,
+      `buffer`,
+      `child_process`,
+      `cluster`,
+      `console`,
+      `constants`,
+      `crypto`,
+      `dgram`,
+      `dns`,
+      `dns/promises`,
+      `domain`,
+      `events`,
+      // "fs",
+      // "fs/promises",
+      `http`,
+      `http2`,
+      `https`,
+      `inspector`,
+      `module`,
+      `net`,
+      `os`,
+      `path`,
+      `perf_hooks`,
+      `process`,
+      `punycode`,
+      `querystring`,
+      `readline`,
+      `repl`,
+      `stream`,
+      `stream/promises`,
+      `string_decoder`,
+      `sys`,
+      `timers`,
+      `timers/promises`,
+      `tls`,
+      `trace_events`,
+      `tty`,
+      `url`,
+      `util`,
+      `v8`,
+      `vm`,
+      `wasi`, // cSpell:ignore wasi
+      `worker_threads`,
+      `zlib`,
+    ]
+
+    const builtinsExternalsDictionary = builtins.reduce(
+      (acc, builtinModule) => {
+        acc[builtinModule] = `commonjs ${builtinModule}`
+        return acc
+      },
+      {
+        fs: `commonjs ${path.join(
+          process.cwd(),
+          `.cache`,
+          `ssr-builtin-trackers`,
+          `fs`
+        )}`,
+      }
+    )
 
     // Packages we want to externalize to save some build time
     // https://github.com/gatsbyjs/gatsby/pull/14208#pullrequestreview-240178728
@@ -661,6 +724,10 @@ module.exports = async (
     }
 
     config.externals = [
+      {
+        ...builtinsExternalsDictionary,
+        // path: `commonjs path`,
+      },
       function ({ context, getResolve, request }, callback) {
         // allows us to resolve webpack aliases from our config
         // helpful for when react is aliased to preact-compat

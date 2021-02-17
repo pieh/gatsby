@@ -315,13 +315,20 @@ export const renderHTMLProd = async ({
       const pageData = await readPageData(publicDir, pagePath)
       const resourcesForTemplate = await getResourcesForTemplate(pageData)
 
-      const htmlString = htmlComponentRenderer.default({
+      const { html, unsafeBuiltinsUsage } = htmlComponentRenderer.default({
         pagePath,
         pageData,
         ...resourcesForTemplate,
       })
 
-      return fs.outputFile(getPageHtmlFilePath(publicDir, pagePath), htmlString)
+      return fs
+        .outputFile(getPageHtmlFilePath(publicDir, pagePath), html)
+        .then(() => {
+          return {
+            pagePath,
+            unsafeBuiltinsUsage,
+          }
+        })
     } catch (e) {
       // add some context to error so we can display more helpful message
       e.context = {

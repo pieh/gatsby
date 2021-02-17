@@ -151,6 +151,17 @@ export const deleteRenderer = async (rendererPath: string): Promise<void> => {
   }
 }
 
+interface IRenderHtmlResult {
+  pagePath: string
+  unsafeBuiltinsUsage: {
+    usage: Array<{
+      moduleName: string
+      exportName: string
+      stack: string
+    }>
+  }
+}
+
 const renderHTMLQueue = async (
   workerPool: IWorkerPool,
   activity: IActivity,
@@ -176,7 +187,7 @@ const renderHTMLQueue = async (
       : workerPool.renderHTMLDev
 
   await Bluebird.map(segments, async pageSegment => {
-    await renderHTML({
+    const htmlRenderMeta: Array<IRenderHtmlResult> = await renderHTML({
       envVars,
       htmlComponentRendererPath,
       paths: pageSegment,
@@ -188,6 +199,17 @@ const renderHTMLQueue = async (
         type: `HTML_GENERATED`,
         payload: pageSegment,
       })
+
+      for (const meta of htmlRenderMeta) {
+        for (const unsafeUsage of meta.unsafeBuiltinsUsage.usage) {
+          // const prettyError = await createErrorFromString(
+          //   unsafeUsage.stack,
+          //   `${htmlComponentRendererPath}.map`
+          // )
+
+          console.log({ unsafeUsage })
+        }
+      }
     }
 
     if (activity && activity.tick) {

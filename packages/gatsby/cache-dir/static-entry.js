@@ -103,6 +103,9 @@ export default ({
   reversedStyles,
   reversedScripts,
 }) => {
+  // for this to work we need this function to be sync or at least ensure there is single execution of it at a time
+  global.fkinGlobalForTrackingKillMeNow = { usage: [] }
+
   let bodyHtml = ``
   let headComponents = [
     <meta
@@ -413,5 +416,5 @@ export default ({
     />
   )}`
 
-  return html
+  return { html, unsafeBuiltinsUsage: global.fkinGlobalForTrackingKillMeNow }
 }
