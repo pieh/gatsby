@@ -291,6 +291,7 @@ export interface IGatsbyState {
     browserCompilationHash: string
     ssrCompilationHash: string
     trackedStaticQueryResults: Map<string, IStaticQueryResultState>
+    unsafeBuiltinWasUsedInSSR: boolean
   }
 }
 

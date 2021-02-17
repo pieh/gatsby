@@ -186,6 +186,8 @@ const renderHTMLQueue = async (
       ? workerPool.renderHTMLProd
       : workerPool.renderHTMLDev
 
+  let wasAnyUnsafeBuiltinUsed = false
+
   await Bluebird.map(segments, async pageSegment => {
     const htmlRenderMeta: Array<IRenderHtmlResult> = await renderHTML({
       envVars,
@@ -200,14 +202,24 @@ const renderHTMLQueue = async (
         payload: pageSegment,
       })
 
-      for (const meta of htmlRenderMeta) {
-        for (const unsafeUsage of meta.unsafeBuiltinsUsage.usage) {
-          // const prettyError = await createErrorFromString(
-          //   unsafeUsage.stack,
-          //   `${htmlComponentRendererPath}.map`
-          // )
+      //
+      if (!wasAnyUnsafeBuiltinUsed) {
+        for (const meta of htmlRenderMeta) {
+          for (const unsafeUsage of meta.unsafeBuiltinsUsage.usage) {
+            // const prettyError = await createErrorFromString(
+            //   unsafeUsage.stack,
+            //   `${htmlComponentRendererPath}.map`
+            // )
+            wasAnyUnsafeBuiltinUsed = true
 
-          console.log({ unsafeUsage })
+            console.log({ unsafeUsage })
+          }
+        }
+
+        if (wasAnyUnsafeBuiltinUsed) {
+          store.dispatch({
+            type: `HTML_USED_UNSAFE_BUILTIN`,
+          })
         }
       }
     }
