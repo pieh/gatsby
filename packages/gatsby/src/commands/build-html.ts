@@ -323,12 +323,23 @@ export async function buildHTMLPagesAndDeleteStaleArtifacts({
     toRegenerate,
     toDelete,
     toCleanupFromTrackedState,
+    diagnosticDetails,
   } = buildUtils.calcDirtyHtmlFiles(store.getState())
 
   store.dispatch({
     type: `HTML_TRACKED_PAGES_CLEANUP`,
     payload: toCleanupFromTrackedState,
   })
+
+  if (program.logPages) {
+    reporter.verbose(
+      `Reasons for page rebuilds:\n${JSON.stringify(
+        Object.fromEntries(diagnosticDetails),
+        null,
+        2
+      )}`
+    )
+  }
 
   if (toRegenerate.length > 0) {
     const buildHTMLActivityProgress = reporter.createProgress(

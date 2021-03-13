@@ -10,6 +10,15 @@ import {
 import { removePageData, fixedPagePath } from "../utils/page-data"
 import { store } from "../redux"
 import { IGatsbyState } from "../redux/types"
+import {
+  FLAG_DIRTY_CLEARED_CACHE,
+  FLAG_DIRTY_NEW_PAGE,
+  FLAG_DIRTY_PAGE_DATA_CHANGED,
+  FLAG_DIRTY_STATIC_QUERY_FIRST_RUN,
+  FLAG_DIRTY_STATIC_QUERY_RESULT_CHANGED,
+  FLAG_DIRTY_BROWSER_COMPILATION_HASH,
+  FLAG_DIRTY_SSR_COMPILATION_HASH,
+} from "../redux/reducers/html"
 
 const checkFolderIsEmpty = (path: string): boolean =>
   fs.existsSync(path) && !fs.readdirSync(path).length
@@ -87,10 +96,12 @@ export function calcDirtyHtmlFiles(
   toRegenerate: Array<string>
   toDelete: Array<string>
   toCleanupFromTrackedState: Set<string>
+  diagnosticDetails: Map<string, Array<string>>
 } {
   const toRegenerate = new Set<string>()
   const toDelete = new Set<string>()
   const toCleanupFromTrackedState = new Set<string>()
+  const diagnosticDetails = new Map<string, Array<string>>()
   const normalizedPagePathToAction = new Map<
     string,
     {
@@ -154,6 +165,33 @@ export function calcDirtyHtmlFiles(
       markActionForPage(path, `delete`)
     } else if (htmlFile.dirty || state.html.unsafeBuiltinWasUsedInSSR) {
       markActionForPage(path, `regenerate`)
+      diagnosticDetails.set(
+        path,
+        [
+          htmlFile.dirty & FLAG_DIRTY_CLEARED_CACHE
+            ? `FLAG_DIRTY_CLEARED_CACHE`
+            : ``,
+          htmlFile.dirty & FLAG_DIRTY_NEW_PAGE ? `FLAG_DIRTY_NEW_PAGE` : ``,
+          htmlFile.dirty & FLAG_DIRTY_PAGE_DATA_CHANGED
+            ? `FLAG_DIRTY_PAGE_DATA_CHANGED`
+            : ``,
+          htmlFile.dirty & FLAG_DIRTY_STATIC_QUERY_FIRST_RUN
+            ? `FLAG_DIRTY_STATIC_QUERY_FIRST_RUN`
+            : ``,
+          htmlFile.dirty & FLAG_DIRTY_STATIC_QUERY_RESULT_CHANGED
+            ? `FLAG_DIRTY_CLEARED_CACHE`
+            : ``,
+          htmlFile.dirty & FLAG_DIRTY_STATIC_QUERY_RESULT_CHANGED
+            ? `FLAG_DIRTY_CLEARED_CACHE`
+            : ``,
+          htmlFile.dirty & FLAG_DIRTY_BROWSER_COMPILATION_HASH
+            ? `FLAG_DIRTY_BROWSER_COMPILATION_HASH`
+            : ``,
+          htmlFile.dirty & FLAG_DIRTY_SSR_COMPILATION_HASH
+            ? `FLAG_DIRTY_SSR_COMPILATION_HASH`
+            : ``,
+        ].filter(Boolean)
+      )
     } else {
       markActionForPage(path, `reuse`)
     }
@@ -163,6 +201,7 @@ export function calcDirtyHtmlFiles(
     toRegenerate: Array.from(toRegenerate),
     toDelete: Array.from(toDelete),
     toCleanupFromTrackedState,
+    diagnosticDetails,
   }
 }
 
