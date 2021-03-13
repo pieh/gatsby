@@ -179,10 +179,7 @@ export function calcDirtyHtmlFiles(
             ? `FLAG_DIRTY_STATIC_QUERY_FIRST_RUN`
             : ``,
           htmlFile.dirty & FLAG_DIRTY_STATIC_QUERY_RESULT_CHANGED
-            ? `FLAG_DIRTY_CLEARED_CACHE`
-            : ``,
-          htmlFile.dirty & FLAG_DIRTY_STATIC_QUERY_RESULT_CHANGED
-            ? `FLAG_DIRTY_CLEARED_CACHE`
+            ? `FLAG_DIRTY_STATIC_QUERY_RESULT_CHANGED`
             : ``,
           htmlFile.dirty & FLAG_DIRTY_BROWSER_COMPILATION_HASH
             ? `FLAG_DIRTY_BROWSER_COMPILATION_HASH`
