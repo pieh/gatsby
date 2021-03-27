@@ -133,6 +133,43 @@ export async function queryRunner(
     result = {}
   } else {
     result = await startQueryJob(graphqlRunner, queryJob, parentSpan)
+    if (result && typeof result[Symbol.asyncIterator] === `function`) {
+      const asyncIterator = result[Symbol.asyncIterator]()
+      const cursor = await asyncIterator.next()
+      result = cursor.value
+
+      // below just some logging - it doesn't actually anything more
+      report.verbose(
+        `Finished first part of query for: ${queryJob.id}\n\n${
+          queryJob.query
+        }\n\nResult:\n\n${JSON.stringify(result, null, 2)}`
+      )
+
+      function logDeferredStuff(cursor): void {
+        if (!cursor.done) {
+          asyncIterator
+            .next()
+            .then(nextCursor => {
+              if (nextCursor.done) {
+                return
+              }
+
+              report.verbose(
+                `Finished next part of query for: ${queryJob.id}\n\n${
+                  queryJob.query
+                }\n\nResult:\n\n${JSON.stringify(nextCursor.value, null, 2)}`
+              )
+              logDeferredStuff(nextCursor)
+            })
+            .catch(e => {
+              report.error(e)
+            })
+        }
+      }
+
+      logDeferredStuff(cursor)
+      // end of logging
+    }
   }
 
   if (result.errors) {

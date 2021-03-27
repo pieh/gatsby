@@ -1,3 +1,4 @@
+const { GraphQLDeferDirective } = require(`graphql`)
 const { SchemaComposer, GraphQLJSON } = require(`graphql-compose`)
 const { getNodeInterface } = require(`./types/node-interface`)
 import { GraphQLDate } from "./types/date"
@@ -10,7 +11,7 @@ const createSchemaComposer = ({ fieldExtensions } = {}) => {
   // See https://github.com/graphql-compose/graphql-compose/commit/70995f7f4a07996cfbe92ebf19cae5ee4fa74ea2
   // This is fixed in v7, so can be removed once we upgrade
   const { BUILT_IN_DIRECTIVES } = require(`graphql-compose/lib/SchemaComposer`)
-  schemaComposer._directives = [...BUILT_IN_DIRECTIVES]
+  schemaComposer._directives = [...BUILT_IN_DIRECTIVES, GraphQLDeferDirective]
 
   getNodeInterface({ schemaComposer })
   schemaComposer.add(GraphQLDate)
