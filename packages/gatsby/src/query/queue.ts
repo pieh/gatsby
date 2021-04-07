@@ -114,6 +114,7 @@ const processBatch = async (
   }
 
   return new Promise((resolve, reject) => {
+    const deferred = []
     let taskFinishCallback
 
     const gc = (): void => {
@@ -131,7 +132,12 @@ const processBatch = async (
     }
 
     if (activity.tick) {
-      taskFinishCallback = (): unknown => activity.tick()
+      taskFinishCallback = (_id, result): unknown => {
+        if (result.inp) {
+          deferred.push(result.inp)
+        }
+        activity.tick()
+      }
       queue.on(`task_finish`, taskFinishCallback)
     }
 
@@ -140,8 +146,9 @@ const processBatch = async (
       reject(err)
     }
 
-    const drainCallback = (): void => {
+    const drainCallback = async (): void => {
       gc()
+      await Promise.all(deferred)
       resolve()
     }
 

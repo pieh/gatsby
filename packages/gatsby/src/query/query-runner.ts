@@ -128,6 +128,7 @@ export async function queryRunner(
 
   // Run query
   let result: IExecutionResult
+
   // Nothing to do if the query doesn't exist.
   if (!queryJob.query || queryJob.query === ``) {
     result = {}
@@ -138,116 +139,107 @@ export async function queryRunner(
       const cursor = await asyncIterator.next()
       result = cursor.value
 
-      // below just some logging - it doesn't actually anything more
-      report.verbose(
-        `Finished first part of query for: ${queryJob.id}\n\n${
-          queryJob.query
-        }\n\nResult:\n\n${JSON.stringify(result, null, 2)}`
-      )
+      // unblock query queue, need to wrap the promise in something
+      // otherwise query queue will just wait for it, so just plain object
+      // with some hardcoded key
+      return {
+        inp: new Promise(async (resolve, reject) => {
+          for await (const partialResult of asyncIterator) {
+            // merge partial result into result
 
-      function logDeferredStuff(cursor): void {
-        if (!cursor.done) {
-          asyncIterator
-            .next()
-            .then(nextCursor => {
-              if (nextCursor.done) {
-                return
-              }
+            _.set(result.data, partialResult.path, {
+              ..._.get(result.data, partialResult.path),
+              ...partialResult.data,
+            })
+          }
 
-              report.verbose(
-                `Finished next part of query for: ${queryJob.id}\n\n${
-                  queryJob.query
-                }\n\nResult:\n\n${JSON.stringify(nextCursor.value, null, 2)}`
-              )
-              logDeferredStuff(nextCursor)
-            })
-            .catch(e => {
-              report.error(e)
-            })
-        }
+          // just get rid of useless field polluting page-data
+          delete result.hasNext
+          resolve(await finalize())
+        }),
       }
+  }
 
-      logDeferredStuff(cursor)
-      // end of logging
+  async function finalize() {
+    if (result.errors) {
+      // If there's a graphql error then log the error and exit
+      panicQueryJobError(queryJob, result.errors)
     }
-  }
 
-  if (result.errors) {
-    // If there's a graphql error then log the error and exit
-    panicQueryJobError(queryJob, result.errors)
-  }
+    // Add the page context onto the results.
+    if (queryJob && queryJob.isPage) {
+      result[`pageContext`] = Object.assign({}, queryJob.context)
+    }
 
-  // Add the page context onto the results.
-  if (queryJob && queryJob.isPage) {
-    result[`pageContext`] = Object.assign({}, queryJob.context)
-  }
+    // Delete internal data from pageContext
+    if (result.pageContext) {
+      delete result.pageContext.path
+      delete result.pageContext.internalComponentName
+      delete result.pageContext.component
+      delete result.pageContext.componentChunkName
+      delete result.pageContext.updatedAt
+      delete result.pageContext.pluginCreator___NODE
+      delete result.pageContext.pluginCreatorId
+      delete result.pageContext.componentPath
+      delete result.pageContext.context
+      delete result.pageContext.isCreatedByStatefulCreatePages
+    }
 
-  // Delete internal data from pageContext
-  if (result.pageContext) {
-    delete result.pageContext.path
-    delete result.pageContext.internalComponentName
-    delete result.pageContext.component
-    delete result.pageContext.componentChunkName
-    delete result.pageContext.updatedAt
-    delete result.pageContext.pluginCreator___NODE
-    delete result.pageContext.pluginCreatorId
-    delete result.pageContext.componentPath
-    delete result.pageContext.context
-    delete result.pageContext.isCreatedByStatefulCreatePages
-  }
+    const resultJSON = JSON.stringify(result)
+    const resultHash = crypto
+      .createHash(`sha1`)
+      .update(resultJSON)
+      .digest(`base64`)
 
-  const resultJSON = JSON.stringify(result)
-  const resultHash = crypto
-    .createHash(`sha1`)
-    .update(resultJSON)
-    .digest(`base64`)
+    if (
+      resultHash !== resultHashes.get(queryJob.id) ||
+      (queryJob.isPage &&
+        !pageDataExists(path.join(program.directory, `public`), queryJob.id))
+    ) {
+      resultHashes.set(queryJob.id, resultHash)
 
-  if (
-    resultHash !== resultHashes.get(queryJob.id) ||
-    (queryJob.isPage &&
-      !pageDataExists(path.join(program.directory, `public`), queryJob.id))
-  ) {
-    resultHashes.set(queryJob.id, resultHash)
+      if (queryJob.isPage) {
+        // We need to save this temporarily in cache because
+        // this might be incomplete at the moment
+        const resultPath = path.join(
+          program.directory,
+          `.cache`,
+          `json`,
+          `${queryJob.id.replace(/\//g, `_`)}.json`
+        )
+        await fs.outputFile(resultPath, resultJSON)
+        store.dispatch({
+          type: `ADD_PENDING_PAGE_DATA_WRITE`,
+          payload: {
+            path: queryJob.id,
+          },
+        })
+      } else {
+        const resultPath = path.join(
+          program.directory,
+          `public`,
+          `page-data`,
+          `sq`,
+          `d`,
+          `${queryJob.hash}.json`
+        )
+        await fs.outputFile(resultPath, resultJSON)
+      }
+    }
 
-    if (queryJob.isPage) {
-      // We need to save this temporarily in cache because
-      // this might be incomplete at the moment
-      const resultPath = path.join(
-        program.directory,
-        `.cache`,
-        `json`,
-        `${queryJob.id.replace(/\//g, `_`)}.json`
-      )
-      await fs.outputFile(resultPath, resultJSON)
-      store.dispatch({
-        type: `ADD_PENDING_PAGE_DATA_WRITE`,
-        payload: {
-          path: queryJob.id,
-        },
+    // Broadcast that a page's query has run.
+    store.dispatch(
+      actions.pageQueryRun({
+        path: queryJob.id,
+        componentPath: queryJob.componentPath,
+        isPage: queryJob.isPage,
+        resultHash,
+        queryHash: queryJob.hash,
       })
-    } else {
-      const resultPath = path.join(
-        program.directory,
-        `public`,
-        `page-data`,
-        `sq`,
-        `d`,
-        `${queryJob.hash}.json`
-      )
-      await fs.outputFile(resultPath, resultJSON)
-    }
+    )
+
+    return result
   }
 
-  // Broadcast that a page's query has run.
-  store.dispatch(
-    actions.pageQueryRun({
-      path: queryJob.id,
-      componentPath: queryJob.componentPath,
-      isPage: queryJob.isPage,
-      resultHash,
-      queryHash: queryJob.hash,
-    })
-  )
-
-  return result
+  return finalize()
 }

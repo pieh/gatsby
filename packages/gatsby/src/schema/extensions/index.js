@@ -6,6 +6,7 @@ const {
 } = require(`graphql`)
 
 const { link, fileByPath } = require(`../resolvers`)
+import { queueNetworkTask } from "./network"
 import { getDateResolver } from "../types/date"
 
 import type { GraphQLFieldConfigArgumentMap, GraphQLFieldConfig } from "graphql"
@@ -138,6 +139,25 @@ const builtInFieldExtensions = {
             ...info,
             from: options.from || info.from,
             fromNode: options.from ? options.fromNode : info.fromNode,
+          })
+        },
+      }
+    },
+  },
+
+  network: {
+    name: `network`,
+    description: `Mark field as potentially long running due to making network requests`,
+    extend(_options, fieldConfig) {
+      return {
+        resolve(source, args, context, info) {
+          const resolver = fieldConfig.resolve || context.defaultFieldResolver
+          return queueNetworkTask({
+            resolver,
+            source,
+            args,
+            context,
+            info,
           })
         },
       }
