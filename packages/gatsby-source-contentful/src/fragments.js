@@ -105,7 +105,9 @@ export const GatsbyContentfulFluid = graphql`
  */
 export const GatsbyContentfulFluid_tracedSVG = graphql`
   fragment GatsbyContentfulFluid_tracedSVG on ContentfulFluid {
-    tracedSVG
+    ... @defer {
+      tracedSVG
+    }
     aspectRatio
     src
     srcSet

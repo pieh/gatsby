@@ -681,19 +681,21 @@ exports.extendNodeType = ({ type, store }) => {
       return null
     }
 
-    const absolutePath = await cacheImage(store, image, options)
+    const absolutePath = await cacheImage(store, image, options, args.context)
     const extension = path.extname(absolutePath)
 
-    return traceSVG({
-      file: {
-        internal: image.internal,
-        name: image.file.fileName,
-        extension,
-        absolutePath,
-      },
-      args: { toFormat: `` },
-      fileArgs: options,
-    })
+    return args.context.queueCPUTask(() =>
+      traceSVG({
+        file: {
+          internal: image.internal,
+          name: image.file.fileName,
+          extension,
+          absolutePath,
+        },
+        args: { toFormat: `` },
+        fileArgs: options,
+      })
+    )
   }
 
   const getDominantColor = async ({ image, options }) => {

@@ -7,7 +7,7 @@ const downloadWithRetry = require(`./download-with-retry`).default
 
 const inFlightImageCache = new Map()
 
-module.exports = async function cacheImage(store, image, options) {
+module.exports = async function cacheImage(store, image, options, context) {
   const program = store.getState().program
   const CACHE_DIR = resolve(`${program.directory}/.cache/contentful/assets/`)
   const {
@@ -56,21 +56,24 @@ module.exports = async function cacheImage(store, image, options) {
     await inFlight
   } else if (!alreadyExists) {
     // File doesn't exist and is not being download yet
-    const downloadPromise = new Promise((resolve, reject) => {
-      const previewUrl = `http:${url}?${params.join(`&`)}`
+    const downloadPromise = context.queueNetworkTask(
+      () =>
+        new Promise((resolve, reject) => {
+          const previewUrl = `http:${url}?${params.join(`&`)}`
 
-      downloadWithRetry({
-        url: previewUrl,
-        responseType: `stream`,
-      })
-        .then(response => {
-          const file = createWriteStream(absolutePath)
-          response.data.pipe(file)
-          file.on(`finish`, resolve)
-          file.on(`error`, reject)
+          downloadWithRetry({
+            url: previewUrl,
+            responseType: `stream`,
+          })
+            .then(response => {
+              const file = createWriteStream(absolutePath)
+              response.data.pipe(file)
+              file.on(`finish`, resolve)
+              file.on(`error`, reject)
+            })
+            .catch(reject)
         })
-        .catch(reject)
-    })
+    )
     inFlightImageCache.set(absolutePath, downloadPromise)
     await downloadPromise
     // When the file is downloaded, remove the promise from the cache
