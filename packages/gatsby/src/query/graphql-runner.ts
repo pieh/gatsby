@@ -21,6 +21,7 @@ import { Store } from "redux"
 import { IGatsbyState } from "../redux/types"
 import { IGraphQLRunnerStatResults, IGraphQLRunnerStats } from "./types"
 import GraphQLSpanTracer from "./graphql-span-tracer"
+import { queueNetworkTask, queueCPUTask } from "../schema/tasks-queue"
 
 type Query = string | Source
 
@@ -216,6 +217,8 @@ export class GraphQLRunner {
           nodeModel: this.nodeModel,
           stats: this.stats,
           tracer,
+          queueNetworkTask,
+          queueCPUTask,
         }),
         variableValues: context,
       })

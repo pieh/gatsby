@@ -15,6 +15,7 @@ export default function withResolverContext<TSource, TArgs>({
   nodeModel,
   stats,
   tracer,
+  ...rest
 }: {
   schema: GraphQLSchema
   schemaComposer: SchemaComposer<IGatsbyResolverContext<TSource, TArgs>> | null
@@ -35,6 +36,7 @@ export default function withResolverContext<TSource, TArgs>({
   return {
     ...(context || {}),
     ...(customContext || {}),
+    ...rest,
     defaultFieldResolver,
     nodeModel: nodeModel.withContext({
       path: context ? context.path : undefined,

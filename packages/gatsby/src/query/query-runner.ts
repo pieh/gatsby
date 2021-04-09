@@ -128,7 +128,6 @@ export async function queryRunner(
 
   // Run query
   let result: IExecutionResult
-
   // Nothing to do if the query doesn't exist.
   if (!queryJob.query || queryJob.query === ``) {
     result = {}
@@ -158,6 +157,7 @@ export async function queryRunner(
           resolve(await finalize())
         }),
       }
+    }
   }
 
   async function finalize() {

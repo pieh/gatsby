@@ -6,7 +6,6 @@ const {
 } = require(`graphql`)
 
 const { link, fileByPath } = require(`../resolvers`)
-import { queueNetworkTask } from "./network"
 import { getDateResolver } from "../types/date"
 
 import type { GraphQLFieldConfigArgumentMap, GraphQLFieldConfig } from "graphql"
@@ -152,13 +151,9 @@ const builtInFieldExtensions = {
       return {
         resolve(source, args, context, info) {
           const resolver = fieldConfig.resolve || context.defaultFieldResolver
-          return queueNetworkTask({
-            resolver,
-            source,
-            args,
-            context,
-            info,
-          })
+          return context.queueNetworkTask(() =>
+            resolver(source, args, context, info)
+          )
         },
       }
     },
