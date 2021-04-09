@@ -46,7 +46,13 @@ function createTaskTypeQueue(concurrency, label) {
   }
 }
 
-const queueNetworkTask = createTaskTypeQueue(20, `Running network tasks`)
-const queueCPUTask = createTaskTypeQueue(10, `Running CPU tasks`)
+const queueNetworkTask = createTaskTypeQueue(
+  process.env.GATSBY_EXPERIMENTAL_NETWORK_TASK_CONCURRENCY || 20,
+  `Running network tasks`
+)
+const queueCPUTask = createTaskTypeQueue(
+  process.env.GATSBY_EXPERIMENTAL_NETWORK_CPU_CONCURRENCY || 10,
+  `Running CPU tasks`
+)
 
 export { queueNetworkTask, queueCPUTask }
