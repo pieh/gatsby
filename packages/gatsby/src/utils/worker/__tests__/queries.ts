@@ -223,10 +223,9 @@ describeWhenLMDB(`worker (queries)`, () => {
   })
 
   it(`should chunk work in runQueriesInWorkersQueue`, async () => {
-    const spy = jest.spyOn(reporter, `createProgress`)
+    const spy = jest.spyOn(worker!, `runQueries`)
 
-    // @ts-ignore - worker is defined
-    await runQueriesInWorkersQueue(worker, queryIdsBig, 10)
+    await runQueriesInWorkersQueue(worker!, queryIdsBig, 10)
     const stateFromWorker = await worker!.getState()
 
     // Called the complete ABC so we can test _a
@@ -250,9 +249,26 @@ describeWhenLMDB(`worker (queries)`, () => {
       },
     })
 
-    expect(spy.mock.calls[0][0]).toBe(`run queries in workers`)
-    // 1 sq + 28 pq (2 normal pq + 26 alphabet pq)
-    expect(spy.mock.calls[0][1]).toBe(29)
+    expect(spy).toHaveBeenNthCalledWith(1, {
+      pageQueryIds: [],
+      staticQueryIds: expect.toBeArrayOfSize(1),
+    })
+
+    expect(spy).toHaveBeenNthCalledWith(2, {
+      pageQueryIds: expect.toBeArrayOfSize(10),
+      staticQueryIds: [],
+    })
+
+    expect(spy).toHaveBeenNthCalledWith(3, {
+      pageQueryIds: expect.toBeArrayOfSize(10),
+      staticQueryIds: [],
+    })
+
+    expect(spy).toHaveBeenNthCalledWith(4, {
+      pageQueryIds: expect.toBeArrayOfSize(8),
+      staticQueryIds: [],
+    })
+
     spy.mockRestore()
   })
 })
