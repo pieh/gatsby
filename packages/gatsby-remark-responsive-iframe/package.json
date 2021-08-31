@@ -7,20 +7,20 @@
     "url": "https://github.com/gatsbyjs/gatsby/issues"
   },
   "dependencies": {
-    "@babel/runtime": "^7.9.6",
-    "cheerio": "^1.0.0-rc.3",
+    "@babel/runtime": "^7.15.3",
+    "cheerio": "^1.0.0-rc.10",
     "common-tags": "^1.8.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "unist-util-visit": "^1.4.1"
   },
   "devDependencies": {
-    "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.9.6",
+    "@babel/cli": "^7.14.8",
+    "@babel/core": "^7.15.0",
     "babel-preset-gatsby-package": "^0.4.1",
     "cross-env": "^5.2.1",
     "remark": "^10.0.1",
-    "remark-mdx": "^1.6.1",
-    "unist-util-find": "^1.0.1"
+    "remark-mdx": "^1.6.22",
+    "unist-util-find": "^1.0.2"
   },
   "homepage": "https://github.com/gatsbyjs/gatsby/tree/master/packages/gatsby-remark-responsive-iframe#readme",
   "keywords": [

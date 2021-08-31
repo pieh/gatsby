@@ -13,9 +13,9 @@
     "gatsby-source-graphql": "^2.5.1",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
-    "subscriptions-transport-ws": "^0.9.16",
-    "typescript": "^3.9.2",
-    "urql": "^1.9.7"
+    "subscriptions-transport-ws": "^0.9.19",
+    "typescript": "^3.9.10",
+    "urql": "^1.11.6"
   },
   "scripts": {
     "develop": "gatsby develop"

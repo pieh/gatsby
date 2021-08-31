@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "chalk": "^2.4.2",
-    "date-fns": "^2.13.0",
+    "date-fns": "^2.23.0",
     "fs-extra": "^8.1.0",
     "gatsby-core-utils": "^1.2.2",
     "graphql-request": "^1.8.2",
@@ -20,8 +20,8 @@
     "puppeteer": "^1.20.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.9.6",
+    "@babel/cli": "^7.14.8",
+    "@babel/core": "^7.15.0",
     "babel-preset-gatsby-package": "^0.4.1",
     "cross-env": "^5.2.1"
   },
