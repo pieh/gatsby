@@ -9,7 +9,7 @@
   "dependencies": {
     "@babel/runtime": "^7.14.8",
     "@hapi/joi": "^15.1.1",
-    "common-tags": "^1.8.0",
+    "common-tags": "^1.8.2",
     "fs-extra": "^10.0.0",
     "gatsby-plugin-utils": "^1.14.0-next.1",
     "lodash.merge": "^4.6.2",
