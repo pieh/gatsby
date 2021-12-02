@@ -4664,10 +4664,10 @@
     "@types/eslint" "*"
     "@types/estree" "*"
 
-"@types/eslint@*", "@types/eslint@^7.2.6", "@types/eslint@^7.28.2":
-  version "7.28.2"
-  resolved "https://registry.yarnpkg.com/@types/eslint/-/eslint-7.28.2.tgz#0ff2947cdd305897c52d5372294e8c76f351db68"
-  integrity sha512-KubbADPkfoU75KgKeKLsFHXnU4ipH7wYg0TRT33NK3N3yiu7jlFAAoygIWBV+KbuHx/G+AvuGX6DllnK35gfJA==
+"@types/eslint@*", "@types/eslint@^7.2.6", "@types/eslint@^7.29.0":
+  version "7.29.0"
+  resolved "https://registry.yarnpkg.com/@types/eslint/-/eslint-7.29.0.tgz#e56ddc8e542815272720bb0b4ccc2aff9c3e1c78"
+  integrity sha512-VNcvioYDH8/FxaeTKkM4/TiTwt6pBV9E3OfGmvaw8tPl0rrHCJ4Ll15HRT+pMiFAf/MLQvAzC+6RzUMEL9Ceng==
   dependencies:
     "@types/estree" "*"
     "@types/json-schema" "*"
@@ -5018,7 +5018,7 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-dom@*", "@types/react-dom@^17.0.10", "@types/react-dom@^17.0.11":
+"@types/react-dom@*", "@types/react-dom@^17.0.11":
   version "17.0.11"
   resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-17.0.11.tgz#e1eadc3c5e86bdb5f7684e00274ae228e7bcc466"
   integrity sha512-f96K3k+24RaLGVu/Y2Ng3e1EbZ8/cVJvypZWd7cy0ofCBaf2lcM46xNhycMZ2xGwbBjRql7hOlZ+e2WlJ5MH3Q==
@@ -17102,17 +17102,16 @@ livereload-js@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/livereload-js/-/livereload-js-2.3.0.tgz#c3ab22e8aaf5bf3505d80d098cbad67726548c9a"
 
-lmdb-store@~1.6.11:
-  version "1.6.11"
-  resolved "https://registry.yarnpkg.com/lmdb-store/-/lmdb-store-1.6.11.tgz#801da597af8c7a01c81f87d5cc7a7497e381236d"
-  integrity sha512-hIvoGmHGsFhb2VRCmfhodA/837ULtJBwRHSHKIzhMB7WtPH6BRLPsvXp1MwD3avqGzuZfMyZDUp3tccLvr721Q==
+lmdb-store@~1.6.14:
+  version "1.6.14"
+  resolved "https://registry.yarnpkg.com/lmdb-store/-/lmdb-store-1.6.14.tgz#8aa5f36fb04195f8639a3b01b32f6696867f2bc9"
+  integrity sha512-4woZfvfgolMEngjoMJrwePjdLotr3QKGJsDWURlJmKBed5JtE00IfAKo7ryPowl4ksGcs21pcdLkwrPnKomIuA==
   dependencies:
+    msgpackr "^1.5.0"
     nan "^2.14.2"
     node-gyp-build "^4.2.3"
     ordered-binary "^1.0.0"
     weak-lru-cache "^1.0.0"
-  optionalDependencies:
-    msgpackr "^1.4.7"
 
 load-bmfont@^1.3.1, load-bmfont@^1.4.0:
   version "1.4.0"
@@ -19216,10 +19215,10 @@ msgpackr-extract@^1.0.14:
     nan "^2.14.2"
     node-gyp-build "^4.2.3"
 
-msgpackr@^1.4.7:
-  version "1.4.7"
-  resolved "https://registry.yarnpkg.com/msgpackr/-/msgpackr-1.4.7.tgz#d802ade841e7d2e873000b491cdda6574a3d5748"
-  integrity sha512-bhC8Ed1au3L3oHaR/fe4lk4w7PLGFcWQ5XY/Tk9N6tzDRz8YndjCG68TD8zcvYZoxNtw767eF/7VpaTpU9kf9w==
+msgpackr@^1.5.0:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/msgpackr/-/msgpackr-1.5.1.tgz#2a8e39d25458406034b8cb50dc7d6a7abd3dfff2"
+  integrity sha512-I1CXFG8BYYSeIhtDlHpUVMsdDiyvP9JAh1d9QoBnkPx3ETPeH/1lR14hweM9GETs09wCWlaOyhtXxIc9boxAAA==
   optionalDependencies:
     msgpackr-extract "^1.0.14"
 
