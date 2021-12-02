@@ -18,7 +18,7 @@
     "@babel/core": "^7.14.8",
     "babel-preset-gatsby-package": "^1.14.0-next.1",
     "cross-env": "^7.0.3",
-    "remark": "^14.0.1",
+    "remark": "^14.0.2",
     "remark-mdx": "^1.6.22",
     "unist-util-find": "^1.0.2"
   },
