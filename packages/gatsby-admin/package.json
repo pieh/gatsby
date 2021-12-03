@@ -27,7 +27,7 @@
     "@types/socket.io-client": "^1.4.36",
     "@typescript-eslint/eslint-plugin": "^4.29.3",
     "@typescript-eslint/parser": "^4.29.3",
-    "csstype": "^3.0.9",
+    "csstype": "^3.0.10",
     "formik": "^2.2.9",
     "gatsby": "^3.14.0-next.1",
     "gatsby-interface": "^0.0.244",
