@@ -4520,10 +4520,10 @@
   resolved "https://registry.yarnpkg.com/@types/babel__code-frame/-/babel__code-frame-7.0.2.tgz#e0c0f1648cbc09a9d4e5b4ed2ae9a6f7c8f5aeb0"
   integrity sha512-imO+jT/yjOKOAS5GQZ8SDtwiIloAGGr6OaZDKB0V5JVaSfGZLat5K5/ZRtyKW6R60XHV3RHYPTFfhYb+wDKyKg==
 
-"@types/babel__core@^7.0.0", "@types/babel__core@^7.1.0", "@types/babel__core@^7.1.14", "@types/babel__core@^7.1.16":
-  version "7.1.16"
-  resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.1.16.tgz#bc12c74b7d65e82d29876b5d0baf5c625ac58702"
-  integrity sha512-EAEHtisTMM+KaKwfWdC3oyllIqswlznXCIVCt7/oRNrh+DhgT4UEBNC/jlADNjvw7UnfbcdkGQcPVZ1xYiLcrQ==
+"@types/babel__core@^7.0.0", "@types/babel__core@^7.1.0", "@types/babel__core@^7.1.14", "@types/babel__core@^7.1.16", "@types/babel__core@^7.1.18":
+  version "7.1.18"
+  resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.1.18.tgz#1a29abcc411a9c05e2094c98f9a1b7da6cdf49f8"
+  integrity sha512-S7unDjm/C7z2A2R9NzfKCK1I+BAALDtxEmsJBwlB3EzNfb929ykjL++1CK9LO++EIp2fQrC8O+BwjKvz6UeDyQ==
   dependencies:
     "@babel/parser" "^7.1.0"
     "@babel/types" "^7.0.0"
@@ -4964,7 +4964,7 @@
   dependencies:
     node-fetch "*"
 
-"@types/node@*", "@types/node@>= 8", "@types/node@^16.11.11", "@types/node@^16.11.17":
+"@types/node@*", "@types/node@>= 8", "@types/node@^16.11.17":
   version "16.11.17"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-16.11.17.tgz#ae146499772e33fc6382e1880bc567e41a528586"
   integrity sha512-C1vTZME8cFo8uxY2ui41xcynEotVkczIVI5AjLmy5pkpBv/FtG+jhtOlfcPysI8VRVwoOMv6NJm44LGnoMSWkw==
@@ -5057,10 +5057,10 @@
     "@types/react" "*"
     "@types/react-instantsearch-core" "*"
 
-"@types/react@*", "@types/react@>=16", "@types/react@^17.0.37":
-  version "17.0.37"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-17.0.37.tgz#6884d0aa402605935c397ae689deed115caad959"
-  integrity sha512-2FS1oTqBGcH/s0E+CjrCCR9+JMpsu9b69RTFO+40ua43ZqP5MmQ4iUde/dMjWR909KxZwmOQIFq6AV6NjEG5xg==
+"@types/react@*", "@types/react@>=16", "@types/react@^17.0.38":
+  version "17.0.38"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-17.0.38.tgz#f24249fefd89357d5fa71f739a686b8d7c7202bd"
+  integrity sha512-SI92X1IA+FMnP3qM5m4QReluXzhcmovhZnLNm3pyeQlooi02qI7sLiepEYqT678uNiyc25XfCqxREFpy3W7YhQ==
   dependencies:
     "@types/prop-types" "*"
     "@types/scheduler" "*"
@@ -9542,15 +9542,15 @@ cssnano-preset-default@^4.0.8:
     postcss-svgo "^4.0.3"
     postcss-unique-selectors "^4.0.1"
 
-cssnano-preset-default@^5.1.8:
-  version "5.1.8"
-  resolved "https://registry.yarnpkg.com/cssnano-preset-default/-/cssnano-preset-default-5.1.8.tgz#7525feb1b72f7b06e57f55064cbdae341d79dea2"
-  integrity sha512-zWMlP0+AMPBVE852SqTrP0DnhTcTA2C1wAF92TKZ3Va+aUVqLIhkqKlnJIXXdqXD7RN+S1ujuWmNpvrJBiM/vg==
+cssnano-preset-default@^5.1.9:
+  version "5.1.9"
+  resolved "https://registry.yarnpkg.com/cssnano-preset-default/-/cssnano-preset-default-5.1.9.tgz#79628ac48eccbdad570f70b4018cc38d43d1b7df"
+  integrity sha512-RhkEucqlQ+OxEi14K1p8gdXcMQy1mSpo7P1oC44oRls7BYIj8p+cht4IFBFV3W4iOjTP8EUB33XV1fX9KhDzyA==
   dependencies:
     css-declaration-sorter "^6.0.3"
     cssnano-utils "^2.0.1"
     postcss-calc "^8.0.0"
-    postcss-colormin "^5.2.1"
+    postcss-colormin "^5.2.2"
     postcss-convert-values "^5.0.2"
     postcss-discard-comments "^5.0.1"
     postcss-discard-duplicates "^5.0.1"
@@ -9569,7 +9569,7 @@ cssnano-preset-default@^5.1.8:
     postcss-normalize-string "^5.0.1"
     postcss-normalize-timing-functions "^5.0.1"
     postcss-normalize-unicode "^5.0.1"
-    postcss-normalize-url "^5.0.3"
+    postcss-normalize-url "^5.0.4"
     postcss-normalize-whitespace "^5.0.1"
     postcss-ordered-values "^5.0.2"
     postcss-reduce-initial "^5.0.2"
@@ -9611,13 +9611,12 @@ cssnano@^4.1.10:
     is-resolvable "^1.0.0"
     postcss "^7.0.0"
 
-cssnano@^5.0.0, cssnano@^5.0.11, cssnano@^5.0.12:
-  version "5.0.12"
-  resolved "https://registry.yarnpkg.com/cssnano/-/cssnano-5.0.12.tgz#2c083a1c786fc9dc2d5522bd3c0e331b7cd302ab"
-  integrity sha512-U38V4x2iJ3ijPdeWqUrEr4eKBB5PbEKsNP5T8xcik2Au3LeMtiMHX0i2Hu9k51FcKofNZumbrcdC6+a521IUHg==
+cssnano@^5.0.0, cssnano@^5.0.11, cssnano@^5.0.14:
+  version "5.0.14"
+  resolved "https://registry.yarnpkg.com/cssnano/-/cssnano-5.0.14.tgz#99bc550f663b48c38e9b8e0ae795697c9de84b47"
+  integrity sha512-qzhRkFvBhv08tbyKCIfWbxBXmkIpLl1uNblt8SpTHkgLfON5OCPX/CCnkdNmEosvo8bANQYmTTMEgcVBlisHaw==
   dependencies:
-    cssnano-preset-default "^5.1.8"
-    is-resolvable "^1.1.0"
+    cssnano-preset-default "^5.1.9"
     lilconfig "^2.0.3"
     yaml "^1.10.2"
 
@@ -14551,7 +14550,7 @@ is-absolute-url@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/is-absolute-url/-/is-absolute-url-2.1.0.tgz#50530dfb84fcc9aa7dbe7852e83a37b93b9f2aa6"
 
-is-absolute-url@^3.0.0, is-absolute-url@^3.0.3:
+is-absolute-url@^3.0.0:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/is-absolute-url/-/is-absolute-url-3.0.3.tgz#96c6a22b6a23929b11ea0afb1836c36ad4a5d698"
   integrity sha512-opmNIX7uFnS96NtPmhWQgQx6/NYFgsUXYMllcfzwWKUMwfo8kku1TvE6hkNcH+Q1ts5cMVrsY7j0bxXQDciu9Q==
@@ -15068,7 +15067,7 @@ is-relative@^1.0.0:
   dependencies:
     is-unc-path "^1.0.0"
 
-is-resolvable@^1.0.0, is-resolvable@^1.1.0:
+is-resolvable@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/is-resolvable/-/is-resolvable-1.1.0.tgz#fb18f87ce1feb925169c9a407c19318a3206ed88"
 
@@ -21126,15 +21125,15 @@ postcss-colormin@^4.0.3:
     postcss "^7.0.0"
     postcss-value-parser "^3.0.0"
 
-postcss-colormin@^5.2.1:
-  version "5.2.1"
-  resolved "https://registry.yarnpkg.com/postcss-colormin/-/postcss-colormin-5.2.1.tgz#6e444a806fd3c578827dbad022762df19334414d"
-  integrity sha512-VVwMrEYLcHYePUYV99Ymuoi7WhKrMGy/V9/kTS0DkCoJYmmjdOMneyhzYUxcNgteKDVbrewOkSM7Wje/MFwxzA==
+postcss-colormin@^5.2.2:
+  version "5.2.2"
+  resolved "https://registry.yarnpkg.com/postcss-colormin/-/postcss-colormin-5.2.2.tgz#019cd6912bef9e7e0924462c5e4ffae241e2f437"
+  integrity sha512-tSEe3NpqWARUTidDlF0LntPkdlhXqfDFuA1yslqpvvGAfpZ7oBaw+/QXd935NKm2U9p4PED0HDZlzmMk7fVC6g==
   dependencies:
     browserslist "^4.16.6"
     caniuse-api "^3.0.0"
     colord "^2.9.1"
-    postcss-value-parser "^4.1.0"
+    postcss-value-parser "^4.2.0"
 
 postcss-convert-values@^4.0.1:
   version "4.0.1"
@@ -21571,14 +21570,13 @@ postcss-normalize-url@^4.0.1:
     postcss "^7.0.0"
     postcss-value-parser "^3.0.0"
 
-postcss-normalize-url@^5.0.3:
-  version "5.0.3"
-  resolved "https://registry.yarnpkg.com/postcss-normalize-url/-/postcss-normalize-url-5.0.3.tgz#42eca6ede57fe69075fab0f88ac8e48916ef931c"
-  integrity sha512-qWiUMbvkRx3kc1Dp5opzUwc7MBWZcSDK2yofCmdvFBCpx+zFPkxBC1FASQ59Pt+flYfj/nTZSkmF56+XG5elSg==
+postcss-normalize-url@^5.0.4:
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/postcss-normalize-url/-/postcss-normalize-url-5.0.4.tgz#3b0322c425e31dd275174d0d5db0e466f50810fb"
+  integrity sha512-cNj3RzK2pgQQyNp7dzq0dqpUpQ/wYtdDZM3DepPmFjCmYIfceuD9VIAcOdvrNetjIU65g1B4uwdP/Krf6AFdXg==
   dependencies:
-    is-absolute-url "^3.0.3"
     normalize-url "^6.0.1"
-    postcss-value-parser "^4.1.0"
+    postcss-value-parser "^4.2.0"
 
 postcss-normalize-whitespace@^4.0.2:
   version "4.0.2"
@@ -21758,10 +21756,10 @@ postcss@^6.0.0, postcss@^6.0.1, postcss@^6.0.22:
     source-map "^0.6.1"
     supports-color "^5.4.0"
 
-postcss@^8.1.10, postcss@^8.1.6, postcss@^8.2.1, postcss@^8.2.15, postcss@^8.2.8, postcss@^8.2.9, postcss@^8.3.11, postcss@^8.3.5, postcss@^8.4.4:
-  version "8.4.4"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.4.tgz#d53d4ec6a75fd62557a66bb41978bf47ff0c2869"
-  integrity sha512-joU6fBsN6EIer28Lj6GDFoC/5yOZzLCfn0zHAn/MYXI7aPt4m4hK5KC5ovEZXy+lnCjmYIbQWngvju2ddyEr8Q==
+postcss@^8.1.10, postcss@^8.1.6, postcss@^8.2.1, postcss@^8.2.15, postcss@^8.2.8, postcss@^8.2.9, postcss@^8.3.11, postcss@^8.3.5, postcss@^8.4.5:
+  version "8.4.5"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.5.tgz#bae665764dfd4c6fcc24dc0fdf7e7aa00cc77f95"
+  integrity sha512-jBDboWM8qpaqwkMwItqTQTiFikhs/67OYVvblFFTM7MrZjt6yMKd6r2kgXizEbTTljacm4NldIlZnhbjr84QYg==
   dependencies:
     nanoid "^3.1.30"
     picocolors "^1.0.0"
