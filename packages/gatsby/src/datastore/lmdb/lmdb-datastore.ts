@@ -12,6 +12,8 @@ import {
   runFastFiltersAndSort,
 } from "../in-memory/run-fast-filters"
 
+import { memoryDecorationGatsbyNode } from "../../utils/debug-memory"
+
 const lmdbDatastore = {
   getNode,
   getTypes,
@@ -70,7 +72,14 @@ function getDatabases(): ILmdbDatabases {
         // FIXME: sharedStructuresKey breaks tests - probably need some cleanup for it on DELETE_CACHE
         // sharedStructuresKey: Symbol.for(`structures`),
         // @ts-ignore
-        cache: true,
+        cache: {
+          // default setting will have lru cache behavior, keeping most recently used
+          // items in memory (with expiration time), this CAN cause issues, but for the most
+          // part I disable it here to get cleaner picture into why Nodes are retained in memory
+          // disabling it completely is probably not great idea, but maybe adjusting config
+          // to limit how many items can be held by cache would be interesting.
+          expirer: false,
+        },
       }),
       nodesByType: rootDb.openDB({
         name: `nodesByType`,
@@ -145,7 +154,7 @@ function getNode(id: string): IGatsbyNode | undefined {
   }
 
   const { nodes } = getDatabases()
-  return nodes.get(id)
+  return memoryDecorationGatsbyNode(nodes.get(id))
 }
 
 function getTypes(): Array<string> {

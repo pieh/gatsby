@@ -59,6 +59,7 @@ export async function runQueriesInWorkersQueue(
     { parentSpan: opts?.parentSpan }
   )
   activity.start()
+  await Promise.all(pool.all.takeHeapSnapshot(`query-running-1`))
   try {
     const staticQuerySegments = chunk(
       queryIds.staticQueryIds,
@@ -95,6 +96,8 @@ export async function runQueriesInWorkersQueue(
     // because gatsby-worker will queue tasks internally and worker will never execute multiple tasks at the same time
     // so awaiting `.saveQueriesDependencies()` is enough to make sure `.setComponents()` and `.runQueries()` finished
     await Promise.all(pool.all.saveQueriesDependencies())
+
+    await Promise.all(pool.all.takeHeapSnapshot(`query-running-2`))
   } catch (e) {
     handleRunQueriesInWorkersQueueError(e)
   } finally {
