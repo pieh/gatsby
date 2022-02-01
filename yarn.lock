@@ -4956,10 +4956,10 @@
   dependencies:
     node-fetch "*"
 
-"@types/node@*", "@types/node@>= 8", "@types/node@^17.0.8":
-  version "17.0.8"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.8.tgz#50d680c8a8a78fe30abe6906453b21ad8ab0ad7b"
-  integrity sha512-YofkM6fGv4gDJq78g4j0mMuGMkZVxZDgtU0JRdx6FgiJDG+0fY0GKVolOV8WqVmEhLCXkQRjwDdKyPxJp/uucg==
+"@types/node@*", "@types/node@>= 8", "@types/node@^17.0.13", "@types/node@^17.0.8":
+  version "17.0.13"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.13.tgz#5ed7ed7c662948335fcad6c412bb42d99ea754e3"
+  integrity sha512-Y86MAxASe25hNzlDbsviXl8jQHb0RDvKt4c40ZJQ1Don0AAL0STLZSs4N+6gLEO55pedy7r2cLwS+ZDxPm/2Bw==
 
 "@types/node@^12.20.6":
   version "12.20.6"
@@ -11796,11 +11796,12 @@ fd@~0.0.2:
   resolved "https://registry.yarnpkg.com/fd/-/fd-0.0.3.tgz#b3240de86dbf5a345baae7382a07d4713566ff0c"
   integrity sha512-iAHrIslQb3U68OcMSP0kkNWabp7sSN6d2TBSb2JO3gcLJVDd4owr/hKM4SFJovFOUeeXeItjYgouEDTMWiVAnA==
 
-fetch-blob@^3.1.2:
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/fetch-blob/-/fetch-blob-3.1.3.tgz#a7dca4855e39d3e3c5a1da62d4ee335c37d26012"
-  integrity sha512-ax1Y5I9w+9+JiM+wdHkhBoxew+zG4AJ2SvAD1v1szpddUIiPERVGBxrMcB2ZqW0Y3PP8bOWYv2zqQq1Jp2kqUQ==
+fetch-blob@^3.1.2, fetch-blob@^3.1.4:
+  version "3.1.4"
+  resolved "https://registry.yarnpkg.com/fetch-blob/-/fetch-blob-3.1.4.tgz#e8c6567f80ad7fc22fd302e7dcb72bafde9c1717"
+  integrity sha512-Eq5Xv5+VlSrYWEqKrusxY1C3Hm/hjeAsCGVG3ft7pZahlUAChpGZT/Ms1WmSLnEAisEXszjzu/s+ce6HZB2VHA==
   dependencies:
+    node-domexception "^1.0.0"
     web-streams-polyfill "^3.0.3"
 
 fetch-mock-jest@^1.5.1:
@@ -16258,10 +16259,10 @@ joi@^14.3.1:
     isemail "3.x.x"
     topo "3.x.x"
 
-joi@^17.2.1, joi@^17.4.0, joi@^17.4.2, joi@^17.5.0:
-  version "17.5.0"
-  resolved "https://registry.yarnpkg.com/joi/-/joi-17.5.0.tgz#7e66d0004b5045d971cf416a55fb61d33ac6e011"
-  integrity sha512-R7hR50COp7StzLnDi4ywOXHrBrgNXuUUfJWIR5lPY5Bm/pOD3jZaTwpluUXVLRWcoWZxkrHBBJ5hLxgnlehbdw==
+joi@^17.2.1, joi@^17.4.0, joi@^17.4.2, joi@^17.6.0:
+  version "17.6.0"
+  resolved "https://registry.yarnpkg.com/joi/-/joi-17.6.0.tgz#0bb54f2f006c09a96e75ce687957bd04290054b2"
+  integrity sha512-OX5dG6DTbcr/kbMFj0KGYxuew69HPcAE3K/sZpEV2nP6e/j/C0HV+HNiBPCASxdx5T7DMoa0s8UeHWMnb6n2zw==
   dependencies:
     "@hapi/hoek" "^9.0.0"
     "@hapi/topo" "^5.0.0"
@@ -19445,6 +19446,11 @@ node-dir@^0.1.10, node-dir@^0.1.17:
   dependencies:
     minimatch "^3.0.2"
 
+node-domexception@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/node-domexception/-/node-domexception-1.0.0.tgz#6888db46a1f71c0b76b3f7555016b63fe64766e5"
+  integrity sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==
+
 node-environment-flags@^1.0.5:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/node-environment-flags/-/node-environment-flags-1.0.6.tgz#a30ac13621f6f7d674260a54dede048c3982c088"
@@ -19465,13 +19471,13 @@ node-fetch-npm@^2.0.2:
     json-parse-better-errors "^1.0.0"
     safe-buffer "^5.1.1"
 
-node-fetch@*, node-fetch@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-3.1.0.tgz#714f4922dc270239487654eaeeab86b8206cb52e"
-  integrity sha512-QU0WbIfMUjd5+MUzQOYhenAazakV7Irh1SGkWCsRzBwvm4fAhzEUaHMJ6QLP7gWT6WO9/oH2zhKMMGMuIrDyKw==
+node-fetch@*, node-fetch@^3.1.0, node-fetch@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-3.2.0.tgz#59390db4e489184fa35d4b74caf5510e8dfbaf3b"
+  integrity sha512-8xeimMwMItMw8hRrOl3C9/xzU49HV/yE6ORew/l+dxWimO5A4Ra8ld2rerlJvc/O7et5Z1zrWsPX43v1QBjCxw==
   dependencies:
     data-uri-to-buffer "^4.0.0"
-    fetch-blob "^3.1.2"
+    fetch-blob "^3.1.4"
     formdata-polyfill "^4.0.10"
 
 node-fetch@2.1.2:
