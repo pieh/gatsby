@@ -16280,10 +16280,10 @@ js-base64@^2.1.9:
   resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-2.5.1.tgz#1efa39ef2c5f7980bb1784ade4a8af2de3291121"
   integrity sha512-M7kLczedRMYX4L8Mdh4MzyAMM9O5osx+4FcOQuTvr3A9F2D9S5JXheN0ewNbrvK2UatkTRhL5ejGmGSjNMiZuw==
 
-js-combinatorics@^1.5.4:
-  version "1.5.4"
-  resolved "https://registry.yarnpkg.com/js-combinatorics/-/js-combinatorics-1.5.4.tgz#fb9c8c1817ef76c8f4d1e43b465df8705b060976"
-  integrity sha512-RpJ15pyuged8J5FNR/RrCxel53mcTmpmERa9fmN/IujwCQJ3AoiymWvwzqU63/CIUMB94s1/t0u78696c4eEfw==
+js-combinatorics@^1.5.5:
+  version "1.5.5"
+  resolved "https://registry.yarnpkg.com/js-combinatorics/-/js-combinatorics-1.5.5.tgz#acf7fe502fed6ad51ddd551e6168fa2d994f6469"
+  integrity sha512-wvFVSKwBIZ/5dStXuEagjAvLl/2WRzA9cAmV3MjA5XydsaHZJzUGQ6LqnbYJb7G5ovmGhHC9Ikh3H83Zebtfbg==
 
 js-levenshtein@^1.1.6:
   version "1.1.6"
