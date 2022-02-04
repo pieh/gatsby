@@ -3580,10 +3580,10 @@
     unist-builder "2.0.3"
     unist-util-visit "2.0.3"
 
-"@mdx-js/mdx@^2.0.0-rc.2":
-  version "2.0.0-rc.2"
-  resolved "https://registry.yarnpkg.com/@mdx-js/mdx/-/mdx-2.0.0-rc.2.tgz#46f343030539717adffd5f7bcb4f97325b31de7b"
-  integrity sha512-hf/kfsQSl/fhFP6s4TRWic7LYDzwsLieD37n90w8CP3U6dsbVhuk+n/OwLSS1pfdb5NJulTV4LQBv4e4h7Y1iw==
+"@mdx-js/mdx@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@mdx-js/mdx/-/mdx-2.0.0.tgz#7f270df1e77c46f8338fc32089016b3ea383d023"
+  integrity sha512-Q/Zv+gdm80qcxpmL/Dtd/b9+UyZjjJUCQeZyywLAQqre648hRYgeGNPu7Bl2hB7M8/WBLXpabQEKW3dmGdDTDQ==
   dependencies:
     "@types/estree-jsx" "^0.0.1"
     "@types/mdx" "^2.0.0"
@@ -3594,7 +3594,7 @@
     hast-util-to-estree "^2.0.0"
     markdown-extensions "^1.0.0"
     periscopic "^3.0.0"
-    remark-mdx "^2.0.0-rc.2"
+    remark-mdx "^2.0.0"
     remark-parse "^10.0.0"
     remark-rehype "^10.0.0"
     unified "^10.0.0"
@@ -3613,10 +3613,10 @@
   resolved "https://registry.yarnpkg.com/@mdx-js/react/-/react-1.6.22.tgz#ae09b4744fddc74714ee9f9d6f17a66e77c43573"
   integrity sha512-TDoPum4SHdfPiGSAaRBw7ECyI8VaHpK8GJugbJIJuqyh6kzw9ZLJZW3HGL3NNrJGxcAixUvqROm+YuQOo5eXtg==
 
-"@mdx-js/react@^2.0.0-rc.2":
-  version "2.0.0-rc.2"
-  resolved "https://registry.yarnpkg.com/@mdx-js/react/-/react-2.0.0-rc.2.tgz#83fa80620bc11eec1112d68d77136048a85497df"
-  integrity sha512-WHksgPnvKyDDNq0RQvTnKboe+wxUcq5A7xD12Ob+ASfUR3NRFo/h//k8fjv3t8dgzWX5M0UeU5jsccjykosDEQ==
+"@mdx-js/react@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@mdx-js/react/-/react-2.0.0.tgz#00a9f5467d2761fe3818222740f50403f83aee2c"
+  integrity sha512-icpMd43xqORnHSVRwALZv3ELN3IS7VS3BL+FyH2FFergQPSQ21FX0lN+OMIs0X+3dGY1L0DLhBCkMfPO+yDG7Q==
   dependencies:
     "@types/mdx" "^2.0.0"
     "@types/react" ">=16"
@@ -4099,7 +4099,7 @@
     is-module "^1.0.0"
     resolve "^1.19.0"
 
-"@rollup/plugin-node-resolve@^13.1.2", "@rollup/plugin-node-resolve@^13.1.3":
+"@rollup/plugin-node-resolve@^13.1.3":
   version "13.1.3"
   resolved "https://registry.yarnpkg.com/@rollup/plugin-node-resolve/-/plugin-node-resolve-13.1.3.tgz#2ed277fb3ad98745424c1d2ba152484508a92d79"
   integrity sha512-BdxNk+LtmElRo5d06MGY4zoepyrXX1tkzX2hrnPEZ53k78GuOMWLqmJDGIIOPwVRIFZrLQOo+Yr6KtCuLIA0AQ==
@@ -9873,6 +9873,13 @@ decimal.js@^10.2.1:
   version "10.2.1"
   resolved "https://registry.yarnpkg.com/decimal.js/-/decimal.js-10.2.1.tgz#238ae7b0f0c793d3e3cea410108b35a2c01426a3"
   integrity sha512-KaL7+6Fw6i5A2XSnsbhm/6B+NuEA7TZ4vqxnd5tXz9sbKtrN9Srj8ab4vKVdK8YAqZO9P1kg45Y6YLoduPf+kw==
+
+decode-named-character-reference@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/decode-named-character-reference/-/decode-named-character-reference-1.0.1.tgz#57b2bd9112659cacbc449d3577d7dadb8e1f3d1b"
+  integrity sha512-YV/0HQHreRwKb7uBopyIkLG17jG6Sv2qUchk9qSoVJ2f+flwRsPNBO0hAnjt6mTNYUT+vw9Gy2ihXg4sUWPi2w==
+  dependencies:
+    character-entities "^2.0.0"
 
 decode-uri-component@^0.2.0:
   version "0.2.0"
@@ -18001,15 +18008,17 @@ mdast-util-mdx-expression@~0.1.0:
   dependencies:
     strip-indent "^3.0.0"
 
-mdast-util-mdx-jsx@^1.0.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/mdast-util-mdx-jsx/-/mdast-util-mdx-jsx-1.1.1.tgz#f2ee5e3b74282a8fecf3a6608bb19ed656751a34"
-  integrity sha512-C4W4hXmagipaeMwi5O8y+lVWE4qP2MDxfKlIh0lZN6MZWSPpQTK5RPwKBH4DdYHorgjbV2rKk84rNWlRtvoZCg==
+mdast-util-mdx-jsx@^2.0.0:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/mdast-util-mdx-jsx/-/mdast-util-mdx-jsx-2.0.1.tgz#03d003c8b0b4bd94ab092d876c0f92d2b0c83b0b"
+  integrity sha512-oPC7/smPBf7vxnvIYH5y3fPo2lw1rdrswFfSb4i0GTAXRUQv7JUU/t/hbp07dgGdUFTSDOHm5DNamhNg/s2Hrg==
   dependencies:
     "@types/estree-jsx" "^0.0.1"
+    "@types/hast" "^2.0.0"
     "@types/mdast" "^3.0.0"
-    mdast-util-to-markdown "^1.0.0"
-    parse-entities "^3.0.0"
+    ccount "^2.0.0"
+    mdast-util-to-markdown "^1.3.0"
+    parse-entities "^4.0.0"
     stringify-entities "^4.0.0"
     unist-util-remove-position "^4.0.0"
     unist-util-stringify-position "^3.0.0"
@@ -18037,13 +18046,13 @@ mdast-util-mdx@^0.1.1:
     mdast-util-mdxjs-esm "~0.1.0"
     mdast-util-to-markdown "^0.6.1"
 
-mdast-util-mdx@^1.0.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/mdast-util-mdx/-/mdast-util-mdx-1.1.0.tgz#c98612804719309aea97e3da068658392e126488"
-  integrity sha512-leKb9uG7laXdyFlTleYV4ZEaCpsxeU1LlkkR/xp35pgKrfV1Y0fNCuOw9vaRc2a9YDpH22wd145Wt7UY5yzeZw==
+mdast-util-mdx@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/mdast-util-mdx/-/mdast-util-mdx-2.0.0.tgz#dd4f6c993cf27da32725e50a04874f595b7b63fb"
+  integrity sha512-M09lW0CcBT1VrJUaF/PYxemxxHa7SLDHdSn94Q9FhxjCQfuW7nMAWKWimTmA3OyDMSTH981NN1csW1X+HPSluw==
   dependencies:
     mdast-util-mdx-expression "^1.0.0"
-    mdast-util-mdx-jsx "^1.0.0"
+    mdast-util-mdx-jsx "^2.0.0"
     mdast-util-mdxjs-esm "^1.0.0"
 
 mdast-util-mdxjs-esm@^1.0.0:
@@ -18117,10 +18126,10 @@ mdast-util-to-markdown@^0.6.0, mdast-util-to-markdown@^0.6.1, mdast-util-to-mark
     repeat-string "^1.0.0"
     zwitch "^1.0.0"
 
-mdast-util-to-markdown@^1.0.0:
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/mdast-util-to-markdown/-/mdast-util-to-markdown-1.2.4.tgz#f67173bb95526a4d93454021aa4602f165ad3858"
-  integrity sha512-Wive3NvrNS4OY5yYKBADdK1QSlbJUZyZ2ssanITUzNQ7sxMfBANTVjLrAA9BFXshaeG9G77xpOK/z+TTret5Hg==
+mdast-util-to-markdown@^1.0.0, mdast-util-to-markdown@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/mdast-util-to-markdown/-/mdast-util-to-markdown-1.3.0.tgz#38b6cdc8dc417de642a469c4fc2abdf8c931bd1e"
+  integrity sha512-6tUSs4r+KK4JGTTiQ7FfHmVOaDrLQJPmpjD6wPMlHGUVXoG9Vjc3jIeP+uyBWRf8clwB2blM+W7+KrlMYQnftA==
   dependencies:
     "@types/mdast" "^3.0.0"
     "@types/unist" "^2.0.0"
@@ -20462,6 +20471,20 @@ parse-entities@^3.0.0:
     character-entities "^2.0.0"
     character-entities-legacy "^3.0.0"
     character-reference-invalid "^2.0.0"
+    is-alphanumerical "^2.0.0"
+    is-decimal "^2.0.0"
+    is-hexadecimal "^2.0.0"
+
+parse-entities@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/parse-entities/-/parse-entities-4.0.0.tgz#f67c856d4e3fe19b1a445c3fabe78dcdc1053eeb"
+  integrity sha512-5nk9Fn03x3rEhGaX1FU6IDwG/k+GxLXlFAkgrbM1asuAFl3BhdQWvASaIsmwWypRNcZKHPYnIuOSfIWEyEQnPQ==
+  dependencies:
+    "@types/unist" "^2.0.0"
+    character-entities "^2.0.0"
+    character-entities-legacy "^3.0.0"
+    character-reference-invalid "^2.0.0"
+    decode-named-character-reference "^1.0.0"
     is-alphanumerical "^2.0.0"
     is-decimal "^2.0.0"
     is-hexadecimal "^2.0.0"
@@ -23540,12 +23563,12 @@ remark-mdx@2.0.0-next.9:
     micromark-extension-mdx "^0.2.0"
     micromark-extension-mdxjs "^0.3.0"
 
-remark-mdx@^2.0.0-next.4, remark-mdx@^2.0.0-rc.2:
-  version "2.0.0-rc.2"
-  resolved "https://registry.yarnpkg.com/remark-mdx/-/remark-mdx-2.0.0-rc.2.tgz#07676a08f34cd292505414e5440927e1b7d26289"
-  integrity sha512-TMgFSEVx42/YzJWjDY+GKw7CGSbp3XKqBraXPxFS27r8iD9U6zuOZKXH4MoLl9JqiTOmQi0M1zJwT2YhPs32ug==
+remark-mdx@^2.0.0, remark-mdx@^2.0.0-next.4:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/remark-mdx/-/remark-mdx-2.0.0.tgz#bd921780c19ce3e51941e54b1e6388440ed499b3"
+  integrity sha512-TDnjSv77Oynf+K1deGWZPKSwh3/9hykVAxVm9enAw6BmicCGklREET8s19KYnjGsNPms0pNDJLmp+bnHDVItAQ==
   dependencies:
-    mdast-util-mdx "^1.0.0"
+    mdast-util-mdx "^2.0.0"
     micromark-extension-mdxjs "^1.0.0"
 
 remark-mdxjs@^2.0.0-next.4:
@@ -24431,10 +24454,10 @@ rollup@^1:
     "@types/node" "*"
     acorn "^7.1.0"
 
-rollup@^2.35.1, rollup@^2.62.0, rollup@^2.66.1:
-  version "2.66.1"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.66.1.tgz#366b0404de353c4331d538c3ad2963934fcb4937"
-  integrity sha512-crSgLhSkLMnKr4s9iZ/1qJCplgAgrRY+igWv8KhG/AjKOJ0YX/WpmANyn8oxrw+zenF3BXWDLa7Xl/QZISH+7w==
+rollup@^2.35.1, rollup@^2.66.1, rollup@^2.67.0:
+  version "2.67.0"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.67.0.tgz#496de7e641dbe39f681c5a82419cb5013917d406"
+  integrity sha512-W83AaERwvDiHwHEF/dfAfS3z1Be5wf7n+pO3ZAO5IQadCT2lBTr7WQ2MwZZe+nodbD+n3HtC4OCOAdsOPPcKZQ==
   optionalDependencies:
     fsevents "~2.3.2"
 
@@ -27707,7 +27730,7 @@ urltools@^0.4.1:
     underscore "^1.8.3"
     urijs "^1.18.2"
 
-urql@^2.0.6, urql@^2.1.3:
+urql@^2.1.3:
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/urql/-/urql-2.1.3.tgz#4bfe631db03dc059738ff774b46244bf1a755c6d"
   integrity sha512-S6GaKM7NJLed25L2qdZxaWFjWggXQHrneEVEe47+ZTQWxmfyV05STMl6DhtnZqb6n1wdT/KUljHkggz0kiE3NA==
