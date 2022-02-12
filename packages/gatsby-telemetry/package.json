@@ -9,7 +9,7 @@
   "dependencies": {
     "@babel/code-frame": "^7.14.0",
     "@babel/runtime": "^7.14.8",
-    "@turist/fetch": "^7.1.7",
+    "@turist/fetch": "^7.2.0",
     "@turist/time": "^0.0.2",
     "async-retry-ng": "^2.0.1",
     "boxen": "^4.2.0",
@@ -19,7 +19,7 @@
     "git-up": "^4.0.5",
     "is-docker": "^2.2.1",
     "lodash": "^4.17.21",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "uuid": "3.4.0"
   },
   "devDependencies": {
