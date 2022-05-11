@@ -29,6 +29,7 @@ export const onRenderBody: GatsbySSR[`onRenderBody`] = ({
   setHeadComponents,
 }) => {
   if (!collectedScripts?.[pathname]?.length) {
+    console.log(`skipping because nothing is collected`)
     return
   }
 

@@ -70,32 +70,34 @@ export function Script(props: ScriptProps): ReactElement | null {
     const inlineScript = resolveInlineScript(props)
     const attributes = resolveAttributes(props)
 
-    const { collectScript } = useContext(PartytownContext)
+    const { collectScript, partytownReady } = useContext(PartytownContext)
     if (collectScript) {
       collectScript(attributes)
     }
 
-    if (inlineScript) {
+    if (partytownReady) {
+      if (inlineScript) {
+        return (
+          <script
+            type="text/partytown"
+            async
+            data-strategy={strategy}
+            {...attributes}
+          >
+            {resolveInlineScript(props)}
+          </script>
+        )
+      }
       return (
         <script
           type="text/partytown"
           async
+          src={proxyPartytownUrl(src)}
           data-strategy={strategy}
           {...attributes}
-        >
-          {resolveInlineScript(props)}
-        </script>
+        />
       )
     }
-    return (
-      <script
-        type="text/partytown"
-        async
-        src={proxyPartytownUrl(src)}
-        data-strategy={strategy}
-        {...attributes}
-      />
-    )
   }
 
   return null

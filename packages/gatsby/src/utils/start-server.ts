@@ -54,6 +54,7 @@ import { getPageMode } from "./page-mode"
 import { configureTrailingSlash } from "./express-middlewares"
 import type { Express } from "express"
 import { addImageRoutes } from "gatsby-plugin-utils/polyfill-remote-file"
+import proxyMiddleware from "express-http-proxy"
 
 type ActivityTracker = any // TODO: Replace this with proper type once reporter is typed
 
@@ -153,11 +154,33 @@ export async function startServer(
     }
   )
 
+  debugger
   const compiler = webpack(devConfig)
 
   /**
    * Set up the express app.
    **/
+
+  // Proxy gatsby-script using off-main-thread strategy
+  app.use(
+    `/__partytown-proxy`,
+    proxyMiddleware(
+      req => {
+        console.log(`proxyMiddleware`, req.url)
+        return new URL(req.query.url as string).host as string
+      },
+      {
+        proxyReqPathResolver: req => {
+          console.log(`resolver`, req)
+          const { pathname = ``, search = `` } = new URL(
+            req.query.url as string
+          )
+          return pathname + search
+        },
+      }
+    )
+  )
+
   app.use(compression())
   app.use(telemetry.expressMiddleware(`DEVELOP`))
   app.use(
