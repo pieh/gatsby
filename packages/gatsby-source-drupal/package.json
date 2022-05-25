@@ -13,7 +13,7 @@
     "body-parser": "^1.19.0",
     "fastq": "^1.11.1",
     "gatsby-source-filesystem": "^3.14.0-next.1",
-    "got": "^11.8.2",
+    "got": "^11.8.5",
     "http2-wrapper": "^2.0.5",
     "lodash": "^4.17.21",
     "tiny-async-pool": "^1.2.0",
