@@ -22,7 +22,7 @@
     "@babel/runtime": "^7.14.8",
     "gatsby-core-utils": "^2.14.0-next.1",
     "gatsby-source-filesystem": "^3.14.0-next.1",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "sharp": "^0.29.0",
     "shift-left": "^0.1.5"
   },
