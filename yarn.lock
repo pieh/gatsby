@@ -10162,7 +10162,7 @@ doctrine@^3.0.0:
   dependencies:
     esutils "^2.0.2"
 
-documentation@^13.1.0, documentation@^13.2.5:
+documentation@^13.2.5:
   version "13.2.5"
   resolved "https://registry.yarnpkg.com/documentation/-/documentation-13.2.5.tgz#2d4c8a94ce60a0342d6981d34488ad6184e463a0"
   integrity sha512-d1TrfrHXYZR63xrOzkYwwe297vkSwBoEhyyMBOi20T+7Ohe1aX1dW4nqXncQmdmE5MxluSaxxa3BW1dCvbF5AQ==
@@ -21627,7 +21627,7 @@ prism-react-renderer@^1.3.5:
   resolved "https://registry.yarnpkg.com/prism-react-renderer/-/prism-react-renderer-1.3.5.tgz#786bb69aa6f73c32ba1ee813fbe17a0115435085"
   integrity sha512-IJ+MSwBWKG+SM3b2SUfdrhC+gu01QkV2KmRQgREThBfSQRoufqRfxfHUxpG1WcaFjP+kojcFyO9Qqtpgt3qLCg==
 
-prismjs@^1.23.0, prismjs@^1.28.0:
+prismjs@^1.28.0:
   version "1.28.0"
   resolved "https://registry.yarnpkg.com/prismjs/-/prismjs-1.28.0.tgz#0d8f561fa0f7cf6ebca901747828b149147044b6"
   integrity sha512-8aaXdYvl1F7iC7Xm1spqSaY/OJBpYW3v+KJ+F17iYxvdc8sfjW194COK5wVhMZX45tGteiBQgdvD/nhxcRwylw==
