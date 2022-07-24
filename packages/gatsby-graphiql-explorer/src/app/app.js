@@ -9,6 +9,7 @@ import GraphiQLExplorer from "graphiql-explorer"
 import { getIntrospectionQuery, buildClientSchema, parse } from "graphql"
 import CodeExporter from "graphiql-code-exporter"
 import snippets from "./snippets"
+import { PagesExplorer } from "./components/pages"
 
 import "whatwg-fetch"
 
@@ -149,24 +150,30 @@ ${queryExample}
 `
 }
 
-const storedExplorerPaneState =
-  typeof parameters.explorerIsOpen !== `undefined`
-    ? parameters.explorerIsOpen === `false`
+function getState(paramName, localStorageName) {
+  return typeof parameters[paramName] !== `undefined`
+    ? parameters[paramName] === `false`
       ? false
       : true
     : window.localStorage
-    ? window.localStorage.getItem(`graphiql:graphiqlExplorerOpen`) !== `false`
+    ? window.localStorage.getItem(localStorageName) !== `false`
     : true
+}
 
-const storedCodeExporterPaneState =
-  typeof parameters.codeExporterIsOpen !== `undefined`
-    ? parameters.codeExporterIsOpen === `false`
-      ? false
-      : true
-    : window.localStorage
-    ? window.localStorage.getItem(`graphiql:graphiqlCodeExporterOpen`) ===
-      `true`
-    : false
+const storedExplorerPaneState = getState(
+  `explorerIsOpen`,
+  `graphiql:graphiqlExplorerOpen`
+)
+
+const storedCodeExporterPaneState = getState(
+  `codeExporterIsOpen`,
+  `graphiql:graphiqlCodeExporterOpen`
+)
+
+const storedPagesExporterIsOpen = getState(
+  `pagesExporterIsOpen`,
+  `graphiql:graphiqlPagesExporterOpen`
+)
 
 class App extends React.Component {
   state = {
@@ -176,6 +183,7 @@ class App extends React.Component {
     variables: DEFAULT_VARIABLES,
     explorerIsOpen: storedExplorerPaneState,
     codeExporterIsOpen: storedCodeExporterPaneState,
+    pagesExporterIsOpen: storedPagesExporterIsOpen,
   }
 
   componentDidMount() {
@@ -315,6 +323,19 @@ class App extends React.Component {
     this.setState({ codeExporterIsOpen: newCodeExporterIsOpen })
   }
 
+  _handlePagesExporter = () => {
+    const newpagesExporterIsOpen = !this.state.pagesExporterIsOpen
+    if (window.localStorage) {
+      window.localStorage.setItem(
+        `graphiql:graphiqlPagesExporterOpen`,
+        newpagesExporterIsOpen
+      )
+    }
+    parameters.pagesExporterIsOpen = newpagesExporterIsOpen
+    updateURL()
+    this.setState({ pagesExporterIsOpen: newpagesExporterIsOpen })
+  }
+
   _refreshExternalDataSources = () => {
     const options = { method: `post` }
     if (this.state.refreshToken) {
@@ -327,6 +348,11 @@ class App extends React.Component {
     })
 
     return fetch(`/__refresh`, options)
+  }
+  _setQueryAndVariables = ({ query, variables }) => {
+    onEditVariables(variables)
+    this._handleEditQuery(query)
+    this.setState({ query, variables })
   }
 
   render() {
@@ -391,6 +417,11 @@ class App extends React.Component {
               label="Code Exporter"
               title="Toggle Code Exporter"
             />
+            <GraphiQL.Button
+              onClick={this._handlePagesExporter}
+              label="Pages Explorer"
+              title="Toggle Pages Explorer"
+            />
             {this.state.enableRefresh && (
               <GraphiQL.Button
                 onClick={this._refreshExternalDataSources}
@@ -401,6 +432,12 @@ class App extends React.Component {
           </GraphiQL.Toolbar>
         </GraphiQL>
         {codeExporter}
+        {this.state.pagesExporterIsOpen ? (
+          <PagesExplorer
+            editorQuery={query}
+            setQueryAndVariables={this._setQueryAndVariables}
+          />
+        ) : null}
       </React.Fragment>
     )
   }

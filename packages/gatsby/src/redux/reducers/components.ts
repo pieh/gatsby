@@ -23,6 +23,7 @@ export const componentsReducer = (
           componentPath: action.payload.componentPath,
           componentChunkName: action.payload.componentChunkName,
           query: ``,
+          originalQueryText: ``,
           pages: new Set(),
           isInBootstrap: true,
           serverData: false,
@@ -38,6 +39,7 @@ export const componentsReducer = (
       action.payload.componentPath = normalize(action.payload.componentPath)
       const component = state.get(action.payload.componentPath)!
       component.query = action.payload.query
+      component.originalQueryText = action.payload.originalQueryText
       state.set(action.payload.componentPath, component)
       return state
     }

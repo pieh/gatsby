@@ -152,6 +152,7 @@ export interface IGatsbyPageComponent {
   componentPath: SystemPath
   componentChunkName: string
   query: string
+  originalQueryText: string
   pages: Set<string>
   isInBootstrap: boolean
   serverData: boolean
@@ -597,7 +598,7 @@ export interface IQueryExtractedAction {
   type: `QUERY_EXTRACTED`
   plugin: IGatsbyPlugin
   traceId: string | undefined
-  payload: { componentPath: string; query: string }
+  payload: { componentPath: string; query: string; originalQueryText: string }
 }
 
 export interface IQueryExtractionGraphQLErrorAction {

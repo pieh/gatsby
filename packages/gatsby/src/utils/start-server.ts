@@ -196,8 +196,132 @@ export async function startServer(
         }
         return fragments
       },
+      getPagesByTemplate: function getPagesByTemplate({
+        filter,
+      }: {
+        filter?: string
+      } = {}): Array<{
+        componentPath: string
+        pages: Array<string>
+        hasMorePages: boolean
+      }> {
+        const ret: ReturnType<typeof getPagesByTemplate> = []
+
+        for (const { componentPath, pages: pagesSet } of store
+          .getState()
+          .components.values()) {
+          let hasMorePages = false
+          const pages: Array<string> = []
+          for (const page of pagesSet) {
+            if (page.startsWith(`/dev-404-page`)) {
+              continue
+            }
+
+            if (!filter || page.includes(filter)) {
+              if (
+                (!filter && pages.length > 2) ||
+                (filter && pages.length > 10)
+              ) {
+                hasMorePages = true
+                break
+              }
+
+              pages.push(page)
+            }
+          }
+
+          if (pages.length > 0) {
+            ret.push({
+              componentPath: path.posix.relative(
+                store.getState().program.directory,
+                componentPath
+              ),
+              pages,
+              hasMorePages,
+            })
+          }
+        }
+
+        return ret.sort((a, b) =>
+          a.componentPath.localeCompare(b.componentPath)
+        )
+      },
+      getPageQueryAndContext: function getPageQueryAndContext({
+        page,
+      }: { page?: string } = {}):
+        | undefined
+        | {
+            query: string
+            context: unknown
+          } {
+        if (!page) {
+          return undefined
+        }
+
+        const pageObj = store.getState().pages.get(page)
+        if (!pageObj) {
+          return undefined
+        }
+
+        const component = store.getState().components.get(pageObj.componentPath)
+        if (!component) {
+          return undefined
+        }
+
+        return {
+          query: component.originalQueryText,
+          context: pageObj.context,
+        }
+      },
+      savePageQuery: function savePageQuery({
+        componentPath,
+        query,
+      }: {
+        componentPath?: string
+        query?: string
+      } = {}): Promise<{ status: "OK" }> | { status: "ERROR"; error: string } {
+        try {
+          if (!componentPath || !query) {
+            return { status: "ERROR", error: `Missing componentPath or query` }
+          }
+
+          // TODO: this is replacing existing query, but can't create completely new one
+          const absPath = path.posix.join(
+            store.getState().program.directory,
+            componentPath
+          )
+          const component = store.getState().components.get(absPath)
+
+          const oldQueryToReplace = component?.originalQueryText
+          if (!oldQueryToReplace) {
+            return {
+              status: "ERROR",
+              error: `Component not found, or it doesn't have a query`,
+            }
+          }
+
+          const source = fs.readFileSync(absPath, `utf8`)
+          const newSource = source.replace(oldQueryToReplace, query)
+          fs.writeFileSync(absPath, newSource)
+
+          emitter.emit(`SOURCE_FILE_CHANGED`, absPath)
+
+          return new Promise(resolve => {
+            function onQueriesProcssed() {
+              emitter.off(`QUERY_EXTRACTION_FINISHED`, onQueriesProcssed)
+              return resolve({ status: "OK" })
+            }
+            emitter.on(`QUERY_EXTRACTION_FINISHED`, onQueriesProcssed)
+          })
+        } catch (e) {
+          return { status: "ERROR", error: e.message }
+        }
+      },
+      express,
     })
   }
+
+  console.info(`PID: ${process.pid}`)
 
   app.use(
     graphqlEndpoint,

@@ -233,13 +233,17 @@ export const updateStateAndRunQueries = async (
   // Run action for each component
   const { components } = snapshot
   components.forEach(c => {
-    const { isStaticQuery = false, text = `` } =
-      queries.get(c.componentPath) || {}
+    const {
+      isStaticQuery = false,
+      text = ``,
+      originalText,
+    } = queries.get(c.componentPath) || {}
 
     store.dispatch(
       actions.queryExtracted({
         componentPath: c.componentPath,
         query: isStaticQuery ? `` : text,
+        originalQueryText: originalText,
       })
     )
   })
@@ -285,6 +289,8 @@ export const updateStateAndRunQueries = async (
      */
     await processNodeManifests()
   }
+
+  emitter.emit(`QUERY_EXTRACTION_FINISHED`)
 }
 
 export const extractQueries = ({
