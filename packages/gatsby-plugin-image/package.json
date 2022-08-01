@@ -61,7 +61,7 @@
     "npm-run-all": "^4.1.5",
     "postcss": "^8.4.14",
     "terser": "^5.14.2",
-    "typescript": "^4.3.5"
+    "typescript": "^4.7.4"
   },
   "peerDependencies": {
     "@babel/core": "^7.12.3",
