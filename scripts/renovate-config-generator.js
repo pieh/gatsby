@@ -351,7 +351,7 @@ const renovateConfig = {
     `:disableRateLimiting`,
     `:label(topic: automation)`,
     `:ignoreModulesAndTests`,
-    `:enableVulnerabilityAlertsWithLabel(testing)`,
+    `:enableVulnerabilityAlertsWithLabel(topic: security)`,
   ],
   includePaths: [`package.json`, `packages/**`, `starters/**`, `examples/**`],
   major: {
