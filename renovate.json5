@@ -11,7 +11,7 @@
     ":disableRateLimiting",
     ":label(topic: automation)",
     ":ignoreModulesAndTests",
-    ":enableVulnerabilityAlerts"
+    ":enableVulnerabilityAlertsWithLabel(testing)"
   ],
   "includePaths": [
     "package.json",
@@ -115,16 +115,6 @@
       ],
       "groupSlug": "starters-examples-gatsby-major",
       "dependencyDashboardApproval": false
-    },
-    {
-      "groupName": null,
-      "schedule": [],
-      "dependencyDashboardApproval": false,
-      "stabilityDays": 0,
-      "rangeStrategy": "update-lockfile",
-      "commitMessageSuffix": "[SECURITY]",
-      "branchTopic": "{{{datasource}}}-{{{depName}}}-vulnerability",
-      "prCreation": "immediate"
     },
     {
       "groupName": "babel monorepo",
