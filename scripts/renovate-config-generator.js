@@ -8,6 +8,16 @@ const packageRules = new Map()
 const globalPackageRules = [
   // bundle well known monorepos
   {
+    groupName: null,
+    schedule: [],
+    dependencyDashboardApproval: false,
+    stabilityDays: 0,
+    rangeStrategy: `update-lockfile`,
+    commitMessageSuffix: `[SECURITY]`,
+    branchTopic: `{{{datasource}}}-{{{depName}}}-vulnerability`,
+    prCreation: `immediate`,
+  },
+  {
     groupName: `babel monorepo`,
     matchPaths: [`+(package.json)`, `packages/**/package.json`],
     matchSourceUrlPrefixes: [`https://github.com/babel/babel`],
