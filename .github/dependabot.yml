@@ -5,8 +5,32 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "npm"
+    directory: "/packages/gatsby"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/packages/gatsby-source-filesystem"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/packages/gatsby-source-contentful"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/packages/gatsby-source-wordpress"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/packages/gatsby-plugin-sharp"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/packages/gatsby-transformer-sharp"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/packages/gatsby-plugin-image"
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
