@@ -7,37 +7,46 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/packages/gatsby"
+    open-pull-requests-limit: 0
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
     directory: "/packages/gatsby-source-filesystem"
+    open-pull-requests-limit: 0
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
     directory: "/packages/gatsby-source-contentful"
+    open-pull-requests-limit: 0
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
     directory: "/packages/gatsby-source-wordpress"
+    open-pull-requests-limit: 0
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
     directory: "/packages/gatsby-plugin-sharp"
+    open-pull-requests-limit: 0
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
     directory: "/packages/gatsby-transformer-sharp"
+    open-pull-requests-limit: 0
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
     directory: "/packages/gatsby-plugin-image"
+    open-pull-requests-limit: 0
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
     directory: "/starters/blog/"
+    open-pull-requests-limit: 0
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
     directory: "/starters/default/"
+    open-pull-requests-limit: 0
     schedule:
       interval: "daily"
