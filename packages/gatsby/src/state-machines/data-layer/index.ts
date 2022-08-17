@@ -137,8 +137,25 @@ export const reloadDataMachine = createMachine(
   {
     id: `reloadDataMachine`,
     context: {},
-    initial: `customizingSchema`,
+    initial: `init`,
     states: {
+      init: {
+        always: [
+          {
+            cond: (ctx): boolean =>
+              !!ctx.webhookBody || !!ctx.webhookSourcePluginName,
+            target: `customizingSchema`,
+          },
+          {
+            cond: (ctx): boolean => !!ctx.reloadCreatePages,
+            target: `creatingPages`,
+            actions: [`assignGraphQLRunners`],
+          },
+          {
+            target: `done`,
+          },
+        ],
+      },
       ...loadDataStates,
       ...recreatePagesStates,
       ...doneState,

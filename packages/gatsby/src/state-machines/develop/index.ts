@@ -40,6 +40,10 @@ const developConfig: MachineConfig<IBuildContext, any, AnyEventObject> = {
       target: `reloadingData`,
       actions: `assignWebhookBody`,
     },
+    RERUN_CREATE_PAGES: {
+      target: `reloadingData`,
+      actions: `assignCreatePagesRerunFlag`,
+    },
     QUERY_RUN_REQUESTED: {
       actions: `trackRequestedQueryRun`,
     },
@@ -62,6 +66,7 @@ const developConfig: MachineConfig<IBuildContext, any, AnyEventObject> = {
         ADD_NODE_MUTATION: undefined,
         SOURCE_FILE_CHANGED: undefined,
         WEBHOOK_RECEIVED: undefined,
+        RERUN_CREATE_PAGES: undefined,
       },
       invoke: {
         id: `initialize`,
@@ -107,6 +112,7 @@ const developConfig: MachineConfig<IBuildContext, any, AnyEventObject> = {
           actions: [
             `assignServiceResult`,
             `clearWebhookBody`,
+            `clearCreatePagesRerunFlag`,
             `finishParentSpan`,
           ],
           target: `runningPostBootstrap`,
@@ -325,6 +331,7 @@ const developConfig: MachineConfig<IBuildContext, any, AnyEventObject> = {
           store,
           webhookBody,
           webhookSourcePluginName,
+          reloadCreatePages,
           program,
           reporter,
         }: IBuildContext): IDataLayerContext => {
@@ -333,6 +340,7 @@ const developConfig: MachineConfig<IBuildContext, any, AnyEventObject> = {
             store,
             webhookBody,
             webhookSourcePluginName,
+            reloadCreatePages,
             refresh: true,
             deferNodeMutation: true,
             shouldRunCreatePagesStatefully: false,
@@ -344,6 +352,7 @@ const developConfig: MachineConfig<IBuildContext, any, AnyEventObject> = {
           actions: [
             `assignServiceResult`,
             `clearWebhookBody`,
+            `clearCreatePagesRerunFlag`,
             `finishParentSpan`,
           ],
           target: `runningQueries`,

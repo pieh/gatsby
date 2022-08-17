@@ -20,6 +20,7 @@ export interface IDataLayerContext {
   graphqlRunner?: GraphQLRunner
   webhookBody?: Record<string, unknown>
   webhookSourcePluginName?: string
+  reloadCreatePages?: boolean
   refresh?: boolean
   workerPool?: GatsbyWorkerPool
   pagesToBuild?: Array<string>

@@ -36,6 +36,7 @@ export interface IBuildContext {
   queryIds?: IGroupedQueryIds
   webhookBody?: Record<string, unknown>
   webhookSourcePluginName?: string
+  reloadCreatePages?: boolean
   refresh?: boolean
   workerPool?: GatsbyWorkerPool
   app?: Express

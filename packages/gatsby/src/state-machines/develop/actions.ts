@@ -151,6 +151,16 @@ export const clearWebhookBody = assign<IBuildContext, AnyEventObject>({
   webhookSourcePluginName: undefined,
 })
 
+export const assignCreatePagesRerunFlag = assign<IBuildContext, AnyEventObject>(
+  {
+    reloadCreatePages: true,
+  }
+)
+
+export const clearCreatePagesRerunFlag = assign<IBuildContext, AnyEventObject>({
+  reloadCreatePages: false,
+})
+
 export const finishParentSpan = ({ parentSpan }: IBuildContext): void =>
   parentSpan?.finish()
 
@@ -263,6 +273,8 @@ export const buildActions: ActionFunctionMap<IBuildContext, AnyEventObject> = {
   markQueryFilesDirty,
   assignWebhookBody,
   clearWebhookBody,
+  assignCreatePagesRerunFlag,
+  clearCreatePagesRerunFlag,
   finishParentSpan,
   spawnWebpackListener,
   markSourceFilesDirty,

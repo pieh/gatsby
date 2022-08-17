@@ -6,6 +6,10 @@ import { IGatsbyPage } from "../redux/types"
 import { actions } from "../redux/actions"
 import { deleteUntouchedPages, findChangedPages } from "../utils/changed-pages"
 import { getDataStore } from "../datastore"
+import {
+  setGatsbyPluginCache,
+  requireGatsbyPlugin,
+} from "../utils/require-gatsby-plugin"
 
 const isInitialCreatePages = true
 let createPagesCount = 0
@@ -15,11 +19,42 @@ export async function createPages({
   store,
   deferNodeMutation,
   shouldRunCreatePagesStatefully,
+  reloadCreatePages,
 }: Partial<IDataLayerContext>): Promise<{
   deletedPages: Array<string>
   changedPages: Array<string>
 }> {
   assertStore(store)
+
+  if (reloadCreatePages) {
+    const { flattenedPlugins } = store.getState()
+    flattenedPlugins.forEach(plugin => {
+      // for now we require that "createPages" already exists on initial run of dev server
+      if (plugin.nodeAPIs.includes(`createPages`)) {
+        const currentlyLoadedModule = requireGatsbyPlugin(plugin, `gatsby-node`)
+
+        const resolvedPath = require.resolve(
+          `${plugin.pluginFilepath}/gatsby-node`
+        )
+        delete require.cache[resolvedPath]
+        const freshModule = require(resolvedPath)
+
+        // let's make sure "createPages" actually exists in modified module
+        if (freshModule?.createPages) {
+          // update only "createPages" and keep rest of lifecycles from original module
+          setGatsbyPluginCache(plugin, `gatsby-node`, {
+            ...currentlyLoadedModule,
+            createPages: freshModule.createPages,
+          })
+        } else {
+          reporter.warn(
+            `${plugin.name}'s gatsby-node file no longer exports "createPages". Previous version will be used.`
+          )
+        }
+      }
+    })
+  }
+
   const activity = reporter.activityTimer(`createPages`, {
     parentSpan,
   })

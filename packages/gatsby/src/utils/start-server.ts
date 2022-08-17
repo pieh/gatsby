@@ -55,6 +55,7 @@ import { getPageMode } from "./page-mode"
 import { configureTrailingSlash } from "./express-middlewares"
 import type { Express } from "express"
 import { addImageRoutes } from "gatsby-plugin-utils/polyfill-remote-file"
+import { setGatsbyPluginCache } from "./require-gatsby-plugin"
 
 type ActivityTracker = any // TODO: Replace this with proper type once reporter is typed
 
@@ -256,6 +257,31 @@ export async function startServer(
       pluginName,
     })
   }
+
+  app.use(`/__create-pages`, (_req, res) => {
+    console.log(`USE RERUN_CREATE_PAGES`)
+    emitter.emit(`RERUN_CREATE_PAGES`)
+    res.send(`OK`)
+  })
+
+  app.use(`/__reload-gatsby-node`, (_req, res) => {
+    console.log(`reload default-site-plugin gatsby-node`)
+
+    const { flattenedPlugins } = store.getState()
+    flattenedPlugins.forEach(plugin => {
+      if (plugin.name === `default-site-plugin`) {
+        const resolvedPath = require.resolve(
+          `${plugin.pluginFilepath}/gatsby-node`
+        )
+        delete require.cache[resolvedPath]
+        const freshModule = require(resolvedPath)
+
+        setGatsbyPluginCache(plugin, `gatsby-node`, freshModule)
+      }
+    })
+
+    res.send(`OK`)
+  })
 
   app.post(`${REFRESH_ENDPOINT}/:plugin_name?`, express.json(), (req, res) => {
     const pluginName = req.params[`plugin_name`]

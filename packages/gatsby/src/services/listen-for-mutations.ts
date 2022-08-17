@@ -26,12 +26,17 @@ export const listenForMutations: InvokeCallback = (callback: Sender<any>) => {
     callback({ type: `SET_GRAPHQL_DEFINITIONS`, payload: event })
   }
 
+  const emitCreatePagesRequest = (event: unknown): void => {
+    callback({ type: `RERUN_CREATE_PAGES`, payload: event })
+  }
+
   emitter.on(`ENQUEUE_NODE_MUTATION`, emitMutation)
   emitter.on(`WEBHOOK_RECEIVED`, emitWebhook)
   emitter.on(`SOURCE_FILE_CHANGED`, emitSourceChange)
   emitter.on(`QUERY_RUN_REQUESTED`, emitQueryRunRequest)
   emitter.on(`SET_SCHEMA`, emitSetSchema)
   emitter.on(`SET_GRAPHQL_DEFINITIONS`, emitGraphQLDefinitions)
+  emitter.on(`RERUN_CREATE_PAGES`, emitCreatePagesRequest)
 
   return function unsubscribeFromMutationListening(): void {
     emitter.off(`ENQUEUE_NODE_MUTATION`, emitMutation)
@@ -40,5 +45,6 @@ export const listenForMutations: InvokeCallback = (callback: Sender<any>) => {
     emitter.off(`QUERY_RUN_REQUESTED`, emitQueryRunRequest)
     emitter.off(`SET_SCHEMA`, emitSetSchema)
     emitter.off(`SET_GRAPHQL_DEFINITIONS`, emitGraphQLDefinitions)
+    emitter.off(`RERUN_CREATE_PAGES`, emitCreatePagesRequest)
   }
 }
