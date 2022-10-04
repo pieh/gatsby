@@ -1,11 +1,13 @@
 import * as path from "path"
 import fs from "fs-extra"
 import Template from "webpack/lib/Template"
-import ModuleDependency from "webpack/lib/dependencies/ModuleDependency"
-import NullDependency from "webpack/lib/dependencies/NullDependency"
+import ImportDependency from "webpack/lib/dependencies/ImportDependency"
 import { createNormalizedModuleKey } from "../utils/create-normalized-module-key"
 import webpack, { Module, NormalModule, Dependency, javascript } from "webpack"
 import type Reporter from "gatsby-cli/lib/reporter"
+
+import { getAbsolutePathForVirtualModule } from "../../gatsby-webpack-virtual-modules"
+import { slash } from "gatsby-core-utils/path"
 
 interface IModuleExport {
   id: string
@@ -20,7 +22,7 @@ interface IDirective {
 /**
  * @see https://github.com/facebook/react/blob/3f70e68cea8d2ed0f53d35420105ae20e22ce428/packages/react-server-dom-webpack/src/ReactFlightWebpackPlugin.js#L27-L35
  */
-class ClientReferenceDependency extends ModuleDependency {
+class ClientReferenceDependency extends ImportDependency {
   constructor(request) {
     super(request)
   }
@@ -46,30 +48,6 @@ export class PartialHydrationPlugin {
   constructor(manifestPath: string, reporter: typeof Reporter) {
     this._manifestPath = manifestPath
     this._reporter = reporter
-  }
-
-  _generateClientReferenceChunk(
-    reference: NormalModule,
-    module: NormalModule,
-    rootContext: string
-  ): void {
-    const chunkName = Template.toPath(
-      // @ts-ignore - types are incorrect
-      path.relative(rootContext, reference.userRequest)
-    )
-
-    const dep = new ClientReferenceDependency(reference.rawRequest)
-    const block = new webpack.AsyncDependenciesBlock(
-      {
-        name: chunkName,
-      },
-      undefined,
-      // @ts-ignore - types are incorrect
-      reference.request
-    )
-
-    block.addDependency(dep as Dependency)
-    module.addBlock(block)
   }
 
   _generateManifest(
@@ -218,17 +196,6 @@ export class PartialHydrationPlugin {
       this.name,
       (compilation, { normalModuleFactory }) => {
         // tell webpack that this is a regular javascript module
-        compilation.dependencyFactories.set(
-          ClientReferenceDependency as ModuleDependency,
-          normalModuleFactory
-        )
-        // don't add extra code to the source file
-        compilation.dependencyTemplates.set(
-          ClientReferenceDependency as ModuleDependency,
-          new NullDependency.Template()
-        )
-
-        // const entryModule: webpack.NormalModule | null = null
         const handler = (parser: javascript.JavascriptParser): void => {
           parser.hooks.program.tap(this.name, ast => {
             const hasClientExportDirective = ast.body.find(
@@ -241,63 +208,79 @@ export class PartialHydrationPlugin {
 
             if (hasClientExportDirective) {
               this._clientModules.add(module)
-
-              // if (entryModule) {
-              //   console.log(`parse`, module.resource)
-              //   this._generateClientReferenceChunk(
-              //     module,
-              //     entryModule,
-              //     compilation.options.context as string
-              //   )
-              //   entryModule.invalidateBuild()
-              // }
             }
-
-            // if (module.resource.includes(`production-app`) && !entryModule) {
-            //   entryModule = module
-
-            //   for (const clientModule of this._clientModules) {
-            //     this._generateClientReferenceChunk(
-            //       clientModule,
-            //       entryModule,
-            //       compilation.options.context as string
-            //     )
-            //   }
-            // }
           })
         }
 
-        compilation.hooks.optimizeChunkModules.tap(
+        let justClientComponents: string | null = null
+        NormalModule.getCompilationHooks(compilation).loader.tap(
           this.name,
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          () => {
-            // 1. move clientModules into their own chunk
-            // 2. disconnect module from original chunk
+          loaderContext => {
+            // @ts-ignore
+            loaderContext.justClientComponents = justClientComponents
+          }
+        )
 
+        compilation.hooks.finishModules.tapAsync(
+          this.name,
+          (modules, callback) => {
+            function matcher(m) {
+              return m.resource && m.resource.includes(`async-requires.js`)
+            }
+
+            const module = Array.from(modules).find(matcher)
+
+            if (!module) {
+              throw new Error("something went wrong")
+            }
+
+            // Check if already build the updated version
+            // this will happen when using caching
+            if (module.buildInfo._isReplaced) {
+              return callback()
+            }
+
+            let lines = ``
+            // some hardcoding
             for (const clientModule of this._clientModules) {
+              const relativeComponentPath = path.relative(
+                getAbsolutePathForVirtualModule(`$virtual`),
+                clientModule.userRequest
+              )
+
               const chunkName = Template.toPath(
-                // @ts-ignore - types are incorrect
                 path.relative(
-                  compilation.options.context as string,
+                  compilation.options.context!,
                   clientModule.userRequest
                 )
               )
 
-              const selectedChunks = Array.from(
-                compilation.chunkGraph.getModuleChunksIterable(clientModule)
-              )
-              const chunk = compilation.addChunk(chunkName)
-              chunk.chunkReason = `PartialHydration client module`
-              compilation.chunkGraph.connectChunkAndModule(chunk, clientModule)
+              const line = `"${chunkName}": () => import("${slash(
+                `./${relativeComponentPath}`
+              )}" /* webpackChunkName: "${chunkName}" */),`
 
-              for (const connectedChunk of selectedChunks) {
-                compilation.chunkGraph.disconnectChunkAndModule(
-                  connectedChunk,
-                  clientModule
-                )
-                connectedChunk.split(chunk)
-              }
+              lines += line
             }
+
+            justClientComponents = `
+
+            exports.clientComponents = {
+${lines}
+            }
+            
+exports.head = {
+  "component---src-pages-404-js": () => import("./../../../src/pages/404.js?export=head" /* webpackChunkName: "component---src-pages-404-jshead" */),
+  "component---src-pages-index-js": () => import("./../../../src/pages/index.js?export=head" /* webpackChunkName: "component---src-pages-index-jshead" */),
+  "component---src-pages-page-2-js": () => import("./../../../src/pages/page-2.js?export=head" /* webpackChunkName: "component---src-pages-page-2-jshead" */),
+  "component---src-pages-using-partial-hydration-js": () => import("./../../../src/pages/using-partial-hydration.js?export=head" /* webpackChunkName: "component---src-pages-using-partial-hydration-jshead" */),
+  "component---src-pages-using-typescript-tsx": () => import("./../../../src/pages/using-typescript.tsx?export=head" /* webpackChunkName: "component---src-pages-using-typescript-tsxhead" */)
+}
+            
+            `
+            compilation.rebuildModule(module, err => {
+              justClientComponents = null
+              callback(err)
+            })
           }
         )
 
