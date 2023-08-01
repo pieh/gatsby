@@ -16,8 +16,8 @@
     "cross-env": "^7.0.3",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
-    "react-typography": "^0.16.20",
-    "typography": "^0.16.21"
+    "react-typography": "^0.16.23",
+    "typography": "^0.16.24"
   },
   "homepage": "https://github.com/gatsbyjs/gatsby/tree/master/packages/gatsby-plugin-typography#readme",
   "keywords": [
