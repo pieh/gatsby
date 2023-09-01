@@ -27,7 +27,7 @@
     "gatsby-core-utils": "^3.22.0-next.0",
     "gatsby-plugin-utils": "^3.16.0-next.1",
     "gatsby-source-filesystem": "^4.22.0-next.1",
-    "node-fetch": "^2.6.7",
+    "node-fetch": "^2.7.0",
     "sharp": "^0.30.7",
     "shift-left": "^0.1.5"
   },
