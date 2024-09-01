@@ -40,8 +40,8 @@
   "types": "dist/src/index.d.ts",
   "homepage": "https://github.com/gatsbyjs/gatsby/tree/master/packages/gatsby-plugin-image#readme",
   "devDependencies": {
-    "@babel/cli": "^7.15.4",
-    "@babel/core": "^7.15.5",
+    "@babel/cli": "^7.25.6",
+    "@babel/core": "^7.25.2",
     "@testing-library/react": "^11.2.7",
     "@types/babel__core": "^7.1.12",
     "@types/babel__traverse": "^7.11.1",
@@ -72,10 +72,10 @@
     "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0"
   },
   "dependencies": {
-    "@babel/code-frame": "^7.14.0",
-    "@babel/parser": "^7.15.5",
-    "@babel/runtime": "^7.15.4",
-    "@babel/traverse": "^7.15.4",
+    "@babel/code-frame": "^7.24.7",
+    "@babel/parser": "^7.25.6",
+    "@babel/runtime": "^7.25.6",
+    "@babel/traverse": "^7.25.6",
     "babel-jsx-utils": "^1.1.0",
     "babel-plugin-remove-graphql-queries": "^4.22.0-next.0",
     "camelcase": "^5.3.1",

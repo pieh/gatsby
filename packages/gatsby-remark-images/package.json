@@ -7,7 +7,7 @@
     "url": "https://github.com/gatsbyjs/gatsby/issues"
   },
   "dependencies": {
-    "@babel/runtime": "^7.15.4",
+    "@babel/runtime": "^7.25.6",
     "@gatsbyjs/potrace": "^2.2.0",
     "chalk": "^4.1.2",
     "cheerio": "^1.0.0-rc.10",
@@ -20,8 +20,8 @@
     "unist-util-visit-parents": "^3.1.1"
   },
   "devDependencies": {
-    "@babel/cli": "^7.15.4",
-    "@babel/core": "^7.15.5",
+    "@babel/cli": "^7.25.6",
+    "@babel/core": "^7.25.2",
     "babel-preset-gatsby-package": "^2.22.0-next.0",
     "cross-env": "^7.0.3",
     "gatsby-plugin-utils": "^3.16.0-next.1",
