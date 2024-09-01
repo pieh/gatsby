@@ -21,7 +21,7 @@
     "clean": "del-cli dist/*"
   },
   "devDependencies": {
-    "@testing-library/react": "^11.2.7",
+    "@testing-library/react": "^16.0.1",
     "cross-env": "^7.0.3",
     "del-cli": "^5.0.0",
     "microbundle": "^0.15.0",
