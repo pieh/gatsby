@@ -18,9 +18,9 @@
   "devDependencies": {
     "@ascorbic/worker-threads-shim": "^1.0.0",
     "@lukeed/uuid": "^2.0.0",
-    "@types/configstore": "^4.0.0",
+    "@types/configstore": "^6.0.2",
     "@types/fs-extra": "^9.0.13",
-    "@types/node": "^14.17.34",
+    "@types/node": "^22.7.4",
     "ansi-wordwrap": "^1.0.2",
     "common-tags": "^1.8.2",
     "enquirer": "^2.3.6",
@@ -29,9 +29,9 @@
     "gatsby-plugin-utils": "^3.16.0-next.1",
     "joi": "^17.4.2",
     "microbundle": "^0.15.0",
-    "node-fetch": "^2.6.6",
-    "string-length": "^4.0.2",
-    "terminal-link": "^2.1.1",
+    "node-fetch": "^3.3.2",
+    "string-length": "^6.0.0",
+    "terminal-link": "^3.0.0",
     "tiny-spin": "^1.0.2"
   },
   "repository": {
