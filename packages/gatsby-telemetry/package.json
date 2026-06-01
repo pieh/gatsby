@@ -17,8 +17,8 @@
     "gatsby-core-utils": "^3.22.0-next.0",
     "git-up": "^6.0.0",
     "is-docker": "^2.2.1",
-    "lodash": "^4.17.21",
-    "node-fetch": "^2.6.7"
+    "lodash": "^4.18.1",
+    "node-fetch": "^2.7.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.4",
