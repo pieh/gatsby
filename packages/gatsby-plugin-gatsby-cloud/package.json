@@ -12,8 +12,8 @@
     "gatsby-core-utils": "^3.22.0-next.0",
     "gatsby-telemetry": "^3.22.0-next.1",
     "kebab-hash": "^0.1.2",
-    "lodash": "^4.17.21",
-    "webpack-assets-manifest": "^5.1.0"
+    "lodash": "^4.18.1",
+    "webpack-assets-manifest": "^5.2.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.4",
