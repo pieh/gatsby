@@ -19,7 +19,7 @@
     "react-dom": "^18.1.0"
   },
   "devDependencies": {
-    "prettier": "^2.7.1"
+    "prettier": "^3.9.6"
   },
   "repository": {
     "type": "git",
