@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.16.1](https://github.com/pieh/gatsby/compare/gatsby-script@2.16.0...gatsby-script@2.16.1) (2026-09-10)
+
+
+### Bug Fixes
+
+* reset package versions to last published stable ([2c34ba2](https://github.com/pieh/gatsby/commit/2c34ba2a5558088af1e72bdb4d6304ca50fc1735))
+* use more explicit node.js version range ([#39398](https://github.com/pieh/gatsby/issues/39398)) ([ede00a5](https://github.com/pieh/gatsby/commit/ede00a5adff7f494bcfd3d14f6ed54ea942986c1))
+
 ## [2.16.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-script@2.16.0/packages/gatsby-script) (2026-01-26)
 
 [🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.16)
