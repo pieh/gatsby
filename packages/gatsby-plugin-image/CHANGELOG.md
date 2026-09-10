@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.16.1](https://github.com/pieh/gatsby/compare/gatsby-plugin-image@3.16.0...gatsby-plugin-image@3.16.1) (2026-09-10)
+
+
+### Bug Fixes
+
+* reset package versions to last published stable ([2c34ba2](https://github.com/pieh/gatsby/commit/2c34ba2a5558088af1e72bdb4d6304ca50fc1735))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * babel-plugin-remove-graphql-queries bumped from ^5.16.0 to ^5.16.1
+    * gatsby-core-utils bumped from ^4.16.0 to ^4.16.1
+    * gatsby-plugin-utils bumped from ^4.16.0 to ^4.16.1
+  * peerDependencies
+    * gatsby bumped from ^5.0.0-next to ^5.16.2
+    * gatsby-plugin-sharp bumped from ^5.0.0-next to ^5.16.1
+    * gatsby-source-filesystem bumped from ^5.0.0-next to ^5.16.1
+
 ## [3.16.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-image@3.16.0/packages/gatsby-plugin-image) (2026-01-26)
 
 [🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.16)
